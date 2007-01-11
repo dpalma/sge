@@ -151,4 +151,53 @@ namespace ManagedEditor
       return "Place Entity";
    }
 
+
+   /////////////////////////////////////////////////////////////////////////////
+   //
+   // CLASS: ChangeTerrainElevationCommand
+   //
+
+   ChangeTerrainElevationCommand::ChangeTerrainElevationCommand(HTERRAINVERTEX hVertex, float elevDelta)
+    : m_hVertex(hVertex)
+    , m_elevDelta(elevDelta)
+    , m_oldElevation(0)
+   {
+   }
+
+   void ChangeTerrainElevationCommand::Do()
+   {
+      if (m_hVertex != INVALID_HTERRAINVERTEX)
+      {
+         UseGlobal(TerrainModel);
+
+         tVec3 vertexPos;
+         if (pTerrainModel->GetVertexPosition(m_hVertex, &vertexPos) == S_OK)
+         {
+            m_oldElevation = vertexPos.y;
+         }
+
+         pTerrainModel->ChangeVertexElevation(m_hVertex, m_elevDelta);
+      }
+   }
+
+   bool ChangeTerrainElevationCommand::CanUndo()
+   {
+      return (m_hVertex != INVALID_HTERRAINVERTEX);
+   }
+
+   void ChangeTerrainElevationCommand::Undo()
+   {
+      if (m_hVertex != INVALID_HTERRAINVERTEX)
+      {
+         UseGlobal(TerrainModel);
+         pTerrainModel->SetVertexElevation(m_hVertex, m_oldElevation);
+      }
+   }
+
+   System::String ^ ChangeTerrainElevationCommand::Label::get()
+   {
+      return "Terrain Elevation";
+   }
+
+
 } // namespace ManagedEditor

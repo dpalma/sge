@@ -60,7 +60,8 @@ namespace ManagedEditor
    //
 
    EditorDocumentCommandArray ^ EditorSelectTool::OnMouseClick(System::Object ^ sender,
-                                                               System::Windows::Forms::MouseEventArgs ^ e)
+                                                               System::Windows::Forms::MouseEventArgs ^ e,
+                                                               EditorDocument ^ doc)
    {
       UseGlobal(Renderer);
       UseGlobal(EntityManager);
@@ -92,7 +93,8 @@ namespace ManagedEditor
    //
 
    EditorDocumentCommandArray ^ EditorPlaceEntityTool::OnMouseClick(System::Object ^ sender,
-                                                                    System::Windows::Forms::MouseEventArgs ^ e)
+                                                                    System::Windows::Forms::MouseEventArgs ^ e,
+                                                                    EditorDocument ^ doc)
    {
       UseGlobal(Renderer);
       UseGlobal(EntityManager);
@@ -126,6 +128,132 @@ namespace ManagedEditor
       }
 
       return nullptr;
+   }
+
+
+   /////////////////////////////////////////////////////////////////////////////
+   //
+   // CLASS: EditorTerrainElevationTool
+   //
+
+   EditorTerrainElevationTool::EditorTerrainElevationTool()
+    : m_command(nullptr)
+    , m_hHitVertex(INVALID_HTERRAINVERTEX)
+    , m_elevDelta(0)
+   {
+   }
+
+   EditorDocumentCommandArray ^ EditorTerrainElevationTool::OnMouseDown(System::Object ^ sender,
+                                                                        System::Windows::Forms::MouseEventArgs ^ e,
+                                                                        EditorDocument ^ doc)
+   {
+      // Should have hit-tested for a vertex in OnMouseMove
+      if (m_hHitVertex != INVALID_HTERRAINVERTEX)
+      {
+         UseGlobal(TerrainRenderer);
+         pTerrainRenderer->EnableBlending(false);
+
+         m_lastDragPoint.X = e->X;
+         m_lastDragPoint.Y = e->Y;
+      }
+
+      System::Windows::Forms::Control ^ control = dynamic_cast<System::Windows::Forms::Control^>(sender);
+
+      if (control)
+      {
+         control->MouseCaptureChanged += gcnew System::EventHandler(this, &EditorTerrainElevationTool::OnMouseCaptureChanged);
+      }
+
+      return nullptr;
+   }
+
+   EditorDocumentCommandArray ^ EditorTerrainElevationTool::OnMouseUp(System::Object ^ sender,
+                                                                      System::Windows::Forms::MouseEventArgs ^ e,
+                                                                      EditorDocument ^ doc)
+   {
+      UseGlobal(TerrainRenderer);
+      pTerrainRenderer->EnableBlending(true);
+
+      System::Windows::Forms::Control ^ control = dynamic_cast<System::Windows::Forms::Control^>(sender);
+
+      if (control)
+      {
+         control->MouseCaptureChanged -= gcnew System::EventHandler(this, &EditorTerrainElevationTool::OnMouseCaptureChanged);
+      }
+
+      if (doc && m_command)
+      {
+         doc->AddDocumentCommand(m_command, false);
+      }
+
+      return nullptr;
+   }
+
+   EditorDocumentCommandArray ^ EditorTerrainElevationTool::OnMouseMove(System::Object ^ sender,
+                                                                        System::Windows::Forms::MouseEventArgs ^ e,
+                                                                        EditorDocument ^ doc)
+   {
+      UseGlobal(Renderer);
+      UseGlobal(TerrainModel);
+      UseGlobal(TerrainRenderer);
+
+      HTERRAINVERTEX hHitVertex = INVALID_HTERRAINVERTEX;
+
+      cRay pickRay;
+      if (pRenderer->GenerateScreenPickRay(e->X, e->Y, &pickRay) == S_OK)
+      {
+         pTerrainModel->GetVertexFromHitTest(pickRay, &hHitVertex);
+      }
+
+      System::Windows::Forms::Control ^ control = dynamic_cast<System::Windows::Forms::Control^>(sender);
+
+      if (control && control->Capture)
+      {
+         if (m_hHitVertex != INVALID_HTERRAINVERTEX)
+         {
+            m_elevDelta -= static_cast<float>(e->Y - m_lastDragPoint.Y);
+
+            m_lastDragPoint.X = e->X;
+            m_lastDragPoint.Y = e->Y;
+
+            if (m_command)
+            {
+               m_command->Undo();
+               m_command = nullptr;
+            }
+
+            m_command = static_cast<EditorDocumentCommand ^>(
+               gcnew ChangeTerrainElevationCommand(m_hHitVertex, m_elevDelta));
+            m_command->Do();
+         }
+      }
+      else
+      {
+         m_hHitVertex = hHitVertex;
+         if (hHitVertex != INVALID_HTERRAINVERTEX)
+         {
+            pTerrainRenderer->HighlightTerrainVertex(hHitVertex);
+         }
+         else
+         {
+            pTerrainRenderer->ClearHighlight();
+         }
+      }
+
+      return nullptr;
+   }
+
+   void EditorTerrainElevationTool::OnMouseCaptureChanged(System::Object ^ sender, System::EventArgs ^ e)
+   {
+      UseGlobal(TerrainRenderer);
+      pTerrainRenderer->EnableBlending(true);
+
+      System::Windows::Forms::Control ^ control = dynamic_cast<System::Windows::Forms::Control^>(sender);
+
+      if (control)
+      {
+         control->MouseCaptureChanged -= gcnew System::EventHandler(this, &EditorTerrainElevationTool::OnMouseCaptureChanged);
+      }
    }
 
 } // namespace ManagedEditor

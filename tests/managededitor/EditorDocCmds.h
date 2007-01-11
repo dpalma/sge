@@ -14,6 +14,7 @@
 
 F_DECLARE_INTERFACE(IEntity);
 
+F_DECLARE_HANDLE(HTERRAINVERTEX);
 
 namespace ManagedEditor
 {
@@ -83,6 +84,30 @@ namespace ManagedEditor
       System::String ^ m_entity;
       float m_nx, m_nz;
       ulong m_placedEntityId;
+   };
+
+
+   /////////////////////////////////////////////////////////////////////////////
+   //
+   // CLASS: ChangeTerrainElevationCommand
+   //
+
+   ref class ChangeTerrainElevationCommand : public EditorDocumentCommand
+   {
+   public:
+      ChangeTerrainElevationCommand(HTERRAINVERTEX hVertex, float elevDelta);
+
+      virtual void Do() override;
+      virtual bool CanUndo() override;
+      virtual void Undo() override;
+      property System::String ^ Label
+      {
+         virtual System::String ^ get() override;
+      }
+
+   private:
+      HTERRAINVERTEX m_hVertex;
+      float m_elevDelta, m_oldElevation;
    };
 
 } // namespace ManagedEditor

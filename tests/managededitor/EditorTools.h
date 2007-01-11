@@ -10,6 +10,8 @@
 #pragma once
 #endif
 
+F_DECLARE_HANDLE(HTERRAINVERTEX);
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // NAMESPACE: ManagedEditor
@@ -17,6 +19,7 @@
 
 namespace ManagedEditor
 {
+   ref class EditorDocument;
    ref class EditorDocumentCommand;
    typedef array<EditorDocumentCommand ^> EditorDocumentCommandArray;
 
@@ -38,7 +41,7 @@ namespace ManagedEditor
    ref class EditorSelectTool : public EditorTool
    {
    public:
-      EditorDocumentCommandArray ^ OnMouseClick(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
+      EditorDocumentCommandArray ^ OnMouseClick(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e, EditorDocument ^ doc);
    };
 
    ///////////////////////////////////////////////////////////////////////////////
@@ -50,7 +53,32 @@ namespace ManagedEditor
    ref class EditorPlaceEntityTool : public EditorTool
    {
    public:
-      EditorDocumentCommandArray ^ OnMouseClick(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e);
+      EditorDocumentCommandArray ^ OnMouseClick(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e, EditorDocument ^ doc);
+   };
+
+
+   /////////////////////////////////////////////////////////////////////////////
+   //
+   // CLASS: EditorTerrainElevationTool
+   //
+
+   [ToolPaletteItem(Label="terrainElevationToolName", Image="TerrainElevation", Group="standardGroupName")]
+   ref class EditorTerrainElevationTool : public EditorTool
+   {
+   public:
+      EditorTerrainElevationTool();
+
+      EditorDocumentCommandArray ^ OnMouseDown(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e, EditorDocument ^ doc);
+      EditorDocumentCommandArray ^ OnMouseUp(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e, EditorDocument ^ doc);
+      EditorDocumentCommandArray ^ OnMouseMove(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e, EditorDocument ^ doc);
+
+      void OnMouseCaptureChanged(System::Object ^ sender, System::EventArgs ^ e);
+
+   private:
+      EditorDocumentCommand ^ m_command;
+      HTERRAINVERTEX m_hHitVertex;
+      System::Drawing::Point m_lastDragPoint;
+      float m_elevDelta;
    };
 
 } // namespace ManagedEditor

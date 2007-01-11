@@ -308,48 +308,48 @@ namespace ManagedEditor
    {
       InvokeToolMethod(
          "OnMouseDown",
-         gcnew array<System::Type ^>{System::Object::typeid, MouseEventArgs::typeid},
-         gcnew array<System::Object ^>{sender, e});
+         gcnew array<System::Type ^>{System::Object::typeid, MouseEventArgs::typeid, EditorDocument::typeid},
+         gcnew array<System::Object ^>{sender, e, m_document});
    }
 
    void EditorAppForm::renderControl_OnMouseUp(System::Object ^ sender, MouseEventArgs ^ e)
    {
       InvokeToolMethod(
          "OnMouseUp",
-         gcnew array<System::Type ^>{System::Object::typeid, MouseEventArgs::typeid},
-         gcnew array<System::Object ^>{sender, e});
+         gcnew array<System::Type ^>{System::Object::typeid, MouseEventArgs::typeid, EditorDocument::typeid},
+         gcnew array<System::Object ^>{sender, e, m_document});
    }
 
    void EditorAppForm::renderControl_OnMouseClick(System::Object ^ sender, MouseEventArgs ^ e)
    {
       InvokeToolMethod(
          "OnMouseClick",
-         gcnew array<System::Type ^>{System::Object::typeid, MouseEventArgs::typeid},
-         gcnew array<System::Object ^>{sender, e});
+         gcnew array<System::Type ^>{System::Object::typeid, MouseEventArgs::typeid, EditorDocument::typeid},
+         gcnew array<System::Object ^>{sender, e, m_document});
    }
 
    void EditorAppForm::renderControl_OnMouseMove(System::Object ^ sender, MouseEventArgs ^ e)
    {
       InvokeToolMethod(
          "OnMouseMove",
-         gcnew array<System::Type ^>{System::Object::typeid, MouseEventArgs::typeid},
-         gcnew array<System::Object ^>{sender, e});
+         gcnew array<System::Type ^>{System::Object::typeid, MouseEventArgs::typeid, EditorDocument::typeid},
+         gcnew array<System::Object ^>{sender, e, m_document});
    }
 
    void EditorAppForm::renderControl_OnMouseHover(System::Object ^ sender, System::EventArgs ^ e)
    {
       InvokeToolMethod(
          "OnMouseHover",
-         gcnew array<System::Type ^>{System::Object::typeid, System::EventArgs::typeid},
-         gcnew array<System::Object ^>{sender, e});
+         gcnew array<System::Type ^>{System::Object::typeid, System::EventArgs::typeid, EditorDocument::typeid},
+         gcnew array<System::Object ^>{sender, e, m_document});
    }
 
    void EditorAppForm::renderControl_OnMouseWheel(System::Object ^ sender, MouseEventArgs ^ e)
    {
       InvokeToolMethod(
          "OnMouseWheel",
-         gcnew array<System::Type ^>{System::Object::typeid, MouseEventArgs::typeid},
-         gcnew array<System::Object ^>{sender, e});
+         gcnew array<System::Type ^>{System::Object::typeid, MouseEventArgs::typeid, EditorDocument::typeid},
+         gcnew array<System::Object ^>{sender, e, m_document});
    }
 
    void EditorAppForm::toolPalette_OnToolSelect(System::Object ^ sender, ToolSelectEventArgs ^ e)
