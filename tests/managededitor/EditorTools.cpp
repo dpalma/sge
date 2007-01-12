@@ -256,4 +256,136 @@ namespace ManagedEditor
       }
    }
 
+   /////////////////////////////////////////////////////////////////////////////
+   //
+   // CLASS: EditorTerrainPlateauTool
+   //
+
+   EditorTerrainPlateauTool::EditorTerrainPlateauTool()
+    : m_elevation(0)
+    , m_hitVertices(gcnew System::Collections::ArrayList)
+   {
+   }
+
+   EditorDocumentCommandArray ^ EditorTerrainPlateauTool::OnMouseDown(System::Object ^ sender,
+                                                                      System::Windows::Forms::MouseEventArgs ^ e,
+                                                                      EditorDocument ^ doc)
+   {
+      UseGlobal(Renderer);
+      UseGlobal(TerrainModel);
+
+      m_hitVertices->Clear();
+
+      cRay pickRay;
+      HTERRAINVERTEX hHitVertex = INVALID_HTERRAINVERTEX;
+      tVec3 vertexPos;
+
+      if (pRenderer->GenerateScreenPickRay(e->X, e->Y, &pickRay) == S_OK
+         && pTerrainModel->GetVertexFromHitTest(pickRay, &hHitVertex) == S_OK
+         && pTerrainModel->GetVertexPosition(hHitVertex, &vertexPos) == S_OK)
+      {
+         m_elevation = vertexPos.y;
+
+         m_command = gcnew EditorCompositeDocumentCommand;
+
+         System::Windows::Forms::Control ^ control = dynamic_cast<System::Windows::Forms::Control^>(sender);
+
+         if (control)
+         {
+            control->MouseCaptureChanged += gcnew System::EventHandler(this, &EditorTerrainPlateauTool::OnMouseCaptureChanged);
+         }
+      }
+
+      return nullptr;
+   }
+
+   EditorDocumentCommandArray ^ EditorTerrainPlateauTool::OnMouseUp(System::Object ^ sender,
+                                                                    System::Windows::Forms::MouseEventArgs ^ e,
+                                                                    EditorDocument ^ doc)
+   {
+      // Do what is done on a move
+      OnMouseMove(sender, e, doc);
+
+      UseGlobal(TerrainRenderer);
+      pTerrainRenderer->EnableBlending(true);
+
+      if (doc && m_command)
+      {
+         doc->AddDocumentCommand(m_command, false);
+      }
+
+      m_hitVertices->Clear();
+
+      System::Windows::Forms::Control ^ control = dynamic_cast<System::Windows::Forms::Control^>(sender);
+
+      if (control)
+      {
+         control->MouseCaptureChanged -= gcnew System::EventHandler(this, &EditorTerrainPlateauTool::OnMouseCaptureChanged);
+      }
+
+      return nullptr;
+   }
+
+   EditorDocumentCommandArray ^ EditorTerrainPlateauTool::OnMouseMove(System::Object ^ sender,
+                                                                      System::Windows::Forms::MouseEventArgs ^ e,
+                                                                      EditorDocument ^ doc)
+   {
+      UseGlobal(Renderer);
+      UseGlobal(TerrainModel);
+      UseGlobal(TerrainRenderer);
+
+      HTERRAINVERTEX hHitVertex = INVALID_HTERRAINVERTEX;
+
+      cRay pickRay;
+      if (pRenderer->GenerateScreenPickRay(e->X, e->Y, &pickRay) == S_OK)
+      {
+         pTerrainModel->GetVertexFromHitTest(pickRay, &hHitVertex);
+      }
+
+      System::Windows::Forms::Control ^ control = dynamic_cast<System::Windows::Forms::Control^>(sender);
+
+      if (control && control->Capture)
+      {
+         if (hHitVertex != INVALID_HTERRAINVERTEX)
+         {
+            System::IntPtr vertexHandle = static_cast<System::IntPtr>(hHitVertex);
+            if (!m_hitVertices->Contains(vertexHandle))
+            {
+               m_hitVertices->Add(vertexHandle);
+               SetTerrainElevationCommand ^ command = gcnew SetTerrainElevationCommand(hHitVertex, m_elevation);
+               command->Do();
+               m_command->Commands->Add(command);
+            }
+         }
+      }
+      else
+      {
+         if (hHitVertex != INVALID_HTERRAINVERTEX)
+         {
+            pTerrainRenderer->HighlightTerrainVertex(hHitVertex);
+         }
+         else
+         {
+            pTerrainRenderer->ClearHighlight();
+         }
+      }
+
+      return nullptr;
+   }
+
+   void EditorTerrainPlateauTool::OnMouseCaptureChanged(System::Object ^ sender, System::EventArgs ^ e)
+   {
+      UseGlobal(TerrainRenderer);
+      pTerrainRenderer->EnableBlending(true);
+
+      System::Windows::Forms::Control ^ control = dynamic_cast<System::Windows::Forms::Control^>(sender);
+
+      if (control)
+      {
+         control->MouseCaptureChanged -= gcnew System::EventHandler(this, &EditorTerrainPlateauTool::OnMouseCaptureChanged);
+      }
+
+      m_command = nullptr;
+   }
+
 } // namespace ManagedEditor

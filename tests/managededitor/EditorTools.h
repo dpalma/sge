@@ -21,6 +21,7 @@ namespace ManagedEditor
 {
    ref class EditorDocument;
    ref class EditorDocumentCommand;
+   ref class EditorCompositeDocumentCommand;
    typedef array<EditorDocumentCommand ^> EditorDocumentCommandArray;
 
    ///////////////////////////////////////////////////////////////////////////////
@@ -79,6 +80,30 @@ namespace ManagedEditor
       HTERRAINVERTEX m_hHitVertex;
       System::Drawing::Point m_lastDragPoint;
       float m_elevDelta;
+   };
+
+
+   /////////////////////////////////////////////////////////////////////////////
+   //
+   // CLASS: EditorTerrainPlateauTool
+   //
+
+   [ToolPaletteItem(Label="terrainPlateauToolName", Image="TerrainPlateau", Group="standardGroupName")]
+   ref class EditorTerrainPlateauTool : public EditorTool
+   {
+   public:
+      EditorTerrainPlateauTool();
+
+      EditorDocumentCommandArray ^ OnMouseDown(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e, EditorDocument ^ doc);
+      EditorDocumentCommandArray ^ OnMouseUp(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e, EditorDocument ^ doc);
+      EditorDocumentCommandArray ^ OnMouseMove(System::Object ^ sender, System::Windows::Forms::MouseEventArgs ^ e, EditorDocument ^ doc);
+
+      void OnMouseCaptureChanged(System::Object ^ sender, System::EventArgs ^ e);
+
+   private:
+      EditorCompositeDocumentCommand ^ m_command;
+      System::Collections::ArrayList ^ m_hitVertices;
+      float m_elevation;
    };
 
 } // namespace ManagedEditor

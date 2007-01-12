@@ -20,6 +20,50 @@ namespace ManagedEditor
 
    ///////////////////////////////////////////////////////////////////////////////
    //
+   // CLASS: EditorCompositeDocumentCommand
+   //
+
+   EditorCompositeDocumentCommand::EditorCompositeDocumentCommand()
+   {
+      Commands = gcnew EditorDocumentCommandList;
+   }
+
+   void EditorCompositeDocumentCommand::Do()
+   {
+      for (int c = Commands->Count, i = 0; i < c; ++i)
+      {
+         Commands[i]->Do();
+      }
+   }
+
+   bool EditorCompositeDocumentCommand::CanUndo()
+   {
+      for (int c = Commands->Count, i = 0; i < c; ++i)
+      {
+         if (!Commands[i]->CanUndo())
+         {
+            return false;
+         }
+      }
+      return true;
+   }
+
+   void EditorCompositeDocumentCommand::Undo()
+   {
+      for (int c = Commands->Count, i = 0; i < c; ++i)
+      {
+         Commands[i]->Undo();
+      }
+   }
+
+   System::String ^ EditorCompositeDocumentCommand::Label::get()
+   {
+      return (Commands->Count > 0) ? Commands[0]->Label : nullptr;
+   }
+
+
+   ///////////////////////////////////////////////////////////////////////////////
+   //
    // CLASS: EditorDocument
    //
 

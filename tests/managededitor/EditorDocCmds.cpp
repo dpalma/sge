@@ -200,4 +200,52 @@ namespace ManagedEditor
    }
 
 
+   /////////////////////////////////////////////////////////////////////////////
+   //
+   // CLASS: SetTerrainElevationCommand
+   //
+
+   SetTerrainElevationCommand::SetTerrainElevationCommand(HTERRAINVERTEX hVertex, float elevation)
+    : m_hVertex(hVertex)
+    , m_elevation(elevation)
+    , m_oldElevation(elevation)
+   {
+   }
+
+   void SetTerrainElevationCommand::Do()
+   {
+      if (m_hVertex != INVALID_HTERRAINVERTEX)
+      {
+         UseGlobal(TerrainModel);
+
+         tVec3 vertexPos;
+         if (pTerrainModel->GetVertexPosition(m_hVertex, &vertexPos) == S_OK)
+         {
+            m_oldElevation = vertexPos.y;
+         }
+
+         pTerrainModel->SetVertexElevation(m_hVertex, m_elevation);
+      }
+   }
+
+   bool SetTerrainElevationCommand::CanUndo()
+   {
+      return true;
+   }
+
+   void SetTerrainElevationCommand::Undo()
+   {
+      if (m_hVertex != INVALID_HTERRAINVERTEX)
+      {
+         UseGlobal(TerrainModel);
+         pTerrainModel->SetVertexElevation(m_hVertex, m_oldElevation);
+      }
+   }
+
+   System::String ^ SetTerrainElevationCommand::Label::get()
+   {
+      return "Terrain Plateau";
+   }
+
+
 } // namespace ManagedEditor

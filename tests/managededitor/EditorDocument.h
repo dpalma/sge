@@ -36,6 +36,30 @@ namespace ManagedEditor
 
    typedef System::Collections::Generic::Stack<EditorDocumentCommand ^> EditorDocumentCommandStack;
 
+   typedef System::Collections::Generic::List<EditorDocumentCommand ^> EditorDocumentCommandList;
+
+
+   ///////////////////////////////////////////////////////////////////////////////
+   //
+   // CLASS: EditorCompositeDocumentCommand
+   //
+
+   ref class EditorCompositeDocumentCommand sealed : public EditorDocumentCommand
+   {
+   public:
+      EditorCompositeDocumentCommand();
+
+      virtual void Do() override;
+      virtual bool CanUndo() override;
+      virtual void Undo() override;
+      property System::String ^ Label
+      {
+         virtual System::String ^ get() override;
+      }
+
+      property EditorDocumentCommandList ^ Commands;
+   };
+
 
    ///////////////////////////////////////////////////////////////////////////////
    //

@@ -110,6 +110,30 @@ namespace ManagedEditor
       float m_elevDelta, m_oldElevation;
    };
 
+
+   /////////////////////////////////////////////////////////////////////////////
+   //
+   // CLASS: SetTerrainElevationCommand
+   //
+
+   ref class SetTerrainElevationCommand : public EditorDocumentCommand
+   {
+   public:
+      SetTerrainElevationCommand(HTERRAINVERTEX hVertex, float elevation);
+
+      virtual void Do() override;
+      virtual bool CanUndo() override;
+      virtual void Undo() override;
+      property System::String ^ Label
+      {
+         virtual System::String ^ get() override;
+      }
+
+   private:
+      HTERRAINVERTEX m_hVertex;
+      float m_elevation, m_oldElevation;
+   };
+
 } // namespace ManagedEditor
 
 ///////////////////////////////////////////////////////////////////////////////

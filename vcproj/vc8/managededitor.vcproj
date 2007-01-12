@@ -723,6 +723,10 @@
 				RelativePath="..\..\tests\managededitor\TerrainElevation.bmp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\tests\managededitor\TerrainPlateau.bmp"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>
