@@ -29,43 +29,11 @@
 static char THIS_FILE[] = __FILE__;
 #endif
 
-#ifdef HAVE_DIRECTX
-#pragma comment(lib, "d3dx9")
-#endif
-
-/////////////////////////////////////////////////////////////////////////////
-
-typedef IDirect3D9 * (WINAPI * tDirect3DCreate9Fn)(UINT);
-
 /////////////////////////////////////////////////////////////////////////////
 
 const float kFov = 90;
 const float kZNear = 1;
 const float kZFar = 5000;
-
-/////////////////////////////////////////////////////////////////////////////
-
-#ifdef HAVE_DIRECTX
-static void MatrixTranspose(const tMatrix4 & m, D3DMATRIX * pT)
-{
-   pT->_11 = m.m00;
-   pT->_12 = m.m10;
-   pT->_13 = m.m20;
-   pT->_14 = m.m30;
-   pT->_21 = m.m01;
-   pT->_22 = m.m11;
-   pT->_23 = m.m21;
-   pT->_24 = m.m31;
-   pT->_31 = m.m02;
-   pT->_32 = m.m12;
-   pT->_33 = m.m22;
-   pT->_34 = m.m32;
-   pT->_41 = m.m03;
-   pT->_42 = m.m13;
-   pT->_43 = m.m23;
-   pT->_44 = m.m33;
-}
-#endif
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -97,14 +65,7 @@ END_MESSAGE_MAP()
 ////////////////////////////////////////
 
 cEditorView::cEditorView()
- : m_bInitialized(false)
- , m_bUsingD3d(false)
- , m_hDC(NULL)
- , m_hRC(NULL)
-#ifdef HAVE_DIRECTX
- , m_d3d9Lib("d3d9")
-#endif
- , m_cameraFov(kFov)
+ : m_cameraFov(kFov)
  , m_cameraZNear(kZNear)
  , m_cameraZFar(kZFar)
  , m_bInPostNcDestroy(false)
@@ -181,7 +142,6 @@ void cEditorView::RenderGL()
    pEntityManager->RenderAll();
 
    pRenderer->EndScene();
-   SwapBuffers(m_hDC);
 }
 
 ////////////////////////////////////////
@@ -251,41 +211,6 @@ cEditorDoc* cEditorView::GetDocument() // non-debug version is inline
 #endif //_DEBUG
 
 
-////////////////////////////////////////
-
-bool cEditorView::Initialize()
-{
-   if (!m_bInitialized)
-   {
-#ifdef HAVE_DIRECTX
-      if (ConfigIsTrue("use_d3d"))
-      {
-         if (!InitD3D())
-         {
-            return false;
-         }
-
-         m_bUsingD3d = true;
-      }
-      else
-      {
-         if (!InitGL())
-         {
-            return false;
-         }
-      }
-#else
-      if (!InitGL())
-      {
-         return false;
-      }
-#endif
-   }
-
-   m_bInitialized = true;
-   return true;
-}
-
 /////////////////////////////////////////////////////////////////////////////
 // cEditorView message handlers
 
@@ -302,15 +227,10 @@ int cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
    UseGlobal(EditorToolState);
    Verify(pEditorToolState->AddToolStateListener(static_cast<IEditorToolStateListener*>(this)) == S_OK);
 
-   // GL can (and should) be initialized during WM_CREATE handling, so do
-   // so and set the flag so that later Initialize() calls don't do anything.
-   if (!ConfigIsTrue("use_d3d"))
+   UseGlobal(Renderer);
+   if (pRenderer->CreateContext(m_hWnd) != S_OK)
    {
-      if (!InitGL())
-      {
-         return -1;
-      }
-      m_bInitialized = true;
+      return -1;
    }
 
 	return 0;
@@ -328,26 +248,8 @@ void cEditorView::OnDestroy()
    UseGlobal(EditorToolState);
    Verify(pEditorToolState->RemoveToolStateListener(static_cast<IEditorToolStateListener*>(this)) == S_OK);
 
-#ifdef HAVE_DIRECTX
-   SafeRelease(m_pD3dDevice);
-   SafeRelease(m_pD3d);
-#endif
-
-   m_bUsingD3d = false;
-
-   wglMakeCurrent(NULL, NULL);
-
-   if (m_hRC != NULL)
-   {
-      wglDeleteContext(m_hRC);
-      m_hRC = NULL;
-   }
-
-   if (m_hDC != NULL)
-   {
-      ::ReleaseDC(m_hWnd, m_hDC);
-      m_hDC = NULL;
-   }
+   UseGlobal(Renderer);
+   pRenderer->DestroyContext();
 }
 
 ////////////////////////////////////////
@@ -355,11 +257,6 @@ void cEditorView::OnDestroy()
 void cEditorView::OnSize(UINT nType, int cx, int cy) 
 {
 	CScrollView::OnSize(nType, cx, cy);
-
-   if (!m_bInitialized)
-   {
-      return;
-   }
 
    // cy cannot be zero because it will be a divisor (in aspect ratio)
    if (cy > 0)
@@ -372,25 +269,7 @@ void cEditorView::OnSize(UINT nType, int cx, int cy)
       UseGlobal(Renderer);
       pRenderer->SetProjectionMatrix(proj.m);
 
-      if (m_bUsingD3d)
-      {
-#ifdef HAVE_DIRECTX
-         m_presentParams.BackBufferWidth = cx;
-         m_presentParams.BackBufferHeight = cy;
-         m_pD3dDevice->Reset(&m_presentParams);
-
-         D3DXMATRIX projTest;
-         D3DXMatrixPerspectiveFovRH(&projTest, m_cameraFov, aspect, m_cameraZNear, m_cameraZFar);
-
-         D3DMATRIX proj;
-         MatrixTranspose(m_proj, &proj);
-         m_pD3dDevice->SetTransform(D3DTS_PROJECTION, &proj);
-#endif
-      }
-      else
-      {
-         glViewport(0, 0, cx, cy);
-      }
+      glViewport(0, 0, cx, cy);
    }
 }
 
@@ -476,10 +355,6 @@ void cEditorView::OnToolTipPop(UINT id, NMHDR * pNMHDR, LRESULT * pResult)
 
 void cEditorView::OnInitialUpdate() 
 {
-   // Have to be initialized before placing the camera, for instance, and
-   // initialization requires no parameters, so just call it.
-   Initialize();
-
    CRect rect;
    GetClientRect(rect);
    SetScaleToFitSize(rect.Size());
@@ -557,113 +432,6 @@ int cEditorView::OnToolHitTest(CPoint point, TOOLINFO * pToolInfo) const
    }
 
    return CScrollView::OnToolHitTest(point, pToolInfo);
-}
-
-////////////////////////////////////////
-
-bool cEditorView::InitGL()
-{
-   m_hDC = ::GetDC(m_hWnd);
-   if (m_hDC == NULL)
-   {
-      return false;
-   }
-
-   PIXELFORMATDESCRIPTOR pfd = {0};
-   pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-   pfd.nVersion = 1;
-   pfd.dwFlags = PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER | PFD_DRAW_TO_WINDOW;
-   pfd.dwLayerMask = PFD_MAIN_PLANE;
-   pfd.iPixelType = PFD_TYPE_RGBA;
-   pfd.cColorBits = GetDeviceCaps(m_hDC, BITSPIXEL);
-
-   int pixelFormat = ChoosePixelFormat(m_hDC, &pfd);
-   if (!pixelFormat)
-   {
-      return false;
-   }
-
-   if (pfd.dwFlags & PFD_NEED_PALETTE)
-   {
-      ErrorMsg("GL context needs palette\n");
-      return false;
-   }
-
-   if (!SetPixelFormat(m_hDC, pixelFormat, &pfd))
-   {
-      return false;
-   }
-
-   m_hRC = wglCreateContext(m_hDC);
-   if (m_hRC == NULL)
-   {
-      return false;
-   }
-
-   if (!wglMakeCurrent(m_hDC, m_hRC))
-   {
-      return false;
-   }
-
-   if (glewInit() != GLEW_OK)
-   {
-      return false;
-   }
-
-   return true;
-}
-
-////////////////////////////////////////
-
-bool cEditorView::InitD3D()
-{
-#ifdef HAVE_DIRECTX
-   tDirect3DCreate9Fn pfnDirect3DCreate9 = reinterpret_cast<tDirect3DCreate9Fn>(
-      m_d3d9Lib.GetProcAddress("Direct3DCreate9"));
-   if (pfnDirect3DCreate9 == NULL)
-   {
-      return false;
-   }
-
-   Assert(!m_pD3d); // This method should be called only once
-   m_pD3d = (*pfnDirect3DCreate9)(DIRECT3D_VERSION);
-   if (!m_pD3d)
-   {
-      return false;
-   }
-
-   D3DDISPLAYMODE displayMode;
-   if (FAILED(m_pD3d->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, &displayMode)))
-   {
-      return false;
-   }
-
-   memset(&m_presentParams, 0, sizeof(m_presentParams));
-   m_presentParams.BackBufferCount = 1;
-   m_presentParams.BackBufferFormat = displayMode.Format;
-   m_presentParams.SwapEffect = D3DSWAPEFFECT_DISCARD;
-   m_presentParams.Windowed = TRUE;
-   m_presentParams.EnableAutoDepthStencil = TRUE;
-   m_presentParams.AutoDepthStencilFormat = D3DFMT_D16;
-   m_presentParams.hDeviceWindow = m_hWnd;
-   m_presentParams.Flags = D3DPRESENTFLAG_DISCARD_DEPTHSTENCIL | D3DPRESENTFLAG_DEVICECLIP;
-
-   HRESULT hr = m_pD3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, m_hWnd,
-      D3DCREATE_SOFTWARE_VERTEXPROCESSING, &m_presentParams, &m_pD3dDevice);
-   if (FAILED(hr))
-   {
-      hr = m_pD3d->CreateDevice(D3DADAPTER_DEFAULT, D3DDEVTYPE_REF, m_hWnd,
-         D3DCREATE_SOFTWARE_VERTEXPROCESSING, &m_presentParams, &m_pD3dDevice);
-      {
-         ErrorMsg1("D3D error %x\n", hr);
-         return false;
-      }
-   }
-
-   return true;
-#else
-   return false;
-#endif
 }
 
 ///////////////////////////////////////////////////////////////////////////////

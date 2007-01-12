@@ -6,25 +6,16 @@
 
 #include "editorapi.h"
 #include "afxcomtools.h"
-#include "DynamicLink.h"
 
 #include "tech/schedulerapi.h"
 
 #include "tech/matrix4.h"
-
-#ifdef HAVE_DIRECTX
-#include <d3d9.h>
-#include <d3dx9.h>
-#endif
 
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
 
 class cEditorDoc;
-
-F_DECLARE_INTERFACE(IDirect3D9);
-F_DECLARE_INTERFACE(IDirect3DDevice9);
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -48,8 +39,6 @@ public:
 
 // Operations
 public:
-   bool Initialize();
-
    // IEditorView
 
    // IEditorAppListener
@@ -101,23 +90,7 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 
-   bool InitGL();
-   bool InitD3D();
-
 private:
-   bool m_bInitialized;
-   bool m_bUsingD3d;
-
-   HDC m_hDC;
-   HGLRC	m_hRC;
-
-#ifdef HAVE_DIRECTX
-   cDynamicLink m_d3d9Lib;
-   cAutoIPtr<IDirect3D9> m_pD3d;
-   cAutoIPtr<IDirect3DDevice9> m_pD3dDevice;
-   D3DPRESENT_PARAMETERS m_presentParams;
-#endif
-
    float m_cameraFov, m_cameraZNear, m_cameraZFar;
 
    bool m_bInPostNcDestroy;
