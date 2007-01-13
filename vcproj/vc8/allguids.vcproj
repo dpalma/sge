@@ -42,7 +42,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\api,..\..\game,..\..\editor"
+				AdditionalIncludeDirectories="..\..\api,..\..\game,..\..\tests\mfceditor"
 				PreprocessorDefinitions="_DEBUG,STRICT,WIN32,_LIB,NO_AUTO_EXPORTS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -115,7 +115,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\api,..\..\game,..\..\editor"
+				AdditionalIncludeDirectories="..\..\api,..\..\game,..\..\tests\mfceditor"
 				PreprocessorDefinitions="STRICT,_LIB,OPT,NDEBUG,WIN32"
 				StringPooling="true"
 				RuntimeLibrary="3"
@@ -189,7 +189,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\api,..\..\game,..\..\editor"
+				AdditionalIncludeDirectories="..\..\api,..\..\game,..\..\tests\mfceditor"
 				PreprocessorDefinitions="NDEBUG,STRICT,WIN32,_LIB"
 				StringPooling="true"
 				RuntimeLibrary="2"
@@ -262,7 +262,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\api,..\..\game,..\..\editor"
+				AdditionalIncludeDirectories="..\..\api,..\..\game,..\..\tests\mfceditor"
 				PreprocessorDefinitions="NDEBUG,STRICT,WIN32,_LIB,NO_AUTO_EXPORTS"
 				StringPooling="true"
 				RuntimeLibrary="0"
@@ -335,7 +335,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\api,..\..\game,..\..\editor"
+				AdditionalIncludeDirectories="..\..\api,..\..\game,..\..\tests\mfceditor"
 				PreprocessorDefinitions="_DEBUG,STRICT,WIN32,_LIB"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"

@@ -3,54 +3,28 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="sound"
-	ProjectGUID="{1111950D-AF67-4EFC-A24C-7E5E15B15C1A}"
-	>
+	ProjectGUID="{1111950D-AF67-4EFC-A24C-7E5E15B15C1A}">
 	<Platforms>
 		<Platform
-			Name="Win32"
-		/>
+			Name="Win32"/>
 	</Platforms>
-	<ToolFiles>
-	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Opt|Win32"
 			OutputDirectory=".\..\..\Build.vc71\Opt"
 			IntermediateDirectory=".\..\..\Build.vc71\Opt\sound"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
-				MkTypLibCompatible="true"
-				SuppressStartupBanner="true"
-				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\Opt/sound.tlb"
-			/>
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\api"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;SOUND_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;HAVE_UNITTESTPP"
-				StringPooling="true"
+				StringPooling="TRUE"
 				RuntimeLibrary="3"
-				EnableFunctionLevelLinking="true"
+				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\Opt\sound/sound.pch"
@@ -58,85 +32,60 @@
 				ObjectFile=".\..\..\Build.vc71\Opt\sound/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\Opt\sound/"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"
-				CompileAs="0"
-			/>
+				CompileAs="0"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib"
 				OutputFile=".\..\..\Build.vc71\Opt/sound.dll"
 				LinkIncremental="2"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories=""
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc71\Opt/sound.pdb"
-				GenerateMapFile="true"
+				GenerateMapFile="TRUE"
 				MapFileName="..\..\Build.vc71\Opt/sound.map"
-				ImportLibrary=".\..\..\Build.vc71\Opt/sound.lib"
-			/>
+				ImportLibrary=".\..\..\Build.vc71\Opt/sound.lib"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\..\..\Build.vc71\Opt/sound.tlb"/>
 			<Tool
-				Name="VCManifestTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"/>
 			<Tool
-				Name="VCAppVerifierTool"
-			/>
+				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
+				Name="VCXMLDataGeneratorTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="StaticDebug|Win32"
 			OutputDirectory=".\..\..\Build.vc71\StaticDebug"
 			IntermediateDirectory=".\..\..\Build.vc71\StaticDebug\sound"
 			ConfigurationType="4"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
@@ -151,72 +100,44 @@
 				ObjectFile=".\..\..\Build.vc71\StaticDebug\sound/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\StaticDebug\sound/"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="4"
-				CompileAs="0"
-			/>
+				CompileAs="0"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
 				OutputFile=".\..\..\Build.vc71\StaticDebug\sound.lib"
-				SuppressStartupBanner="true"
-			/>
+				SuppressStartupBanner="TRUE"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\..\..\Build.vc71\Debug"
 			IntermediateDirectory=".\..\..\Build.vc71\Debug\sound"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
-				MkTypLibCompatible="true"
-				SuppressStartupBanner="true"
-				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\Debug/sound.tlb"
-			/>
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
@@ -231,93 +152,68 @@
 				ObjectFile=".\..\..\Build.vc71\Debug\sound/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\Debug\sound/"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="4"
-				CompileAs="0"
-			/>
+				CompileAs="0"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib"
 				OutputFile=".\..\..\Build.vc71\Debug/sound.dll"
 				LinkIncremental="2"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories=""
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc71\Debug/sound.pdb"
-				GenerateMapFile="true"
+				GenerateMapFile="TRUE"
 				MapFileName="..\..\Build.vc71\Debug/sound.map"
-				ImportLibrary=".\..\..\Build.vc71\Debug/sound.lib"
-			/>
+				ImportLibrary=".\..\..\Build.vc71\Debug/sound.lib"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\..\..\Build.vc71\Debug/sound.tlb"/>
 			<Tool
-				Name="VCManifestTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"/>
 			<Tool
-				Name="VCAppVerifierTool"
-			/>
+				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
+				Name="VCXMLDataGeneratorTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="StaticRelease|Win32"
 			OutputDirectory=".\..\..\Build.vc71\StaticRelease"
 			IntermediateDirectory=".\..\..\Build.vc71\StaticRelease\sound"
 			ConfigurationType="4"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\api"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,SOUND_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL"
-				StringPooling="true"
+				StringPooling="TRUE"
 				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="true"
+				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\StaticRelease\sound/sound.pch"
@@ -325,79 +221,51 @@
 				ObjectFile=".\..\..\Build.vc71\StaticRelease\sound/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\StaticRelease\sound/"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
-				CompileAs="0"
-			/>
+				SuppressStartupBanner="TRUE"
+				CompileAs="0"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
 				OutputFile=".\..\..\Build.vc71\StaticRelease\sound.lib"
-				SuppressStartupBanner="true"
-			/>
+				SuppressStartupBanner="TRUE"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory=".\..\..\Build.vc71\Release"
 			IntermediateDirectory=".\..\..\Build.vc71\Release\sound"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="true"
-				SuppressStartupBanner="true"
-				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\Release/sound.tlb"
-			/>
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\api"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;SOUND_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL"
-				StringPooling="true"
+				StringPooling="TRUE"
 				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
+				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\Release\sound/sound.pch"
@@ -405,58 +273,50 @@
 				ObjectFile=".\..\..\Build.vc71\Release\sound/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\Release\sound/"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
-				CompileAs="0"
-			/>
+				SuppressStartupBanner="TRUE"
+				CompileAs="0"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="winmm.lib $(OutDir)\tinyxml.lib"
 				OutputFile=".\..\..\Build.vc71\Release/sound.dll"
 				LinkIncremental="1"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories=""
 				ProgramDatabaseFile=".\..\..\Build.vc71\Release/sound.pdb"
-				GenerateMapFile="true"
+				GenerateMapFile="TRUE"
 				MapFileName="..\..\Build.vc71\Release/sound.map"
 				OptimizeReferences="2"
-				ImportLibrary=".\..\..\Build.vc71\Release/sound.lib"
-			/>
+				ImportLibrary=".\..\..\Build.vc71\Release/sound.lib"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\..\..\Build.vc71\Release/sound.tlb"/>
 			<Tool
-				Name="VCManifestTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"/>
 			<Tool
-				Name="VCAppVerifierTool"
-			/>
+				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
+				Name="VCXMLDataGeneratorTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
 	<References>
@@ -464,92 +324,100 @@
 	<Files>
 		<Filter
 			Name="Source Files"
-			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
-			>
+			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
-				RelativePath="..\..\sound\soundnull.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\sound\soundwin.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\sound\stdhdr.cpp"
-				>
+				RelativePath="..\..\sound\soundnull.cpp">
 				<FileConfiguration
 					Name="Opt|Win32"
-					>
+					ExcludedFromBuild="TRUE">
 					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-					/>
+						Name="VCCLCompilerTool"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="StaticDebug|Win32"
-					>
+					ExcludedFromBuild="TRUE">
 					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-					/>
+						Name="VCCLCompilerTool"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Debug|Win32"
-					>
+					ExcludedFromBuild="TRUE">
 					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-					/>
+						Name="VCCLCompilerTool"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="StaticRelease|Win32"
-					>
+					ExcludedFromBuild="TRUE">
 					<Tool
-						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-					/>
+						Name="VCCLCompilerTool"/>
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
-					>
+					ExcludedFromBuild="TRUE">
+					<Tool
+						Name="VCCLCompilerTool"/>
+				</FileConfiguration>
+			</File>
+			<File
+				RelativePath="..\..\sound\soundwin.cpp">
+			</File>
+			<File
+				RelativePath="..\..\sound\stdhdr.cpp">
+				<FileConfiguration
+					Name="Opt|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-					/>
+						UsePrecompiledHeader="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="StaticDebug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Debug|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="StaticRelease|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release|Win32">
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
-			Filter="h;hpp;hxx;hm;inl"
-			>
+			Filter="h;hpp;hxx;hm;inl">
 			<File
-				RelativePath="..\..\sound\soundnull.h"
-				>
+				RelativePath="..\..\sound\soundnull.h">
 			</File>
 			<File
-				RelativePath="..\..\sound\soundwin.h"
-				>
+				RelativePath="..\..\sound\soundwin.h">
 			</File>
 			<File
-				RelativePath="..\..\sound\stdhdr.h"
-				>
+				RelativePath="..\..\sound\stdhdr.h">
 			</File>
 		</Filter>
 		<Filter
-			Name="API"
-			>
+			Name="API">
 			<File
-				RelativePath="..\..\api\sound\soundapi.h"
-				>
+				RelativePath="..\..\api\sound\soundapi.h">
 			</File>
 			<File
-				RelativePath="..\..\api\sound\sounddll.h"
-				>
+				RelativePath="..\..\api\sound\sounddll.h">
 			</File>
 			<File
-				RelativePath="..\..\api\sound\soundguids.h"
-				>
+				RelativePath="..\..\api\sound\soundguids.h">
 			</File>
 		</Filter>
 	</Files>
