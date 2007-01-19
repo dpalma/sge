@@ -6,6 +6,8 @@
 
 #include "engine/entityapi.h"
 
+#include "ai/aiapi.h"
+
 #include "engine/modelapi.h"
 #include "engine/modeltypes.h"
 
@@ -22,7 +24,8 @@
 // CLASS: cEntityPositionComponent
 //
 
-class cEntityPositionComponent : public cComObject<IMPLEMENTS(IEntityPositionComponent)>
+class cEntityPositionComponent : public cComObject2<IMPLEMENTS(IEntityPositionComponent),
+                                                    IMPLEMENTS(IAIAgentLocationProvider)>
 {
 public:
    cEntityPositionComponent();
@@ -77,7 +80,9 @@ private:
 // CLASS: cEntityRenderComponent
 //
 
-class cEntityRenderComponent : public cComObject2<IMPLEMENTS(IEntityRenderComponent), IMPLEMENTS(IUpdatable)>
+class cEntityRenderComponent : public cComObject3<IMPLEMENTS(IEntityRenderComponent),
+                                                  IMPLEMENTS(IUpdatable),
+                                                  IMPLEMENTS(IAIAgentAnimationProvider)>
 {
 public:
    cEntityRenderComponent(const tChar * pszModel);
@@ -89,6 +94,8 @@ public:
    virtual tResult SetAnimation(eModelAnimationType type);
 
    virtual void Update(double elapsedTime);
+
+   virtual tResult SetAnimation(eAIAgentAnimation anim);
 
 private:
    cEntityModelRenderer m_mainModel;
@@ -119,46 +126,17 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cEntityBasicBrain
-//
-
-class cEntityBasicBrain : public cStateMachine<cEntityBasicBrain, double>
-{
-public:
-   cEntityBasicBrain();
-   ~cEntityBasicBrain();
-
-   void MoveTo(const tVec3 & point, IEntityPositionComponent * pPosition, IEntityRenderComponent * pRender);
-   void Stop();
-
-private:
-   void OnEnterIdle();
-   void OnIdle(double elapsed);
-   void OnExitIdle();
-
-   void OnEnterMoving();
-   void OnMoving(double elapsed);
-   void OnExitMoving();
-
-   tState m_idleState;
-   tState m_movingState;
-
-   tVec3 m_moveGoal;
-   cAutoIPtr<IEntityPositionComponent> m_pPosition;
-   cAutoIPtr<IEntityRenderComponent> m_pRender;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
 // CLASS: cEntityBrainComponent
 //
 
 class cEntityBrainComponent : public cComObject2<IMPLEMENTS(IEntityBrainComponent), IMPLEMENTS(IUpdatable)>
 {
+   cEntityBrainComponent(IAIAgent * pAgent);
+
 public:
-   cEntityBrainComponent(IEntity * pEntity);
    ~cEntityBrainComponent();
+
+   static tResult Create(IEntity * pEntity, IEntityBrainComponent * * ppBrainComponent);
 
    virtual tResult MoveTo(const tVec3 & point);
    virtual tResult Stop();
@@ -166,8 +144,7 @@ public:
    virtual void Update(double elapsedTime);
 
 private:
-   cEntityBasicBrain m_brain;
-   IEntity * m_pEntity; // Don't hold a reference to the entity because it owns this component
+   cAutoIPtr<IAIAgent> m_pAgent;
 };
 
 

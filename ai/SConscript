@@ -3,6 +3,13 @@
 
 Import('env')
 
+sourceFiles = Split("""
+   aiagent.cpp
+   aibehaviormoveto.cpp
+   aibehaviorstand.cpp
+   aibehaviorwander.cpp
+""")
+
 libPaths = Split("""
    #allguids
    #tech
@@ -14,7 +21,7 @@ linkLibs = Split("""
 """)
 
 local = env.Copy()
-#local.BuildLibrary(target='ai',
-#                   source=sourceFiles,
-#                   lib_path=libPaths,
-#                   libs=linkLibs)
+local.BuildLibrary(target='ai',
+                   source=sourceFiles,
+                   lib_path=libPaths,
+                   libs=linkLibs)

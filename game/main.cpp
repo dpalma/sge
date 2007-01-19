@@ -244,7 +244,7 @@ public:
 
    virtual tResult Execute(double time);
 
-   void OnInitialState(double);
+   void OnInitialStateUpdate(double);
    void OnEnterErrorState();
    void OnRunInitStages(double);
    void OnEnterFinishedState();
@@ -292,7 +292,7 @@ tResult cMainInitTask::Execute(double time)
 
 ////////////////////////////////////////
 
-void cMainInitTask::OnInitialState(double time)
+void cMainInitTask::OnInitialStateUpdate(double time)
 {
    cUnitTestThread * pUnitTestThread = new cUnitTestThread(true);
    if (pUnitTestThread != NULL)

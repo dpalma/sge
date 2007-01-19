@@ -468,6 +468,22 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
+				RelativePath="..\..\ai\aiagent.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\ai\aibehaviormoveto.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\ai\aibehaviorstand.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\ai\aibehaviorwander.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\ai\stdhdr.cpp"
 				>
 				<FileConfiguration
@@ -516,6 +532,22 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
+			<File
+				RelativePath="..\..\ai\aiagent.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\ai\aibehaviormoveto.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\ai\aibehaviorstand.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\ai\aibehaviorwander.h"
+				>
+			</File>
 			<File
 				RelativePath="..\..\ai\stdhdr.h"
 				>

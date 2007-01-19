@@ -411,6 +411,35 @@ void cEntityRenderComponent::Update(double elapsedTime)
    m_mainModel.Update(elapsedTime);
 }
 
+///////////////////////////////////////
+
+tResult cEntityRenderComponent::SetAnimation(eAIAgentAnimation anim)
+{
+   static const struct
+   {
+      eAIAgentAnimation agentAnim;
+      eModelAnimationType modelAnim;
+   }
+   animMap[] =
+   {
+      { kAIAgentAnimIdle, kMAT_Idle },
+      { kAIAgentAnimWalk, kMAT_Walk },
+      { kAIAgentAnimRun, kMAT_Run },
+      { kAIAgentAnimMeleeAttack, kMAT_Attack },
+      { kAIAgentAnimRangedAttack, kMAT_Attack },
+      { kAIAgentAnimDie, kMAT_Death },
+      { kAIAgentAnimTakeDamage, kMAT_Damage },
+   };
+   for (int i = 0; i < _countof(animMap); ++i)
+   {
+      if (anim == animMap[i].agentAnim)
+      {
+         return m_mainModel.SetAnimation(animMap[i].modelAnim);
+      }
+   }
+   return E_FAIL;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 tResult EntityCreateRenderComponent(const tChar * pszModel, IEntityRenderComponent * * ppRenderComponent)
@@ -560,126 +589,13 @@ tResult EntitySpawnComponentFactory(const TiXmlElement * pTiXmlElement,
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cEntityBasicBrain
-//
-
-////////////////////////////////////////
-
-cEntityBasicBrain::cEntityBasicBrain()
- : m_idleState(&cEntityBasicBrain::OnEnterIdle, &cEntityBasicBrain::OnIdle, &cEntityBasicBrain::OnExitIdle)
- , m_movingState(&cEntityBasicBrain::OnEnterMoving, &cEntityBasicBrain::OnMoving, &cEntityBasicBrain::OnExitMoving)
-{
-}
-
-////////////////////////////////////////
-
-cEntityBasicBrain::~cEntityBasicBrain()
-{
-}
-
-////////////////////////////////////////
-
-void cEntityBasicBrain::MoveTo(const tVec3 & point, IEntityPositionComponent * pPosition, IEntityRenderComponent * pRender)
-{
-   if (pPosition == NULL)
-   {
-      return;
-   }
-
-   m_moveGoal = point;
-
-   SafeRelease(m_pPosition);
-   m_pPosition = CTAddRef(pPosition);
-
-   SafeRelease(m_pRender);
-   m_pRender = CTAddRef(pRender);
-
-   GotoState(&m_movingState);
-}
-
-////////////////////////////////////////
-
-void cEntityBasicBrain::Stop()
-{
-   SafeRelease(m_pPosition);
-   GotoState(&m_idleState);
-}
-
-////////////////////////////////////////
-
-void cEntityBasicBrain::OnEnterIdle()
-{
-   if (!!m_pRender)
-   {
-      m_pRender->SetAnimation(kMAT_Idle);
-   }
-}
-
-////////////////////////////////////////
-
-void cEntityBasicBrain::OnIdle(double elapsed)
-{
-}
-
-////////////////////////////////////////
-
-void cEntityBasicBrain::OnExitIdle()
-{
-}
-
-////////////////////////////////////////
-
-void cEntityBasicBrain::OnEnterMoving()
-{
-   if (!!m_pRender)
-   {
-      m_pRender->SetAnimation(kMAT_Walk);
-   }
-}
-
-////////////////////////////////////////
-
-void cEntityBasicBrain::OnMoving(double elapsed)
-{
-   if (!!m_pPosition)
-   {
-      tVec3 curPos;
-      if (m_pPosition->GetPosition(&curPos) == S_OK)
-      {
-         if (AlmostEqual(curPos.x, m_moveGoal.x)
-            && AlmostEqual(curPos.z, m_moveGoal.z))
-         {
-            GotoState(&m_idleState);
-            Update(elapsed); // force idle immediately
-         }
-         else
-         {
-            tVec3 dir = m_moveGoal - curPos;
-            dir.Normalize();
-            curPos += (dir * 10.0f * static_cast<float>(elapsed));
-            m_pPosition->SetPosition(curPos);
-         }
-      }
-   }
-}
-
-////////////////////////////////////////
-
-void cEntityBasicBrain::OnExitMoving()
-{
-   // Scheduler task is removed via return value--no need to do so here
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
 // CLASS: cEntityBrainComponent
 //
 
 ///////////////////////////////////////
 
-cEntityBrainComponent::cEntityBrainComponent(IEntity * pEntity)
- : m_pEntity(pEntity)
+cEntityBrainComponent::cEntityBrainComponent(IAIAgent * pAgent)
+ : m_pAgent(CTAddRef(pAgent))
 {
 }
 
@@ -691,17 +607,79 @@ cEntityBrainComponent::~cEntityBrainComponent()
 
 ///////////////////////////////////////
 
+tResult cEntityBrainComponent::Create(IEntity * pEntity, IEntityBrainComponent * * ppBrainComponent)
+{
+   if (pEntity == NULL || ppBrainComponent == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tResult result = E_FAIL;
+
+   cAutoIPtr<IAIAgent> pAgent;
+   if ((result = AIAgentCreate(&pAgent)) != S_OK)
+   {
+      return result;
+   }
+
+   {
+      cAutoIPtr<IEntityPositionComponent> pPosition;
+      if (pEntity->GetComponent(kECT_Position, IID_IEntityPositionComponent, &pPosition) == S_OK)
+      {
+         cAutoIPtr<IAIAgentLocationProvider> pLocationProvider;
+         if (pPosition->QueryInterface(IID_IAIAgentLocationProvider, (void**)&pLocationProvider) == S_OK)
+         {
+            pAgent->SetLocationProvider(pLocationProvider);
+         }
+      }
+   }
+
+   {
+      cAutoIPtr<IEntityRenderComponent> pRender;
+      if (pEntity->GetComponent(kECT_Render, IID_IEntityRenderComponent, &pRender) == S_OK)
+      {
+         cAutoIPtr<IAIAgentAnimationProvider> pAnimationProvider;
+         if (pRender->QueryInterface(IID_IAIAgentAnimationProvider, (void**)&pAnimationProvider) == S_OK)
+         {
+            pAgent->SetAnimationProvider(pAnimationProvider);
+         }
+      }
+   }
+
+   cAutoIPtr<IAIBehavior> pDefaultBehavior;
+   if ((result = AIBehaviorStandCreate(&pDefaultBehavior)) != S_OK)
+   {
+      return result;
+   }
+
+   if ((result = pAgent->SetDefaultBehavior(pDefaultBehavior)) != S_OK)
+   {
+      return result;
+   }
+
+   cAutoIPtr<cEntityBrainComponent> pBrainComponent = new cEntityBrainComponent(pAgent);
+   if (!pBrainComponent)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   *ppBrainComponent = static_cast<IEntityBrainComponent *>(CTAddRef(pBrainComponent));
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 tResult cEntityBrainComponent::MoveTo(const tVec3 & point)
 {
-   cAutoIPtr<IEntityPositionComponent> pPosition;
-   cAutoIPtr<IEntityRenderComponent> pRender;
-   if ((m_pEntity != NULL)
-      && m_pEntity->GetComponent(kECT_Position, IID_IEntityPositionComponent, &pPosition) == S_OK
-      && m_pEntity->GetComponent(kECT_Render, IID_IEntityRenderComponent, &pRender) == S_OK)
+   Assert(!!m_pAgent);
+
+   cAutoIPtr<IAIBehavior> pMoveToBehavior;
+   if (AIBehaviorMoveToCreate(point, &pMoveToBehavior) == S_OK)
    {
-      m_brain.MoveTo(point, pPosition, pRender);
+      m_pAgent->PushBehavior(pMoveToBehavior);
       return S_OK;
    }
+
    return E_FAIL;
 }
 
@@ -709,7 +687,12 @@ tResult cEntityBrainComponent::MoveTo(const tVec3 & point)
 
 tResult cEntityBrainComponent::Stop()
 {
-   m_brain.Stop();
+   Assert(!!m_pAgent);
+   int sanityCheck = 1000;
+   while ((m_pAgent->PopBehavior() == S_OK) && (--sanityCheck > 0))
+   {
+      // do nothing
+   }
    return S_OK;
 }
 
@@ -717,7 +700,15 @@ tResult cEntityBrainComponent::Stop()
 
 void cEntityBrainComponent::Update(double elapsedTime)
 {
-   m_brain.Update(elapsedTime);
+   Assert(!!m_pAgent);
+   cAutoIPtr<IAIBehavior> pBehavior;
+   if (m_pAgent->GetActiveBehavior(&pBehavior) == S_OK)
+   {
+      if (pBehavior->Update(m_pAgent, elapsedTime) == S_AI_BEHAVIOR_DONE)
+      {
+         m_pAgent->PopBehavior();
+      }
+   }
 }
 
 ///////////////////////////////////////
@@ -736,10 +727,11 @@ tResult EntityBrainComponentFactory(const TiXmlElement * pTiXmlElement,
       return E_INVALIDARG;
    }
 
-   cAutoIPtr<cEntityBrainComponent> pBrainComponent = new cEntityBrainComponent(pEntity);
-   if (!pBrainComponent)
+   tResult result = E_FAIL;
+   cAutoIPtr<IEntityBrainComponent> pBrainComponent;
+   if ((result = cEntityBrainComponent::Create(pEntity, &pBrainComponent)) != S_OK)
    {
-      return E_OUTOFMEMORY;
+      return result;
    }
 
    if (pEntity->SetComponent(kECT_Brain, static_cast<IEntityComponent*>(pBrainComponent)) != S_OK)
