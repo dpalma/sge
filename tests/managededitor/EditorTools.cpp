@@ -66,8 +66,10 @@ namespace ManagedEditor
       UseGlobal(Renderer);
       UseGlobal(EntityManager);
 
+      cAutoIPtr<IRenderCamera> pCamera;
       cRay pickRay;
-      if (pRenderer->GenerateScreenPickRay(e->X, e->Y, &pickRay) == S_OK)
+      if (pRenderer->GetCamera(&pCamera) == S_OK
+         && pCamera->GenerateScreenPickRay(e->X, e->Y, &pickRay) == S_OK)
       {
          if (e->Button == System::Windows::Forms::MouseButtons::Left)
          {
@@ -100,8 +102,10 @@ namespace ManagedEditor
       UseGlobal(EntityManager);
       UseGlobal(TerrainModel);
 
+      cAutoIPtr<IRenderCamera> pCamera;
       cRay pickRay;
-      if (pRenderer->GenerateScreenPickRay(e->X, e->Y, &pickRay) == S_OK)
+      if (pRenderer->GetCamera(&pCamera) == S_OK
+         && pCamera->GenerateScreenPickRay(e->X, e->Y, &pickRay) == S_OK)
       {
          if (e->Button == System::Windows::Forms::MouseButtons::Left)
          {
@@ -199,8 +203,10 @@ namespace ManagedEditor
 
       HTERRAINVERTEX hHitVertex = INVALID_HTERRAINVERTEX;
 
+      cAutoIPtr<IRenderCamera> pCamera;
       cRay pickRay;
-      if (pRenderer->GenerateScreenPickRay(e->X, e->Y, &pickRay) == S_OK)
+      if (pRenderer->GetCamera(&pCamera) == S_OK
+         && pCamera->GenerateScreenPickRay(e->X, e->Y, &pickRay) == S_OK)
       {
          pTerrainModel->GetVertexFromHitTest(pickRay, &hHitVertex);
       }
@@ -280,7 +286,9 @@ namespace ManagedEditor
       HTERRAINVERTEX hHitVertex = INVALID_HTERRAINVERTEX;
       tVec3 vertexPos;
 
-      if (pRenderer->GenerateScreenPickRay(e->X, e->Y, &pickRay) == S_OK
+      cAutoIPtr<IRenderCamera> pCamera;
+      if (pRenderer->GetCamera(&pCamera) == S_OK
+         && pCamera->GenerateScreenPickRay(e->X, e->Y, &pickRay) == S_OK
          && pTerrainModel->GetVertexFromHitTest(pickRay, &hHitVertex) == S_OK
          && pTerrainModel->GetVertexPosition(hHitVertex, &vertexPos) == S_OK)
       {
@@ -336,8 +344,10 @@ namespace ManagedEditor
 
       HTERRAINVERTEX hHitVertex = INVALID_HTERRAINVERTEX;
 
+      cAutoIPtr<IRenderCamera> pCamera;
       cRay pickRay;
-      if (pRenderer->GenerateScreenPickRay(e->X, e->Y, &pickRay) == S_OK)
+      if (pRenderer->GetCamera(&pCamera) == S_OK
+         && pCamera->GenerateScreenPickRay(e->X, e->Y, &pickRay) == S_OK)
       {
          pTerrainModel->GetVertexFromHitTest(pickRay, &hHitVertex);
       }

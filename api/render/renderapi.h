@@ -28,6 +28,7 @@ typedef XID Window;
 F_DECLARE_INTERFACE(IImage);
 
 F_DECLARE_INTERFACE(IRenderer);
+F_DECLARE_INTERFACE_GUID(IRenderCamera, "5065B828-D331-478f-ABA2-8AB171418499");
 F_DECLARE_INTERFACE(IRender2D);
 F_DECLARE_INTERFACE(IRenderFont);
 
@@ -137,17 +138,39 @@ interface IRenderer : IUnknown
    virtual tResult Begin2D(int width, int height, IRender2D * * ppRender2D) = 0;
    virtual tResult End2D() = 0;
 
+   virtual tResult PushMatrix(const float matrix[16]) = 0;
+   virtual tResult PopMatrix() = 0;
+
+   virtual tResult GetCamera(IRenderCamera * * ppCamera) = 0;
+   virtual tResult SetCamera(IRenderCamera * pCamera) = 0;
+};
+
+///////////////////////////////////////
+
+RENDER_API tResult RendererCreate();
+
+///////////////////////////////////////
+
+RENDER_API void RenderWireFrameBox(const tAxisAlignedBox & box, const float color[4]);
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IRenderCamera
+//
+
+interface IRenderCamera : IUnknown
+{
+   virtual const float * GetViewMatrix() const = 0;
    virtual tResult GetViewMatrix(float viewMatrix[16]) const = 0;
    virtual tResult SetViewMatrix(const float viewMatrix[16]) = 0;
 
+   virtual const float * GetProjectionMatrix() const = 0;
    virtual tResult GetProjectionMatrix(float projMatrix[16]) const = 0;
    virtual tResult SetProjectionMatrix(const float projMatrix[16]) = 0;
 
    virtual tResult GetViewProjectionMatrix(float viewProjMatrix[16]) const = 0;
    virtual tResult GetViewProjectionInverseMatrix(float viewProjInvMatrix[16]) const = 0;
-
-   virtual tResult PushMatrix(const float matrix[16]) = 0;
-   virtual tResult PopMatrix() = 0;
 
    virtual tResult ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pndy) const = 0;
    virtual tResult GeneratePickRay(float ndx, float ndy, cRay * pRay) const = 0;
@@ -164,13 +187,7 @@ interface IRenderer : IUnknown
    }
 };
 
-///////////////////////////////////////
-
-RENDER_API tResult RendererCreate();
-
-///////////////////////////////////////
-
-RENDER_API void RenderWireFrameBox(const tAxisAlignedBox & box, const float color[4]);
+RENDER_API tResult RenderCameraCreate(IRenderCamera * * ppRenderCamera);
 
 
 ///////////////////////////////////////////////////////////////////////////////

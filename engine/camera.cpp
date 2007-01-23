@@ -223,7 +223,11 @@ void cCameraControl::SimFrame(double elapsedTime)
    m_rotation.Multiply(mt, &newModelView);
 
    UseGlobal(Renderer);
-   pRenderer->SetViewMatrix(newModelView.m);
+   cAutoIPtr<IRenderCamera> pCamera;
+   if (pRenderer->GetCamera(&pCamera) == S_OK)
+   {
+      pCamera->SetViewMatrix(newModelView.m);
+   }
 }
 
 ///////////////////////////////////////

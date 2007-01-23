@@ -35,7 +35,7 @@ extern const uint kVertexFVF;
 class cRender2DDX : public cComObject<IMPLEMENTS(IRender2D)>
 {
    cRender2DDX(const cRender2DDX &);
-   void operator =(const cRender2DDX &);
+   const cRender2DDX & operator =(const cRender2DDX &);
 
 public:
    cRender2DDX(IDirect3DDevice9 * pD3dDevice);

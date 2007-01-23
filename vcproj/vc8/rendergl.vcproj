@@ -544,6 +544,10 @@
 				</FileConfiguration>
 			</File>
 			<File
+				RelativePath="..\..\rendergl\renderglcamera.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\rendergl\stdhdr.cpp"
 				>
 				<FileConfiguration
@@ -618,6 +622,10 @@
 			</File>
 			<File
 				RelativePath="..\..\rendergl\renderfontx11.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\rendergl\renderglcamera.h"
 				>
 			</File>
 			<File

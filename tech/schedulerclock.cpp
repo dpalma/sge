@@ -7,6 +7,10 @@
 
 #include "tech/techtime.h"
 
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
+#endif
+
 #include "tech/dbgalloc.h" // must be last header
 
 
@@ -139,5 +143,31 @@ void cSchedulerClock::AdvanceTo(double newTime)
       m_simTime = newTime;
    }
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_UNITTESTPP
+
+TEST(SchedulerClockStartStop)
+{
+   cSchedulerClock clock;
+   CHECK(!clock.IsRunning());
+
+   clock.Start();
+   CHECK(clock.IsRunning());
+
+   clock.Start();
+   CHECK(clock.IsRunning());
+
+   clock.UpdateRealTime();
+
+   clock.Stop();
+   CHECK(!clock.IsRunning());
+
+   clock.Stop();
+   CHECK(!clock.IsRunning());
+}
+
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////

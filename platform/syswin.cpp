@@ -366,9 +366,9 @@ tResult SysSetClipboardString(const tChar * psz)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult SysGetFontPath(cFilePath * pFontPath)
+static tResult SysGetPath(int csidl, cFilePath * pPath)
 {
-   if (pFontPath == NULL)
+   if (pPath == NULL)
    {
       return E_POINTER;
    }
@@ -390,17 +390,31 @@ tResult SysGetFontPath(cFilePath * pFontPath)
 
    if (g_pfnGetFolderPath != NULL)
    {
-      tChar szFontPath[MAX_PATH];
-      ZeroMemory(szFontPath, sizeof(szFontPath));
+      tChar szPath[MAX_PATH];
+      ZeroMemory(szPath, sizeof(szPath));
 
-      if ((*g_pfnGetFolderPath)(NULL, CSIDL_FONTS, NULL, 0, szFontPath) == S_OK)
+      if ((*g_pfnGetFolderPath)(NULL, CSIDL_FONTS, NULL, SHGFP_TYPE_CURRENT, szPath) == S_OK)
       {
-         *pFontPath = cFilePath(szFontPath);
+         *pPath = cFilePath(szPath);
          return S_OK;
       }
    }
 
    return E_FAIL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult SysGetFontPath(cFilePath * pFontPath)
+{
+   return SysGetPath(CSIDL_FONTS, pFontPath);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult SysGetUserPath(cFilePath * pUserPath)
+{
+   return SysGetPath(CSIDL_PERSONAL, pUserPath);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

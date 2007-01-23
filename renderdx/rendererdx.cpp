@@ -785,48 +785,6 @@ tResult cRendererDX::End2D()
 
 ////////////////////////////////////////
 
-tResult cRendererDX::GetViewMatrix(float viewMatrix[16]) const
-{
-   return E_NOTIMPL;
-}
-
-////////////////////////////////////////
-
-tResult cRendererDX::SetViewMatrix(const float viewMatrix[16])
-{
-   return E_NOTIMPL;
-}
-
-////////////////////////////////////////
-
-tResult cRendererDX::GetProjectionMatrix(float projMatrix[16]) const
-{
-   return E_NOTIMPL;
-}
-
-////////////////////////////////////////
-
-tResult cRendererDX::SetProjectionMatrix(const float projMatrix[16])
-{
-   return E_NOTIMPL;
-}
-
-////////////////////////////////////////
-
-tResult cRendererDX::GetViewProjectionMatrix(float viewProjMatrix[16]) const
-{
-   return E_NOTIMPL;
-}
-
-////////////////////////////////////////
-
-tResult cRendererDX::GetViewProjectionInverseMatrix(float viewProjInvMatrix[16]) const
-{
-   return E_NOTIMPL;
-}
-
-////////////////////////////////////////
-
 tResult cRendererDX::PushMatrix(const float matrix[16])
 {
    return E_NOTIMPL;
@@ -841,14 +799,14 @@ tResult cRendererDX::PopMatrix()
 
 ////////////////////////////////////////
 
-tResult cRendererDX::ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pndy) const
+tResult cRendererDX::GetCamera(IRenderCamera * * ppCamera)
 {
    return E_NOTIMPL;
 }
 
 ////////////////////////////////////////
 
-tResult cRendererDX::GeneratePickRay(float ndx, float ndy, cRay * pRay) const
+tResult cRendererDX::SetCamera(IRenderCamera * pCamera)
 {
    return E_NOTIMPL;
 }

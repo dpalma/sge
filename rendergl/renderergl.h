@@ -80,24 +80,13 @@ public:
    virtual tResult Begin2D(int width, int height, IRender2D * * ppRender2D);
    virtual tResult End2D();
 
-   virtual tResult GetViewMatrix(float viewMatrix[16]) const;
-   virtual tResult SetViewMatrix(const float viewMatrix[16]);
-
-   virtual tResult GetProjectionMatrix(float projMatrix[16]) const;
-   virtual tResult SetProjectionMatrix(const float projMatrix[16]);
-
-   void UpdateCompositeMatrices() const; // const because it must be called from const methods
-   virtual tResult GetViewProjectionMatrix(float viewProjMatrix[16]) const;
-   virtual tResult GetViewProjectionInverseMatrix(float viewProjInvMatrix[16]) const;
-
    virtual tResult PushMatrix(const float matrix[16]);
    virtual tResult PopMatrix();
 
-   virtual tResult ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pndy) const;
-   virtual tResult GeneratePickRay(float ndx, float ndy, cRay * pRay) const;
+   virtual tResult GetCamera(IRenderCamera * * ppCamera);
+   virtual tResult SetCamera(IRenderCamera * pCamera);
 
 private:
-   tResult Initialize();
 #ifdef HAVE_CG
    static void CgErrorHandler(CGcontext cgContext, CGerror cgError, void * pData);
 #endif
@@ -107,10 +96,10 @@ private:
    HDC m_hDC;
    HGLRC m_hGLRC;
 #else
+   Display * m_display;
    GLXContext m_context;
 #endif
 
-   bool m_bInitialized;
    bool m_bInScene;
 
 #ifdef HAVE_CG
@@ -135,10 +124,7 @@ private:
 
    cAutoIPtr<IRender2D> m_pRender2D;
 
-   float m_view[16], m_proj[16];
-
-   mutable bool m_bUpdateCompositeMatrices;
-   mutable float m_viewInv[16], m_viewProj[16], m_viewProjInv[16];
+   cAutoIPtr<IRenderCamera> m_pCamera;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

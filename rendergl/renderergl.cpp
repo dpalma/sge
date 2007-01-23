@@ -488,9 +488,9 @@ cRendererGL::cRendererGL()
  , m_hDC(NULL)
  , m_hGLRC(NULL)
 #else
- : m_context(NULL)
+ : m_display(NULL)
+ , m_context(NULL)
 #endif
- , m_bInitialized(false)
  , m_bInScene(false)
 #ifdef HAVE_CG
  , m_cgContext(NULL)
@@ -503,7 +503,6 @@ cRendererGL::cRendererGL()
  , m_vertexSize(0)
  , m_indexFormat(kIF_16Bit)
  , m_glIndexFormat(0)
- , m_bUpdateCompositeMatrices(true)
 {
    SetIndexFormat(kIF_16Bit);
 }
@@ -521,6 +520,11 @@ tResult cRendererGL::Init()
    SysSetDestroyCallback(MainWindowDestroyCallback);
 
    if (Render2DCreateGL(&m_pRender2D) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   if (RenderCameraCreate(&m_pCamera) != S_OK)
    {
       return E_FAIL;
    }
@@ -645,6 +649,11 @@ tResult cRendererGL::CreateContext(HWND hWnd)
 
    g_bHaveValidGlContext = true;
 
+   glDisable(GL_DITHER);
+   glEnable(GL_DEPTH_TEST);
+   glEnable(GL_CULL_FACE);
+   glCullFace(GL_BACK);
+
    return S_OK;
 #else
    return E_NOTIMPL;
@@ -705,9 +714,23 @@ tResult cRendererGL::CreateContext(Display * display, Window window)
       return E_FAIL;
    }
 
+   m_display = display;
+
    glXMakeCurrent(display, window, m_context);
 
+   if (glewInit() != GLEW_OK)
+   {
+      ErrorMsg("GLEW library failed to initialize\n");
+      DestroyContext();
+      return E_FAIL;
+   }
+
    g_bHaveValidGlContext = true;
+
+   glDisable(GL_DITHER);
+   glEnable(GL_DEPTH_TEST);
+   glEnable(GL_CULL_FACE);
+   glCullFace(GL_BACK);
 
    return S_OK;
 #endif
@@ -750,6 +773,13 @@ tResult cRendererGL::DestroyContext()
    }
 
    m_hWnd = NULL;
+#else
+   if (m_context != NULL)
+   {
+      glXDestroyContext(m_display, m_context);
+      m_display = NULL;
+      m_context = NULL;
+   }
 #endif
 
    g_bHaveValidGlContext = false;
@@ -841,22 +871,24 @@ tResult cRendererGL::GetRenderState(eRenderState state, ulong * pValue)
 
 tResult cRendererGL::BeginScene()
 {
-   if (SUCCEEDED(Initialize()))
+   if (!m_pCamera)
    {
-      AssertMsg(!m_bInScene, "Cannot nest BeginScene/EndScene calls");
-      if (!m_bInScene)
-      {
-         m_bInScene = true;
-         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+      return E_FAIL;
+   }
 
-         glMatrixMode(GL_PROJECTION);
-         glLoadMatrixf(m_proj);
+   AssertMsg(!m_bInScene, "Cannot nest BeginScene/EndScene calls");
+   if (!m_bInScene)
+   {
+      m_bInScene = true;
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
-         glMatrixMode(GL_MODELVIEW);
-         glLoadMatrixf(m_view);
+      glMatrixMode(GL_PROJECTION);
+      glLoadMatrixf(m_pCamera->GetProjectionMatrix());
 
-         return S_OK;
-      }
+      glMatrixMode(GL_MODELVIEW);
+      glLoadMatrixf(m_pCamera->GetViewMatrix());
+
+      return S_OK;
    }
 
    return E_FAIL;
@@ -1116,109 +1148,6 @@ tResult cRendererGL::End2D()
 
 ////////////////////////////////////////
 
-tResult cRendererGL::GetViewMatrix(float viewMatrix[16]) const
-{
-   if (viewMatrix == NULL)
-   {
-      return E_POINTER;
-   }
-
-   memcpy(viewMatrix, m_view, 16 * sizeof(float));
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cRendererGL::SetViewMatrix(const float viewMatrix[16])
-{
-   if (viewMatrix == NULL)
-   {
-      return E_POINTER;
-   }
-
-   MatrixInvert(viewMatrix, m_viewInv);
-
-   m_bUpdateCompositeMatrices = true;
-
-   memcpy(m_view, viewMatrix, 16 * sizeof(float));
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cRendererGL::GetProjectionMatrix(float projMatrix[16]) const
-{
-   if (projMatrix == NULL)
-   {
-      return E_POINTER;
-   }
-
-   memcpy(projMatrix, m_proj, 16 * sizeof(float));
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cRendererGL::SetProjectionMatrix(const float projMatrix[16])
-{
-   if (projMatrix == NULL)
-   {
-      return E_POINTER;
-   }
-
-   m_bUpdateCompositeMatrices = true;
-
-   memcpy(m_proj, projMatrix, 16 * sizeof(float));
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-void cRendererGL::UpdateCompositeMatrices() const
-{
-   if (m_bUpdateCompositeMatrices)
-   {
-      float projMatrix[16], viewMatrix[16];
-      GetProjectionMatrix(projMatrix);
-      GetViewMatrix(viewMatrix);
-      MatrixMultiply(projMatrix, viewMatrix, m_viewProj);
-      MatrixInvert(m_viewProj, m_viewProjInv);
-      m_bUpdateCompositeMatrices = false;
-   }
-}
-
-////////////////////////////////////////
-
-tResult cRendererGL::GetViewProjectionMatrix(float viewProjMatrix[16]) const
-{
-   if (viewProjMatrix == NULL)
-   {
-      return E_POINTER;
-   }
-
-   UpdateCompositeMatrices();
-
-   memcpy(viewProjMatrix, m_viewProj, 16 * sizeof(float));
-   return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cRendererGL::GetViewProjectionInverseMatrix(float viewProjInvMatrix[16]) const
-{
-   if (viewProjInvMatrix == NULL)
-   {
-      return E_POINTER;
-   }
-
-   UpdateCompositeMatrices();
-
-   memcpy(viewProjInvMatrix, m_viewProjInv, 16 * sizeof(float));
-   return S_OK;
-}
-
-////////////////////////////////////////
-
 tResult cRendererGL::PushMatrix(const float matrix[16])
 {
    if (matrix == NULL)
@@ -1243,91 +1172,19 @@ tResult cRendererGL::PopMatrix()
 #endif
 }
 
-////////////////////////////////////////
-
-tResult cRendererGL::ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pndy) const
-{
-   if (pndx == NULL || pndy == NULL)
-   {
-      return E_POINTER;
-   }
-
-   int viewport[4];
-   glGetIntegerv(GL_VIEWPORT, viewport);
-
-   sy = viewport[3] - sy;
-
-   // convert screen coords to normalized (origin at center, [-1..1])
-   float normx = (float)(sx - viewport[0]) * 2.f / viewport[2] - 1.f;
-   float normy = (float)(sy - viewport[1]) * 2.f / viewport[3] - 1.f;
-
-   *pndx = normx;
-   *pndy = normy;
-
-   return S_OK;
-}
-
 ///////////////////////////////////////
 
-tResult cRendererGL::GeneratePickRay(float ndx, float ndy, cRay * pRay) const
+tResult cRendererGL::GetCamera(IRenderCamera * * ppCamera)
 {
-   if (pRay == NULL)
-   {
-      return E_POINTER;
-   }
-
-   tMatrix4 m;
-   if (GetViewProjectionInverseMatrix(m.m) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   tVec4 n;
-   m.Transform(tVec4(ndx, ndy, -1, 1), &n);
-   if (n.w == 0.0f)
-   {
-      return E_FAIL;
-   }
-   n.x /= n.w;
-   n.y /= n.w;
-   n.z /= n.w;
-
-   tVec4 f;
-   m.Transform(tVec4(ndx, ndy, 1, 1), &f);
-   if (f.w == 0.0f)
-   {
-      return E_FAIL;
-   }
-   f.x /= f.w;
-   f.y /= f.w;
-   f.z /= f.w;
-
-   tVec4 eye;
-   MatrixTransform4(m_viewInv, tVec4(0,0,0,1).v, eye.v);
-
-   tVec3 dir(f.x - n.x, f.y - n.y, f.z - n.z);
-   dir.Normalize();
-
-   *pRay = cRay(tVec3(eye.x,eye.y,eye.z), dir);
-
-   return S_OK;
+   return m_pCamera.GetPointer(ppCamera);
 }
 
 ////////////////////////////////////////
 
-tResult cRendererGL::Initialize()
+tResult cRendererGL::SetCamera(IRenderCamera * pCamera)
 {
-   if (m_bInitialized)
-   {
-      return S_FALSE;
-   }
-
-   glDisable(GL_DITHER);
-   glEnable(GL_DEPTH_TEST);
-   glEnable(GL_CULL_FACE);
-   glCullFace(GL_BACK);
-
-   m_bInitialized = true;
+   SafeRelease(m_pCamera);
+   m_pCamera = CTAddRef(pCamera);
    return S_OK;
 }
 

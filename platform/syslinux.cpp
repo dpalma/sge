@@ -89,6 +89,14 @@ tResult SysGetFontPath(cFilePath * pFontPath)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+tResult SysGetUserPath(cFilePath * pUserPath)
+{
+   // TODO
+   return E_NOTIMPL;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 static int SysHandleXError(Display * display, XErrorEvent * event)
 {
    ErrorMsg4("X error %d, %d, %d, %d\n", event->serial, event->error_code, event->request_code, event->minor_code);

@@ -79,20 +79,11 @@ public:
    virtual tResult Begin2D(int width, int height, IRender2D * * ppRender2D);
    virtual tResult End2D();
 
-   virtual tResult GetViewMatrix(float viewMatrix[16]) const;
-   virtual tResult SetViewMatrix(const float viewMatrix[16]);
-
-   virtual tResult GetProjectionMatrix(float projMatrix[16]) const;
-   virtual tResult SetProjectionMatrix(const float projMatrix[16]);
-
-   virtual tResult GetViewProjectionMatrix(float viewProjMatrix[16]) const;
-   virtual tResult GetViewProjectionInverseMatrix(float viewProjInvMatrix[16]) const;
-
    virtual tResult PushMatrix(const float matrix[16]);
    virtual tResult PopMatrix();
 
-   virtual tResult ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pndy) const;
-   virtual tResult GeneratePickRay(float ndx, float ndy, cRay * pRay) const;
+   virtual tResult GetCamera(IRenderCamera * * ppCamera);
+   virtual tResult SetCamera(IRenderCamera * pCamera);
 
 private:
 #ifdef HAVE_CG

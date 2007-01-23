@@ -18,7 +18,7 @@
 class cRender2DGL : public cComObject<IMPLEMENTS(IRender2D)>
 {
    cRender2DGL(const cRender2DGL &);
-   void operator =(const cRender2DGL &);
+   const cRender2DGL & operator =(const cRender2DGL &);
 
 public:
    cRender2DGL();

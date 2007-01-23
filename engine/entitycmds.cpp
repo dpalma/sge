@@ -136,8 +136,10 @@ bool cTerrainClickInputMode::OnInputEvent(const sInputEvent * pEvent)
    {
       UseGlobal(Renderer);
 
+      cAutoIPtr<IRenderCamera> pCamera;
       cRay pickRay;
-      if (pRenderer->GenerateScreenPickRay(pEvent->point.x, pEvent->point.y, &pickRay) == S_OK)
+      if (pRenderer->GetCamera(&pCamera) == S_OK
+         && pCamera->GenerateScreenPickRay(pEvent->point.x, pEvent->point.y, &pickRay) == S_OK)
       {
          tVec3 location;
          if (GetTerrainLocation(pickRay, &location))

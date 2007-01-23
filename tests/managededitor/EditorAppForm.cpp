@@ -275,7 +275,11 @@ namespace ManagedEditor
          MatrixPerspective(kFov, aspect, kZNear, kZFar, &proj);
 
          UseGlobal(Renderer);
-         pRenderer->SetProjectionMatrix(proj.m);
+         cAutoIPtr<IRenderCamera> pCamera;
+         if (pRenderer->GetCamera(&pCamera) == S_OK)
+         {
+            pCamera->SetProjectionMatrix(proj.m);
+         }
 
          glViewport(0, 0, m_renderControl->Width, m_renderControl->Height);
       }
