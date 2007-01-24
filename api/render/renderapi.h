@@ -160,6 +160,20 @@ interface IRenderCamera : IUnknown
    virtual tResult GetProjectionMatrix(float projMatrix[16]) const = 0;
    virtual tResult SetProjectionMatrix(const float projMatrix[16]) = 0;
 
+   // Perpective projection parameters
+
+   virtual float GetFOV() const = 0;
+   virtual void SetFOV(float fov) = 0;
+
+   virtual float GetAspect() const = 0;
+   virtual void SetAspect(float aspect) = 0;
+   virtual void SetAutoAspect() = 0;
+
+   virtual tResult GetNearFar(float * pZNear, float * pZFar) const = 0;
+   virtual tResult SetNearFar(float zNear, float zFar) = 0;
+
+   // Composite matrices
+
    virtual tResult GetViewProjectionMatrix(float viewProjMatrix[16]) const = 0;
    virtual tResult GetViewProjectionInverseMatrix(float viewProjInvMatrix[16]) const = 0;
 

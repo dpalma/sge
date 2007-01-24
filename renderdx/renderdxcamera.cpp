@@ -95,6 +95,52 @@ tResult cRenderDXCamera::SetProjectionMatrix(const float projMatrix[16])
 
 ////////////////////////////////////////
 
+float cRenderDXCamera::GetFOV() const
+{
+   return 70;
+}
+
+////////////////////////////////////////
+
+void cRenderDXCamera::SetFOV(float fov)
+{
+}
+
+////////////////////////////////////////
+
+float cRenderDXCamera::GetAspect() const
+{
+   return 1;
+}
+
+////////////////////////////////////////
+
+void cRenderDXCamera::SetAspect(float aspect)
+{
+}
+
+////////////////////////////////////////
+
+void cRenderDXCamera::SetAutoAspect()
+{
+}
+
+////////////////////////////////////////
+
+tResult cRenderDXCamera::GetNearFar(float * pZNear, float * pZFar) const
+{
+   return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
+tResult cRenderDXCamera::SetNearFar(float zNear, float zFar)
+{
+   return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
 tResult cRenderDXCamera::GetViewProjectionMatrix(float viewProjMatrix[16]) const
 {
    return E_NOTIMPL;

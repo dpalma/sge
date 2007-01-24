@@ -32,6 +32,16 @@ public:
    virtual tResult GetProjectionMatrix(float projMatrix[16]) const;
    virtual tResult SetProjectionMatrix(const float projMatrix[16]);
 
+   virtual float GetFOV() const;
+   virtual void SetFOV(float fov);
+
+   virtual float GetAspect() const;
+   virtual void SetAspect(float aspect);
+   virtual void SetAutoAspect();
+
+   virtual tResult GetNearFar(float * pZNear, float * pZFar) const;
+   virtual tResult SetNearFar(float zNear, float zFar);
+
    virtual tResult GetViewProjectionMatrix(float viewProjMatrix[16]) const;
    virtual tResult GetViewProjectionInverseMatrix(float viewProjInvMatrix[16]) const;
 

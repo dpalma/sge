@@ -5,12 +5,18 @@
 
 #include "renderglcamera.h"
 
-#include "tech/matrix4.h"
+#include "platform/sys.h"
+
+#include "tech/configapi.h"
 #include "tech/ray.h"
 
 #include <GL/glew.h>
 
 #include "tech/dbgalloc.h" // must be last header
+
+static const float kDefaultFov = 70;
+static const float kDefaultZNear = 1;
+static const float kDefaultZFar = 2000;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -39,7 +45,11 @@ tResult RenderCameraCreate(IRenderCamera * * ppRenderCamera)
 ////////////////////////////////////////
 
 cRenderGLCamera::cRenderGLCamera()
- : m_bUpdateCompositeMatrices(true)
+ : m_fov(kDefaultFov)
+ , m_aspect(0)
+ , m_znear(kDefaultZNear)
+ , m_zfar(kDefaultZFar)
+ , m_flags(kAutoAspect | kUpdateCompositeMatrices | kUpdateProjectionMatrix)
 {
 }
 
@@ -80,7 +90,7 @@ tResult cRenderGLCamera::SetViewMatrix(const float viewMatrix[16])
 
    MatrixInvert(viewMatrix, m_viewInv);
 
-   m_bUpdateCompositeMatrices = true;
+   m_flags |= kUpdateCompositeMatrices;
 
    memcpy(m_view, viewMatrix, 16 * sizeof(float));
    return S_OK;
@@ -90,7 +100,13 @@ tResult cRenderGLCamera::SetViewMatrix(const float viewMatrix[16])
 
 const float * cRenderGLCamera::GetProjectionMatrix() const
 {
-   return m_proj;
+   if ((m_flags & kUpdateProjectionMatrix) == kUpdateProjectionMatrix)
+   {
+      MatrixPerspective(GetFOV(), GetAspect(), m_znear, m_zfar, &m_proj);
+      m_flags &= ~kUpdateProjectionMatrix;
+   }
+
+   return m_proj.m;
 }
 
 ////////////////////////////////////////
@@ -102,7 +118,13 @@ tResult cRenderGLCamera::GetProjectionMatrix(float projMatrix[16]) const
       return E_POINTER;
    }
 
-   memcpy(projMatrix, m_proj, 16 * sizeof(float));
+   if ((m_flags & kUpdateProjectionMatrix) == kUpdateProjectionMatrix)
+   {
+      MatrixPerspective(GetFOV(), GetAspect(), m_znear, m_zfar, &m_proj);
+      m_flags &= ~kUpdateProjectionMatrix;
+   }
+
+   memcpy(projMatrix, m_proj.m, 16 * sizeof(float));
    return S_OK;
 }
 
@@ -115,9 +137,84 @@ tResult cRenderGLCamera::SetProjectionMatrix(const float projMatrix[16])
       return E_POINTER;
    }
 
-   m_bUpdateCompositeMatrices = true;
+   m_flags |= kUpdateCompositeMatrices;
+   m_flags &= ~kUpdateProjectionMatrix;
 
-   memcpy(m_proj, projMatrix, 16 * sizeof(float));
+   memcpy(m_proj.m, projMatrix, 16 * sizeof(float));
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+float cRenderGLCamera::GetFOV() const
+{
+   return m_fov;
+}
+
+////////////////////////////////////////
+
+void cRenderGLCamera::SetFOV(float fov)
+{
+   m_fov = fov;
+   m_flags |= kUpdateProjectionMatrix;
+}
+
+////////////////////////////////////////
+
+float cRenderGLCamera::GetAspect() const
+{
+   if ((m_flags & kAutoAspect) == kAutoAspect)
+   {
+      int w = 0, h = 0;
+      if (SysGetWindowSize(&w, &h) != S_OK)
+      {
+         ErrorMsg("SysGetWindowSize failed\n");
+         return 1;
+      }
+      return static_cast<float>(w) / h;
+   }
+   else
+   {
+      return m_aspect;
+   }
+}
+
+////////////////////////////////////////
+
+void cRenderGLCamera::SetAspect(float aspect)
+{
+   m_aspect = aspect;
+   m_flags &= ~kAutoAspect;
+   m_flags |= kUpdateProjectionMatrix;
+}
+
+////////////////////////////////////////
+
+void cRenderGLCamera::SetAutoAspect()
+{
+   m_flags |= (kAutoAspect | kUpdateProjectionMatrix);
+}
+
+////////////////////////////////////////
+
+tResult cRenderGLCamera::GetNearFar(float * pZNear, float * pZFar) const
+{
+   if (pZNear == NULL || pZFar == NULL)
+   {
+      return E_NOTIMPL;
+   }
+   *pZNear = m_znear;
+   *pZFar = m_zfar;
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cRenderGLCamera::SetNearFar(float zNear, float zFar)
+{
+   m_znear = zNear;
+   m_zfar = zFar;
+   m_flags |= kUpdateProjectionMatrix;
    return S_OK;
 }
 
@@ -125,14 +222,14 @@ tResult cRenderGLCamera::SetProjectionMatrix(const float projMatrix[16])
 
 void cRenderGLCamera::UpdateCompositeMatrices() const
 {
-   if (m_bUpdateCompositeMatrices)
+   if ((m_flags & kUpdateCompositeMatrices) == kUpdateCompositeMatrices)
    {
       float projMatrix[16], viewMatrix[16];
       GetProjectionMatrix(projMatrix);
       GetViewMatrix(viewMatrix);
       MatrixMultiply(projMatrix, viewMatrix, m_viewProj);
       MatrixInvert(m_viewProj, m_viewProjInv);
-      m_bUpdateCompositeMatrices = false;
+      m_flags &= ~kUpdateCompositeMatrices;
    }
 }
 

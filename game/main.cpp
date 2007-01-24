@@ -49,17 +49,11 @@ typedef char * LPSTR;
 #define kDefaultWidth   800
 #define kDefaultHeight  600
 #define kDefaultBpp     16
-#define kDefaultFov     70
-
-const float kZNear = 1;
-const float kZFar = 2000;
 
 
 ///////////////////////////////////////////////////////////////////////////////
 
 cAutoIPtr<IGUILabelElement> g_pFrameStats;
-
-float g_fov;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -409,9 +403,6 @@ tResult cMainInitTask::RunStartupScript()
 
 tResult cMainInitTask::CreateMainWindow()
 {
-   g_fov = kDefaultFov;
-   ConfigGet(_T("fov"), &g_fov);
-
    int width = kDefaultWidth;
    int height = kDefaultHeight;
    int bpp = kDefaultBpp;
@@ -434,15 +425,6 @@ tResult cMainInitTask::CreateMainWindow()
    if (pRenderer->CreateContext() != S_OK)
    {
       return E_FAIL;
-   }
-
-   tMatrix4 proj;
-   MatrixPerspective(g_fov, (float)width / height, kZNear, kZFar, &proj);
-
-   cAutoIPtr<IRenderCamera> pCamera;
-   if (pRenderer->GetCamera(&pCamera) == S_OK)
-   {
-      pCamera->SetProjectionMatrix(proj.m);
    }
 
    cAutoIPtr<ITask> pMainRenderTask(MainRenderTaskCreate());
