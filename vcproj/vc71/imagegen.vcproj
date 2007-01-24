@@ -16,7 +16,7 @@
 			OutputDirectory=".\..\..\Build.vc71\Release"
 			IntermediateDirectory=".\..\..\Build.vc71\Release\imagegen"
 			ConfigurationType="1"
-			UseOfMFC="2"
+			UseOfMFC="0"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
@@ -80,7 +80,7 @@
 			OutputDirectory=".\..\..\Build.vc71\Debug"
 			IntermediateDirectory=".\..\..\Build.vc71\Debug\imagegen"
 			ConfigurationType="1"
-			UseOfMFC="2"
+			UseOfMFC="0"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
@@ -146,7 +146,7 @@
 			OutputDirectory=".\..\..\Build.vc71\StaticDebug"
 			IntermediateDirectory=".\..\..\Build.vc71\StaticDebug\imagegen"
 			ConfigurationType="1"
-			UseOfMFC="1"
+			UseOfMFC="0"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
@@ -211,7 +211,7 @@
 			OutputDirectory=".\..\..\Build.vc71\Opt"
 			IntermediateDirectory=".\..\..\Build.vc71\Opt\imagegen"
 			ConfigurationType="1"
-			UseOfMFC="2"
+			UseOfMFC="0"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
@@ -278,7 +278,7 @@
 			OutputDirectory=".\..\..\Build.vc71\StaticRelease"
 			IntermediateDirectory=".\..\..\Build.vc71\StaticRelease\imagegen"
 			ConfigurationType="1"
-			UseOfMFC="1"
+			UseOfMFC="0"
 			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
@@ -476,8 +476,5 @@
 		</Filter>
 	</Files>
 	<Globals>
-		<Global
-			Name="RESOURCE_FILE"
-			Value="\prj\sge\tests\imagegen\imagegen.rc"/>
 	</Globals>
 </VisualStudioProject>

@@ -331,6 +331,9 @@
 				RelativePath="..\..\renderdx\render2ddx.cpp">
 			</File>
 			<File
+				RelativePath="..\..\renderdx\renderdxcamera.cpp">
+			</File>
+			<File
 				RelativePath="..\..\renderdx\rendererdx.cpp">
 			</File>
 			<File
@@ -375,6 +378,9 @@
 			Filter="h;hpp;hxx;hm;inl">
 			<File
 				RelativePath="..\..\renderdx\render2ddx.h">
+			</File>
+			<File
+				RelativePath="..\..\renderdx\renderdxcamera.h">
 			</File>
 			<File
 				RelativePath="..\..\renderdx\rendererdx.h">
