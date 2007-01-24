@@ -15,9 +15,6 @@
 
 class cRay;
 
-template <typename T> class cAxisAlignedBox;
-typedef class cAxisAlignedBox<float> tAxisAlignedBox;
-
 F_DECLARE_HANDLE(HWND);
 
 struct _XDisplay;
@@ -145,13 +142,7 @@ interface IRenderer : IUnknown
    virtual tResult SetCamera(IRenderCamera * pCamera) = 0;
 };
 
-///////////////////////////////////////
-
 RENDER_API tResult RendererCreate();
-
-///////////////////////////////////////
-
-RENDER_API void RenderWireFrameBox(const tAxisAlignedBox & box, const float color[4]);
 
 
 ///////////////////////////////////////////////////////////////////////////////

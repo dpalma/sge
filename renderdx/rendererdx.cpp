@@ -841,56 +841,5 @@ tResult RendererCreate()
    return RegisterGlobalObject(IID_IRenderer, p);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
-const sVertexElement g_wireFrameVertex[] =
-{
-   { kVEU_Position,  kVET_Float3,   0, 0 },
-};
-
-void RenderWireFrame(const tAxisAlignedBox & box, const cColor & color)
-{
-   const tVec3 & mins = box.GetMins();
-   const tVec3 & maxs = box.GetMaxs();
-
-   tVec3 verts[] =
-   {
-      tVec3(mins.x, mins.y, mins.z),
-      tVec3(maxs.x, mins.y, mins.z),
-      tVec3(maxs.x, mins.y, maxs.z),
-      tVec3(mins.x, mins.y, maxs.z),
-
-      tVec3(mins.x, maxs.y, mins.z),
-      tVec3(maxs.x, maxs.y, mins.z),
-      tVec3(maxs.x, maxs.y, maxs.z),
-      tVec3(mins.x, maxs.y, maxs.z),
-
-   };
-
-   const uint16 indices[] =
-   {
-      0, 1,
-      1, 2,
-      2, 3,
-      3, 0,
-
-      4, 5,
-      5, 6,
-      6, 7,
-      7, 4,
-
-      0, 4,
-      1, 5,
-      2, 6,
-      3, 7,
-   };
-
-   UseGlobal(Renderer);
-   pRenderer->SetDiffuseColor(color.GetPointer());
-   pRenderer->SetVertexFormat(g_wireFrameVertex, _countof(g_wireFrameVertex));
-   pRenderer->SubmitVertices(&verts[0], _countof(verts));
-   pRenderer->SetIndexFormat(kIF_16Bit);
-   pRenderer->Render(kPT_Lines, indices, _countof(indices));
-}
 
 ////////////////////////////////////////////////////////////////////////////////

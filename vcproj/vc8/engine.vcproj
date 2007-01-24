@@ -536,6 +536,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\engine\modelutils.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\engine\ms3dread.cpp"
 				>
 			</File>
@@ -646,6 +650,10 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\modelskeleton.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\engine\modelutils.h"
 				>
 			</File>
 			<File

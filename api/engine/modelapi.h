@@ -174,6 +174,7 @@ interface IModel : IUnknown
    virtual tResult GetSkeleton(IModelSkeleton * * ppSkeleton) = 0;
 };
 
+ENGINE_API tResult ModelCreateBox(const tVec3 & mins, const tVec3 & maxs, const float color[4], IModel * * ppModel);
 
 ////////////////////////////////////////////////////////////////////////////////
 

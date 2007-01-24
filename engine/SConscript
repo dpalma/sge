@@ -21,6 +21,7 @@ sourceFiles = Split("""
    modelsgem.cpp
    modelskeleton.cpp
    modeltypes.cpp
+   modelutils.cpp
    ms3dread.cpp
    saveloadmanager.cpp
    terrain.cpp

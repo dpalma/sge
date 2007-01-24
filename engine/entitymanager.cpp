@@ -279,34 +279,25 @@ void cEntityManager::RenderAll()
    {
       cAutoIPtr<IEntity> pEntity(CTAddRef(*iter));
 
-      bool bPopMatrix = false;
-      cAutoIPtr<IEntityPositionComponent> pPosition;
-      if (pEntity->GetComponent(kECT_Position, IID_IEntityPositionComponent, &pPosition) == S_OK)
-      {
-         pRenderer->PushMatrix(pPosition->GetWorldTransform().m);
-         bPopMatrix = true;
-      }
-
       cAutoIPtr<IEntityRenderComponent> pRender;
       if (pEntity->GetComponent(kECT_Render, IID_IEntityRenderComponent, &pRender) == S_OK)
       {
+         bool bPopMatrix = false;
+         cAutoIPtr<IEntityPositionComponent> pPosition;
+         if (pEntity->GetComponent(kECT_Position, IID_IEntityPositionComponent, &pPosition) == S_OK)
+         {
+            pRenderer->PushMatrix(pPosition->GetWorldTransform().m);
+            bPopMatrix = true;
+         }
+
          bool bSelected = IsSelected(*iter);
 
          pRender->Render(bSelected ? kERF_Selected : kERF_None);
 
-         if (bSelected)
+         if (bPopMatrix)
          {
-            tAxisAlignedBox bbox;
-            if (pRender->GetBoundingBox(&bbox) == S_OK)
-            {
-               RenderWireFrameBox(bbox, cColor(1,1,0).GetPointer());
-            }
+            pRenderer->PopMatrix();
          }
-      }
-
-      if (bPopMatrix)
-      {
-         pRenderer->PopMatrix();
       }
    }
 }

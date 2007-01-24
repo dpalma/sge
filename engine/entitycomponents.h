@@ -4,6 +4,8 @@
 #ifndef INCLUDED_ENTITYCOMPONENTS_H
 #define INCLUDED_ENTITYCOMPONENTS_H
 
+#include "modelutils.h"
+
 #include "engine/entityapi.h"
 
 #include "ai/aiapi.h"
@@ -46,37 +48,6 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cEntityModelRenderer
-//
-
-typedef std::vector<sBlendedVertex> tBlendedVertices;
-
-class cEntityModelRenderer
-{
-   cEntityModelRenderer(const cEntityModelRenderer &);
-   const cEntityModelRenderer & operator =(const cEntityModelRenderer &);
-
-public:
-   cEntityModelRenderer(const tChar * pszModel);
-   ~cEntityModelRenderer();
-
-   tResult GetBoundingBox(tAxisAlignedBox * pBBox) const;
-   void Update(double elapsedTime);
-   void Render();
-   tResult SetAnimation(eModelAnimationType type);
-
-private:
-   cStr m_model;
-   cAutoIPtr<IModel> m_pModel;
-   std::vector<tMatrix34> m_blendMatrices;
-   tBlendedVertices m_blendedVerts;
-   cAutoIPtr<IModelAnimationController> m_pAnimController;
-   tAxisAlignedBox m_bbox;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
 // CLASS: cEntityRenderComponent
 //
 
@@ -91,14 +62,14 @@ public:
    virtual tResult GetBoundingBox(tAxisAlignedBox * pBBox) const;
 
    virtual void Render(uint flags);
-   virtual tResult SetAnimation(eModelAnimationType type);
 
    virtual void Update(double elapsedTime);
 
    virtual tResult SetAnimation(eAIAgentAnimation anim);
 
 private:
-   cEntityModelRenderer m_mainModel;
+   cAnimatedModelRenderer m_mainModel;
+   cBasicModelRenderer m_bboxModel;
 };
 
 

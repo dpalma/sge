@@ -11,6 +11,7 @@ sourceFiles = Split("""
    renderergl.cpp
    renderfontfreetype.cpp
    renderfontftgl.cpp
+   renderglcamera.cpp
 """)
 
 if env['PLATFORM'] == 'win32':

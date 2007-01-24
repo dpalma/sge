@@ -5,6 +5,8 @@
 
 #include "model.h"
 
+#include <iterator>
+
 #include "tech/dbgalloc.h" // must be last header
 
 
@@ -31,15 +33,15 @@ cModel::cModel()
 
 ///////////////////////////////////////
 
-cModel::cModel(const tModelVertices & verts,
-               const std::vector<uint16> & indices,
-               const std::vector<sModelMesh> & meshes,
-               const tModelMaterials & materials,
+cModel::cModel(tModelVertices::const_iterator firstVert, tModelVertices::const_iterator lastVert,
+               std::vector<uint16>::const_iterator firstIndex, std::vector<uint16>::const_iterator lastIndex,
+               std::vector<sModelMesh>::const_iterator firstMesh, std::vector<sModelMesh>::const_iterator lastMesh,
+               tModelMaterials::const_iterator firstMaterial, tModelMaterials::const_iterator lastMaterial,
                IModelSkeleton * pSkeleton)
- : m_vertices(verts)
- , m_indices(indices)
- , m_meshes(meshes)
- , m_materials(materials)
+ : m_vertices(firstVert, lastVert)
+ , m_indices(firstIndex, lastIndex)
+ , m_meshes(firstMesh, lastMesh)
+ , m_materials(firstMaterial, lastMaterial)
  , m_pSkeleton(CTAddRef(pSkeleton))
 {
 }
@@ -64,7 +66,37 @@ tResult cModel::Create(const tModelVertices & verts,
       return E_POINTER;
    }
 
-   cModel * pModel = new cModel(verts, indices, meshes, materials, pSkeleton);
+   cModel * pModel = new cModel(verts.begin(), verts.end(),
+                                indices.begin(), indices.end(),
+                                meshes.begin(), meshes.end(),
+                                materials.begin(), materials.end(),
+                                pSkeleton);
+   if (pModel == NULL)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   pModel->PreApplyJoints();
+
+   *ppModel = static_cast<IModel*>(pModel);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cModel::Create(tModelVertices::const_iterator firstVert, tModelVertices::const_iterator lastVert,
+                       std::vector<uint16>::const_iterator firstIndex, std::vector<uint16>::const_iterator lastIndex,
+                       std::vector<sModelMesh>::const_iterator firstMesh, std::vector<sModelMesh>::const_iterator lastMesh,
+                       tModelMaterials::const_iterator firstMaterial, tModelMaterials::const_iterator lastMaterial,
+                       IModelSkeleton * pSkeleton, IModel * * ppModel)
+{
+   if (ppModel == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cModel * pModel = new cModel(firstVert, lastVert, firstIndex, lastIndex,
+      firstMesh, lastMesh, firstMaterial, lastMaterial, pSkeleton);
    if (pModel == NULL)
    {
       return E_OUTOFMEMORY;
@@ -230,6 +262,62 @@ void cModel::PreApplyJoints()
       bindMatrices[index].Transform(iter->pos, &transformedPosition);
       iter->pos = transformedPosition;
    }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+tResult ModelCreateBox(const tVec3 & mins, const tVec3 & maxs, const float color[4], IModel * * ppModel)
+{
+   sModelVertex verts[] =
+   {
+      { 0, 0, tVec3(), tVec3(mins.x, mins.y, mins.z), -1 },
+      { 0, 0, tVec3(), tVec3(maxs.x, mins.y, mins.z), -1 },
+      { 0, 0, tVec3(), tVec3(maxs.x, mins.y, maxs.z), -1 },
+      { 0, 0, tVec3(), tVec3(mins.x, mins.y, maxs.z), -1 },
+      { 0, 0, tVec3(), tVec3(mins.x, maxs.y, mins.z), -1 },
+      { 0, 0, tVec3(), tVec3(maxs.x, maxs.y, mins.z), -1 },
+      { 0, 0, tVec3(), tVec3(maxs.x, maxs.y, maxs.z), -1 },
+      { 0, 0, tVec3(), tVec3(mins.x, maxs.y, maxs.z), -1 },
+   };
+
+   const uint16 indices[] =
+   {
+      0, 1,
+      1, 2,
+      2, 3,
+      3, 0,
+
+      4, 5,
+      5, 6,
+      6, 7,
+      7, 4,
+
+      0, 4,
+      1, 5,
+      2, 6,
+      3, 7,
+   };
+
+   sModelMesh mesh = {0};
+   mesh.primitive = kPT_Lines;
+   mesh.materialIndex = 0;
+   mesh.nIndices = _countof(indices);
+   mesh.indexStart = 0;
+
+   sModelMaterial material = {0};
+   memcpy(material.diffuse, color, sizeof(material.diffuse));
+
+   cAutoIPtr<IModel> pModel(new cModel(&verts[0], &verts[_countof(verts)],
+      &indices[0], &indices[_countof(indices)], &mesh, (&mesh) + 1,
+      &material, (&material) + 1, NULL));
+
+   if (!pModel)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   return pModel.GetPointer(ppModel);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

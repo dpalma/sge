@@ -97,8 +97,6 @@ interface IEntityRenderComponent : IEntityComponent
    virtual tResult GetBoundingBox(tAxisAlignedBox * pBBox) const = 0;
 
    virtual void Render(uint flags) = 0;
-
-   virtual tResult SetAnimation(eModelAnimationType type) = 0;
 };
 
 ENGINE_API tResult EntityCreateRenderComponent(const tChar * pszModel, IEntityRenderComponent * * ppRenderComponent);
