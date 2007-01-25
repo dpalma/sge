@@ -26,6 +26,10 @@ def main(argv):
 		usage()
 		return -1
 		
+	if len(opts) == 0:
+		usage()
+		return -1
+		
 	repos = None
 	bldlabel = None
 	nobuild = False
@@ -43,6 +47,9 @@ def main(argv):
 			nobuild = True
 		elif opt in ("--nosvnexport"):
 			nosvnexport = True
+		else:
+			print >> sys.stderr, "Unknown argument: %s" % opt
+			return -1
 			
 	if repos is None:
 		repos = 'svn://dpcvs.no-ip.org'
@@ -63,9 +70,6 @@ def main(argv):
 	if not os.path.exists(bldlabel) and not nosvnexport:
 		print "\nBuild label is %s\n" % bldlabel
 		client.export(repos + '/trunk/sge', bldlabel, revision=info.rev)
-#	else:
-#		print >> sys.stderr, "Error: a directory named %s already exists" % bldlabel
-#		return -1
 		
 	if not nobuild:
 		build(bldlabel)
