@@ -45,9 +45,17 @@ namespace ManagedEditor
       UseGlobal(Renderer);
       if (!!pRenderer)
       {
-         pRenderer->DestroyContext();
+         pRenderer->SetRenderTarget(NULL);
+
          HWND hWnd = reinterpret_cast<HWND>(Handle.ToPointer());
-         pRenderer->CreateContext(hWnd);
+
+         UseGlobal(Renderer);
+         cAutoIPtr<IRenderTarget> pRenderTarget;
+
+         if (pRenderer->CreateRenderTarget(hWnd, &pRenderTarget) == S_OK)
+         {
+            pRenderer->SetRenderTarget(pRenderTarget);
+         }
       }
    }
 
@@ -56,7 +64,7 @@ namespace ManagedEditor
       UseGlobal(Renderer);
       if (!!pRenderer)
       {
-         pRenderer->DestroyContext();
+         pRenderer->SetRenderTarget(NULL);
       }
    }
 

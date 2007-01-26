@@ -33,6 +33,8 @@
 
 extern const uint kVertexFVF;
 
+extern tResult RenderTargetDXCreate(IDirect3DDevice9 * pD3dDevice, IRenderTarget * * ppRenderTarget);
+
 extern tResult Render2DCreateDX(IDirect3DDevice9 * pD3dDevice, IRender2D * * ppRender2D);
 
 extern tResult RenderFontCreateD3DX(const tChar * pszFont, int fontPointSize, uint flags, IDirect3DDevice9 * pD3dDevice, IRenderFont * * ppFont);
@@ -194,7 +196,7 @@ void MainWindowDestroyCallback()
    UseGlobal(Renderer);
    if (!!pRenderer)
    {
-      pRenderer->DestroyContext();
+      pRenderer->SetRenderTarget(NULL);
    }
 }
 
@@ -346,39 +348,52 @@ tResult cRendererDX::Term()
    }
    m_fontMap.clear();
 
-   DestroyContext();
+   SafeRelease(m_pTarget);
+
+#ifdef HAVE_CG
+   if (m_cgContext != NULL)
+   {
+      if (m_oldCgErrorHandler != NULL)
+      {
+         cgSetErrorHandler(m_oldCgErrorHandler, m_pOldCgErrHandlerData);
+         m_oldCgErrorHandler = NULL;
+         m_pOldCgErrHandlerData = NULL;
+      }
+
+      cgDestroyContext(m_cgContext);
+      m_cgContext = NULL;
+
+      m_cgProfileVertex = CG_PROFILE_UNKNOWN;
+      m_cgProfileFragment = CG_PROFILE_UNKNOWN;
+   }
+#endif
+
+   SafeRelease(m_pD3dDevice);
+   SafeRelease(m_pD3d);
+
+   m_hWnd = NULL;
 
    return S_OK;
 }
 
 ////////////////////////////////////////
 
-tResult cRendererDX::CreateContext()
-{
-#ifdef _WIN32
-   return CreateContext(SysGetMainWindow());
-#else
-   return E_NOTIMPL;
-#endif
-}
+///////////////////////////////////////
 
-////////////////////////////////////////
-
-tResult cRendererDX::CreateContext(HWND hWnd)
+tResult cRendererDX::CreateRenderTarget(HWND hWnd, IRenderTarget * * ppRenderTarget)
 {
    if (!IsWindow(hWnd))
    {
       return E_INVALIDARG;
    }
 
-   if ((m_hWnd != NULL) || (m_hD3dLib != NULL) || !!m_pD3d || !!m_pD3dDevice)
+   if (m_hWnd == NULL || m_hD3dLib == NULL || !m_pD3d || !m_pD3dDevice)
    {
-      WarnMsg("Direct3D renderer context already created\n");
-      return S_FALSE;
-   }
+      if (InitDirect3D9(hWnd, &m_hD3dLib, &m_pD3d, &m_pD3dDevice) != D3D_OK)
+      {
+         return E_FAIL;
+      }
 
-   if (InitDirect3D9(hWnd, &m_hD3dLib, &m_pD3d, &m_pD3dDevice) == D3D_OK)
-   {
       m_hWnd = hWnd;
 
 #ifdef HAVE_CG
@@ -408,48 +423,34 @@ tResult cRendererDX::CreateContext(HWND hWnd)
       {
          return E_FAIL;
       }
-
-      return S_OK;
    }
 
-   return E_FAIL;
+   tResult result = RenderTargetDXCreate(m_pD3dDevice, ppRenderTarget);
+
+   return result;
 }
 
-////////////////////////////////////////
+///////////////////////////////////////
 
-tResult cRendererDX::CreateContext(Display * display, Window window)
+tResult cRendererDX::CreateRenderTarget(Display * display, Window window, IRenderTarget * * ppRenderTarget)
 {
-   ErrorMsg("POSIX overload of IRenderer::CreateContext not supported\n");
+   ErrorMsg("POSIX overload of IRenderer::CreateRenderTarget not supported\n");
    return E_NOTIMPL;
 }
 
+///////////////////////////////////////
+
+tResult cRendererDX::GetRenderTarget(IRenderTarget * * ppRenderTarget)
+{
+   return m_pTarget.GetPointer(ppRenderTarget);
+}
+
 ////////////////////////////////////////
 
-tResult cRendererDX::DestroyContext()
+tResult cRendererDX::SetRenderTarget(IRenderTarget * pRenderTarget)
 {
-#ifdef HAVE_CG
-   if (m_cgContext != NULL)
-   {
-      if (m_oldCgErrorHandler != NULL)
-      {
-         cgSetErrorHandler(m_oldCgErrorHandler, m_pOldCgErrHandlerData);
-         m_oldCgErrorHandler = NULL;
-         m_pOldCgErrHandlerData = NULL;
-      }
-
-      cgDestroyContext(m_cgContext);
-      m_cgContext = NULL;
-
-      m_cgProfileVertex = CG_PROFILE_UNKNOWN;
-      m_cgProfileFragment = CG_PROFILE_UNKNOWN;
-   }
-#endif
-
-   SafeRelease(m_pD3dDevice);
-   SafeRelease(m_pD3d);
-
-   m_hWnd = NULL;
-
+   SafeRelease(m_pTarget);
+   m_pTarget = CTAddRef(pRenderTarget);
    return S_OK;
 }
 

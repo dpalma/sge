@@ -18,11 +18,6 @@
 #pragma once
 #endif
 
-F_DECLARE_HANDLE(HDC);
-F_DECLARE_HANDLE(HGLRC);
-
-typedef struct __GLXcontextRec * GLXContext;
-
 F_DECLARE_INTERFACE(IReader);
 
 typedef unsigned int GLenum;
@@ -50,10 +45,11 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
-   virtual tResult CreateContext();
-   virtual tResult CreateContext(HWND hWnd);
-   virtual tResult CreateContext(Display * display, Window window);
-   virtual tResult DestroyContext();
+   virtual tResult CreateRenderTarget(HWND hWnd, IRenderTarget * * ppRenderTarget);
+   virtual tResult CreateRenderTarget(Display * display, Window window, IRenderTarget * * ppRenderTarget);
+
+   virtual tResult GetRenderTarget(IRenderTarget * * ppRenderTarget);
+   virtual tResult SetRenderTarget(IRenderTarget * pRenderTarget);
 
    virtual tResult SetRenderState(eRenderState state, ulong value);
    virtual tResult GetRenderState(eRenderState state, ulong * pValue);
@@ -91,14 +87,7 @@ private:
    static void CgErrorHandler(CGcontext cgContext, CGerror cgError, void * pData);
 #endif
 
-#ifdef _WIN32
-   HWND m_hWnd;
-   HDC m_hDC;
-   HGLRC m_hGLRC;
-#else
-   Display * m_display;
-   GLXContext m_context;
-#endif
+   cAutoIPtr<IRenderTarget> m_pTarget;
 
    bool m_bInScene;
 

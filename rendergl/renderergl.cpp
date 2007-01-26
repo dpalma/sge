@@ -38,6 +38,9 @@
 
 ////////////////////////////////////////////////////////////////////////////////
 
+extern tResult RenderTargetW32Create(HWND hWnd, IRenderTarget * * ppRenderTarget);
+extern tResult RenderTargetX11Create(Display * display, Window window, IRenderTarget * * ppRenderTarget);
+
 extern tResult RenderFontCreateGL(const tChar * pszFont, int pointSize, uint flags, IRenderFont * * ppFont);
 extern tResult RenderFontCreateFTGL(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont);
 
@@ -394,79 +397,9 @@ void MainWindowDestroyCallback()
    UseGlobal(Renderer);
    if (!!pRenderer)
    {
-      pRenderer->DestroyContext();
+      pRenderer->SetRenderTarget(NULL);
    }
 }
-
-
-///////////////////////////////////////////////////////////////////////////////
-// Create a default OpenGL context using the Win32 function ChoosePixelFormat
-
-#ifdef _WIN32
-static int CreateDefaultContext(HWND hWnd, int * pBpp, HDC * phDC, HGLRC * phGLRC)
-{
-   Assert(IsWindow(hWnd));
-
-   *phDC = GetDC(hWnd);
-   if (!*phDC)
-   {
-      return 0;
-   }
-
-   if (*pBpp == 0)
-   {
-      *pBpp = GetDeviceCaps(*phDC, BITSPIXEL);
-   }
-
-   PIXELFORMATDESCRIPTOR pfd;
-   memset(&pfd, 0, sizeof(pfd));
-   pfd.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-   pfd.nVersion = 1;
-   pfd.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-   pfd.iPixelType = PFD_TYPE_RGBA;
-   pfd.cColorBits = *pBpp;
-   pfd.cDepthBits = *pBpp;
-   pfd.cStencilBits = *pBpp;
-   pfd.dwLayerMask = PFD_MAIN_PLANE;
-
-   int pixelFormat = ChoosePixelFormat(*phDC, &pfd);
-   while ((pixelFormat == 0) && (pfd.cStencilBits > 0))
-   {
-      pfd.cStencilBits /= 2;
-      pixelFormat = ChoosePixelFormat(*phDC, &pfd);
-   }
-
-   if (pixelFormat == 0)
-   {
-      ErrorMsg("Unable to find a suitable pixel format\n");
-      ReleaseDC(hWnd, *phDC);
-      *phDC = NULL;
-      *phGLRC = NULL;
-      return 0;
-   }
-
-   if (!SetPixelFormat(*phDC, pixelFormat, &pfd))
-   {
-      ErrorMsg1("SetPixelFormat failed with error %d\n", GetLastError());
-      ReleaseDC(hWnd, *phDC);
-      *phDC = NULL;
-      *phGLRC = NULL;
-      return 0;
-   }
-
-   *phGLRC = wglCreateContext(*phDC);
-   if ((*phGLRC) == NULL)
-   {
-      ErrorMsg1("wglCreateContext failed with error 0x%04x\n", glGetError());
-      ReleaseDC(hWnd, *phDC);
-      *phDC = NULL;
-      *phGLRC = NULL;
-      return 0;
-   }
-
-   return pixelFormat;
-}
-#endif // _WIN32
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -483,15 +416,7 @@ END_CONSTRAINTS()
 ////////////////////////////////////////
 
 cRendererGL::cRendererGL()
-#ifdef _WIN32
- : m_hWnd(NULL)
- , m_hDC(NULL)
- , m_hGLRC(NULL)
-#else
- : m_display(NULL)
- , m_context(NULL)
-#endif
- , m_bInScene(false)
+ : m_bInScene(false)
 #ifdef HAVE_CG
  , m_cgContext(NULL)
  , m_oldCgErrorHandler(NULL)
@@ -560,61 +485,36 @@ tResult cRendererGL::Term()
    }
    m_fontMap.clear();
 
-   DestroyContext();
+#ifdef HAVE_CG
+   if (m_cgContext != NULL)
+   {
+      if (m_oldCgErrorHandler != NULL)
+      {
+         cgSetErrorHandler(m_oldCgErrorHandler, m_pOldCgErrHandlerData);
+         m_oldCgErrorHandler = NULL;
+         m_pOldCgErrHandlerData = NULL;
+      }
+ 
+      cgDestroyContext(m_cgContext);
+      m_cgContext = NULL;
+ 
+      m_cgProfileVertex = CG_PROFILE_UNKNOWN;
+      m_cgProfileFragment = CG_PROFILE_UNKNOWN;
+   }
+#endif
+
+   SafeRelease(m_pTarget);
+   g_bHaveValidGlContext = false;
 
    return S_OK;
 }
 
 ////////////////////////////////////////
 
-tResult cRendererGL::CreateContext()
+tResult cRendererGL::CreateRenderTarget(HWND hWnd, IRenderTarget * * ppRenderTarget)
 {
 #ifdef _WIN32
-   return CreateContext(SysGetMainWindow());
-#else
-   return CreateContext(SysGetDisplay(), SysGetMainWindow());
-#endif
-}
-
-////////////////////////////////////////
-
-tResult cRendererGL::CreateContext(HWND hWnd)
-{
-#ifdef _WIN32
-   if (!IsWindow(hWnd))
-   {
-      return E_INVALIDARG;
-   }
-
-   if ((m_hWnd != NULL) || (m_hDC != NULL) || (m_hGLRC != NULL))
-   {
-      WarnMsg("OpenGL renderer context already created\n");
-      return S_FALSE;
-   }
-
-   int bpp = 0;
-   if (CreateDefaultContext(hWnd, &bpp, &m_hDC, &m_hGLRC) == 0)
-   {
-      ErrorMsg("An error occurred creating the GL context\n");
-      return E_FAIL;
-   }
-
-   m_hWnd = hWnd;
-
-   if (!wglMakeCurrent(m_hDC, m_hGLRC))
-   {
-      GLenum glError = glGetError();
-      ErrorMsg1("wglMakeCurrent failed with error 0x%04x\n", glError);
-      DestroyContext();
-      return E_FAIL;
-   }
-
-   if (glewInit() != GLEW_OK)
-   {
-      ErrorMsg("GLEW library failed to initialize\n");
-      DestroyContext();
-      return E_FAIL;
-   }
+   tResult result = RenderTargetW32Create(hWnd, ppRenderTarget);
 
 #ifdef HAVE_CG
    if (m_cgContext == NULL)
@@ -647,143 +547,47 @@ tResult cRendererGL::CreateContext(HWND hWnd)
       }
    }
 
-   g_bHaveValidGlContext = true;
+   g_bHaveValidGlContext = (result == S_OK);
 
    glDisable(GL_DITHER);
    glEnable(GL_DEPTH_TEST);
    glEnable(GL_CULL_FACE);
    glCullFace(GL_BACK);
 
-   return S_OK;
+   return result;
 #else
    return E_NOTIMPL;
 #endif
 }
 
-////////////////////////////////////////
+///////////////////////////////////////
 
-tResult cRendererGL::CreateContext(Display * display, Window window)
+tResult cRendererGL::CreateRenderTarget(Display * display, Window window, IRenderTarget * * ppRenderTarget)
 {
 #ifdef _WIN32
    return E_NOTIMPL;
 #else
-   if (display == NULL)
-   {
-      return E_POINTER;
-   }
+   tResult result = RenderTargetX11Create(display, window, ppRenderTarget);
 
-   if (window == 0)
-   {
-      return E_INVALIDARG;
-   }
+   g_bHaveValidGlContext = (result == S_OK);
 
-   if (m_context != NULL)
-   {
-      WarnMsg("GL renderer context already created\n");
-      return S_FALSE;
-   }
-
-   XWindowAttributes attr = {0};
-   XGetWindowAttributes(display, window, &attr);
-
-   if (attr.visual == NULL)
-   {
-      ErrorMsg("Unable to determine visual for window\n");
-      return E_FAIL;
-   }
-
-   XVisualInfo vinfoTemplate = {0};
-   vinfoTemplate.visual = attr.visual;
-   vinfoTemplate.visualid = XVisualIDFromVisual(attr.visual);
-
-   int nVisualInfos = 0;
-   XVisualInfo * pVisualInfo = XGetVisualInfo(display, VisualIDMask, &vinfoTemplate, &nVisualInfos);
-
-   if (pVisualInfo == NULL)
-   {
-      return E_FAIL;
-   }
-
-   m_context = glXCreateContext(display, pVisualInfo, None, GL_TRUE);
-
-   XFree(pVisualInfo);
-
-   if (m_context == NULL)
-   {
-      ErrorMsg("Could not create glX context\n");
-      return E_FAIL;
-   }
-
-   m_display = display;
-
-   glXMakeCurrent(display, window, m_context);
-
-   if (glewInit() != GLEW_OK)
-   {
-      ErrorMsg("GLEW library failed to initialize\n");
-      DestroyContext();
-      return E_FAIL;
-   }
-
-   g_bHaveValidGlContext = true;
-
-   glDisable(GL_DITHER);
-   glEnable(GL_DEPTH_TEST);
-   glEnable(GL_CULL_FACE);
-   glCullFace(GL_BACK);
-
-   return S_OK;
+   return result;
 #endif
+}
+
+///////////////////////////////////////
+
+tResult cRendererGL::GetRenderTarget(IRenderTarget * * ppRenderTarget)
+{
+   return m_pTarget.GetPointer(ppRenderTarget);
 }
 
 ////////////////////////////////////////
 
-tResult cRendererGL::DestroyContext()
+tResult cRendererGL::SetRenderTarget(IRenderTarget * pRenderTarget)
 {
-#ifdef HAVE_CG
-   if (m_cgContext != NULL)
-   {
-      if (m_oldCgErrorHandler != NULL)
-      {
-         cgSetErrorHandler(m_oldCgErrorHandler, m_pOldCgErrHandlerData);
-         m_oldCgErrorHandler = NULL;
-         m_pOldCgErrHandlerData = NULL;
-      }
-
-      cgDestroyContext(m_cgContext);
-      m_cgContext = NULL;
-
-      m_cgProfileVertex = CG_PROFILE_UNKNOWN;
-      m_cgProfileFragment = CG_PROFILE_UNKNOWN;
-   }
-#endif
-
-#ifdef _WIN32
-   if (m_hDC != NULL)
-   {
-      wglMakeCurrent(m_hDC, NULL);
-      ReleaseDC(m_hWnd, m_hDC);
-      m_hDC = NULL;
-   }
-
-   if (m_hGLRC != NULL)
-   {
-      wglDeleteContext(m_hGLRC);
-      m_hGLRC = NULL;
-   }
-
-   m_hWnd = NULL;
-#else
-   if (m_context != NULL)
-   {
-      glXDestroyContext(m_display, m_context);
-      m_display = NULL;
-      m_context = NULL;
-   }
-#endif
-
-   g_bHaveValidGlContext = false;
-
+   SafeRelease(m_pTarget);
+   m_pTarget = CTAddRef(pRenderTarget);
    return S_OK;
 }
 
@@ -901,14 +705,7 @@ tResult cRendererGL::EndScene()
    if (m_bInScene)
    {
       m_bInScene = false;
-#ifdef _WIN32
-      if (m_hDC != NULL)
-      {
-         Verify(SwapBuffers(m_hDC));
-      }
-#else
-      glXSwapBuffers(SysGetDisplay(), SysGetMainWindow());
-#endif
+      m_pTarget->SwapBuffers();
       return S_OK;
    }
    return E_FAIL;

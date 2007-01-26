@@ -422,7 +422,18 @@ tResult cMainInitTask::CreateMainWindow()
    }
 
    UseGlobal(Renderer);
-   if (pRenderer->CreateContext() != S_OK)
+   cAutoIPtr<IRenderTarget> pRenderTarget;
+
+#ifdef _WIN32
+   if (pRenderer->CreateRenderTarget(SysGetMainWindow(), &pRenderTarget) != S_OK)
+#else
+   if (pRenderer->CreateRenderTarget(SysGetDisplay(), SysGetMainWindow(), &pRenderTarget) != S_OK)
+#endif
+   {
+      return E_FAIL;
+   }
+
+   if (pRenderer->SetRenderTarget(pRenderTarget) != S_OK)
    {
       return E_FAIL;
    }

@@ -25,6 +25,7 @@ typedef XID Window;
 F_DECLARE_INTERFACE(IImage);
 
 F_DECLARE_INTERFACE(IRenderer);
+F_DECLARE_INTERFACE_GUID(IRenderTarget, "B962C170-8A3A-409e-8031-04CD3E7C44AD");
 F_DECLARE_INTERFACE_GUID(IRenderCamera, "5065B828-D331-478f-ABA2-8AB171418499");
 F_DECLARE_INTERFACE(IRender2D);
 F_DECLARE_INTERFACE(IRenderFont);
@@ -105,10 +106,11 @@ enum eRenderState
 
 interface IRenderer : IUnknown
 {
-   virtual tResult CreateContext() = 0; // Use the functions in platform/sys.h to get the main window
-   virtual tResult CreateContext(HWND hWnd) = 0;
-   virtual tResult CreateContext(Display * display, Window window) = 0;
-   virtual tResult DestroyContext() = 0;
+   virtual tResult CreateRenderTarget(HWND hWnd, IRenderTarget * * ppRenderTarget) = 0;
+   virtual tResult CreateRenderTarget(Display * display, Window window, IRenderTarget * * ppRenderTarget) = 0;
+
+   virtual tResult GetRenderTarget(IRenderTarget * * ppRenderTarget) = 0;
+   virtual tResult SetRenderTarget(IRenderTarget * pRenderTarget) = 0;
 
    virtual tResult SetRenderState(eRenderState state, ulong value) = 0;
    virtual tResult GetRenderState(eRenderState state, ulong * pValue) = 0;
@@ -143,6 +145,17 @@ interface IRenderer : IUnknown
 };
 
 RENDER_API tResult RendererCreate();
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IRenderTarget
+//
+
+interface IRenderTarget : IUnknown
+{
+   virtual void SwapBuffers() = 0;
+};
 
 
 ///////////////////////////////////////////////////////////////////////////////

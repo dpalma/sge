@@ -49,10 +49,11 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
-   virtual tResult CreateContext();
-   virtual tResult CreateContext(HWND hWnd);
-   virtual tResult CreateContext(Display * display, Window window);
-   virtual tResult DestroyContext();
+   virtual tResult CreateRenderTarget(HWND hWnd, IRenderTarget * * ppRenderTarget);
+   virtual tResult CreateRenderTarget(Display * display, Window window, IRenderTarget * * ppRenderTarget);
+
+   virtual tResult GetRenderTarget(IRenderTarget * * ppRenderTarget);
+   virtual tResult SetRenderTarget(IRenderTarget * pRenderTarget);
 
    virtual tResult SetRenderState(eRenderState state, ulong value);
    virtual tResult GetRenderState(eRenderState state, ulong * pValue);
@@ -97,6 +98,8 @@ private:
    HINSTANCE m_hD3dLib;
    cAutoIPtr<IDirect3D9> m_pD3d;
    cAutoIPtr<IDirect3DDevice9> m_pD3dDevice;
+
+   cAutoIPtr<IRenderTarget> m_pTarget;
 
 #ifdef HAVE_CG
    friend void * CgProgramLoad(IReader * pReader, void * typeParam);
