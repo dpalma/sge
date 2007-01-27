@@ -33,7 +33,7 @@ public:
 
 	virtual BOOL PreTranslateMessage(MSG* pMsg)
 	{
-		return CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg);
+      return WTL::CFrameWindowImpl<CMainFrame>::PreTranslateMessage(pMsg);
 	}
 
 	virtual BOOL OnIdle();
@@ -56,8 +56,8 @@ public:
       COMMAND_ID_HANDLER_EX(ID_IMAGE_STATIC, OnImageStatic)
       COMMAND_ID_HANDLER_EX(ID_IMAGE_GAMMA, OnImageGamma)
 		COMMAND_ID_HANDLER_EX(ID_APP_ABOUT, OnAppAbout)
-		CHAIN_MSG_MAP(CUpdateUI<CMainFrame>)
-		CHAIN_MSG_MAP(CFrameWindowImpl<CMainFrame>)
+      CHAIN_MSG_MAP(WTL::CUpdateUI<CMainFrame>)
+		CHAIN_MSG_MAP(WTL::CFrameWindowImpl<CMainFrame>)
 	END_MSG_MAP()
 
 	BEGIN_UPDATE_UI_MAP(CMainFrame)

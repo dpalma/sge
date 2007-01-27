@@ -267,7 +267,11 @@ void cEditorView::OnSize(UINT nType, int cx, int cy)
       MatrixPerspective(m_cameraFov, aspect, m_cameraZNear, m_cameraZFar, &proj);
 
       UseGlobal(Renderer);
-      pRenderer->SetProjectionMatrix(proj.m);
+      cAutoIPtr<IRenderCamera> pCamera;
+      if (pRenderer->GetCamera(&pCamera) == S_OK)
+      {
+         pCamera->SetProjectionMatrix(proj.m);
+      }
 
       glViewport(0, 0, cx, cy);
    }
@@ -314,7 +318,11 @@ void cEditorView::OnToolsCameraSettings()
       MatrixPerspective(m_cameraFov, aspect, m_cameraZNear, m_cameraZFar, &proj);
 
       UseGlobal(Renderer);
-      pRenderer->SetProjectionMatrix(proj.m);
+      cAutoIPtr<IRenderCamera> pCamera;
+      if (pRenderer->GetCamera(&pCamera) == S_OK)
+      {
+         pCamera->SetProjectionMatrix(proj.m);
+      }
    }
 }
 

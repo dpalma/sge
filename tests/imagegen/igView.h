@@ -29,7 +29,7 @@ public:
    void Update();
 
 	BEGIN_MSG_MAP(cImageGenView)
-		CHAIN_MSG_MAP(CScrollWindowImpl<cImageGenView>);
+		CHAIN_MSG_MAP(WTL::CScrollWindowImpl<cImageGenView>);
 	END_MSG_MAP()
 
    void DoPaint(WTL::CDCHandle dc);
