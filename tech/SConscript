@@ -38,6 +38,7 @@ sourceFiles = Split("""
    resourceutils.cpp
    scheduler.cpp
    schedulerclock.cpp
+   sim.cpp
    statemachinetest.cpp
    techassert.cpp
    techhash.cpp

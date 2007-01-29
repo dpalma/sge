@@ -644,6 +644,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\tech\sim.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\tech\statemachinetest.cpp"
 				>
 			</File>
@@ -809,6 +813,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\tech\sim.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\tech\stdhdr.h"
 				>
 			</File>
@@ -954,6 +962,10 @@
 			</File>
 			<File
 				RelativePath="..\..\api\tech\schedulerapi.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\tech\simapi.h"
 				>
 			</File>
 			<File
