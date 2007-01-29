@@ -6,10 +6,12 @@
 
 #include "engine/saveloadapi.h"
 
+#include "tech/connptimpl.h"
 #include "tech/digraph.h"
 #include "tech/globalobjdef.h"
 #include "tech/readwriteapi.h"
 
+#include <list>
 #include <map>
 
 #ifdef _MSC_VER
@@ -71,7 +73,7 @@ struct sFileEntry
 // CLASS: cSaveLoadManager
 //
 
-class cSaveLoadManager : public cComObject2<IMPLEMENTS(ISaveLoadManager), IMPLEMENTS(IGlobalObject)>
+class cSaveLoadManager : public cComObject2<IMPLEMENTSCP(ISaveLoadManager, ISaveLoadListener), IMPLEMENTS(IGlobalObject)>
 {
 public:
    cSaveLoadManager();
@@ -93,6 +95,9 @@ public:
    virtual tResult OpenSingleEntry(IReader * pReader, REFGUID id, IReader * * ppEntryReader);
 
    virtual void Reset();
+
+	virtual tResult AddSaveLoadListener(ISaveLoadListener * pListener);
+	virtual tResult RemoveSaveLoadListener(ISaveLoadListener * pListener);
 
 private:
    tResult LoadEntryTable(IReader * pReader, std::vector<sFileEntry> * pEntries);

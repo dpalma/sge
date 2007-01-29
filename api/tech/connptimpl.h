@@ -72,6 +72,12 @@ public:
    }
 
 protected:
+   void DisconnectAll()
+   {
+      std::for_each(m_sinks.begin(), m_sinks.end(), CTInterfaceMethod(&SINKINTRFC::Release));
+      m_sinks.clear();
+   }
+
    typedef CONTAINER tSinks;
    typedef typename CONTAINER::iterator tSinksIterator;
    typedef typename CONTAINER::reverse_iterator tSinksReverseIterator;
@@ -83,8 +89,7 @@ protected:
 
    ~cConnectionPoint()
    {
-      std::for_each(m_sinks.begin(), m_sinks.end(), CTInterfaceMethod(&IUnknown::Release));
-      m_sinks.clear();
+      DisconnectAll();
    }
 
    template <typename RETURN>
@@ -165,6 +170,11 @@ class cConnectionPointEx
 {
 protected:
    ~cConnectionPointEx()
+   {
+      DisconnectAll();
+   }
+
+   void DisconnectAll()
    {
       typename CONTAINER::iterator iter;
       for (iter = m_sinks.begin(); iter != m_sinks.end(); iter++)

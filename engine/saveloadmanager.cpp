@@ -332,6 +332,8 @@ tResult cSaveLoadManager::Term()
    }
    m_participantMap.clear();
 
+   cConnectionPoint<ISaveLoadManager, ISaveLoadListener>::DisconnectAll();
+
    return S_OK;
 }
 
@@ -485,10 +487,12 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
       return E_FAIL;
    }
 
+   ForEachConnection(&ISaveLoadListener::OnBeginSave);
+
    std::vector<sFileEntry> entries;
 
    std::vector<const GUID *>::iterator iter = saveOrder.begin();
-   for (; iter != saveOrder.end(); iter++)
+   for (uint index = 0; iter != saveOrder.end(); ++iter, ++index)
    {
       cVersionedParticipant * pVP = NULL;
       {
@@ -545,6 +549,8 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
          entry.length = end - begin;
          entries.push_back(entry);
       }
+
+      ForEachConnection(&ISaveLoadListener::OnSaveProgress, index, saveOrder.size());
    }
 
    ulong tableOffset = 0, tableLength = entries.size() * sizeof(sFileEntry);
@@ -568,6 +574,8 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
          }
       }
    }
+
+   ForEachConnection(&ISaveLoadListener::OnEndSave);
 
    sFileFooter footer = {0};
    footer.offset = tableOffset;
@@ -600,9 +608,11 @@ tResult cSaveLoadManager::Load(IReader * pReader)
       return E_FAIL;
    }
 
+   ForEachConnection(&ISaveLoadListener::OnBeginLoad);
+
    // Read the individual entries
    std::vector<sFileEntry>::iterator iter = entries.begin();
-   for (; iter != entries.end(); iter++)
+   for (uint index = 0; iter != entries.end(); ++iter, ++index)
    {
       const sFileEntry & entry = *iter;
 
@@ -645,7 +655,11 @@ tResult cSaveLoadManager::Load(IReader * pReader)
             return E_FAIL;
          }
       }
+
+      ForEachConnection(&ISaveLoadListener::OnLoadProgress, index, entries.size());
    }
+
+   ForEachConnection(&ISaveLoadListener::OnEndLoad);
 
    return S_OK;
 }
@@ -734,6 +748,28 @@ void cSaveLoadManager::Reset()
 
       pParticipant->Reset();
    }
+}
+
+///////////////////////////////////////
+
+tResult cSaveLoadManager::AddSaveLoadListener(ISaveLoadListener * pListener)
+{
+   if (pListener == NULL)
+   {
+      return E_POINTER;
+   }
+   return cConnectionPoint<ISaveLoadManager, ISaveLoadListener>::Connect(pListener);
+}
+
+///////////////////////////////////////
+
+tResult cSaveLoadManager::RemoveSaveLoadListener(ISaveLoadListener * pListener)
+{
+   if (pListener == NULL)
+   {
+      return E_POINTER;
+   }
+   return cConnectionPoint<ISaveLoadManager, ISaveLoadListener>::Disconnect(pListener);
 }
 
 ///////////////////////////////////////
