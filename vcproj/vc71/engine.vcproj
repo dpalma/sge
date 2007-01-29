@@ -544,6 +544,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\engine\scenario.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\engine\stdhdr.cpp"
 				>
 				<FileConfiguration
@@ -665,6 +669,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\engine\scenario.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\engine\stdhdr.h"
 				>
 			</File>
@@ -710,6 +718,10 @@
 			</File>
 			<File
 				RelativePath="..\..\api\engine\saveloadapi.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\engine\scenarioapi.h"
 				>
 			</File>
 			<File

@@ -134,6 +134,10 @@ DEFINE_GUID(SAVELOADID_CameraControl,
 DEFINE_GUID(SAVELOADID_GMMTerrain, 
 0x477843cf, 0xd71f, 0x450f, 0x80, 0x6c, 0x38, 0xc3, 0xec, 0x18, 0x52, 0xba);
 
+// {B29D0BF0-171F-4826-85EA-E8EA7CB61E11}
+DEFINE_GUID(IID_IScenario, 
+0xb29d0bf0, 0x171f, 0x4826, 0x85, 0xea, 0xe8, 0xea, 0x7c, 0xb6, 0x1e, 0x11);
+
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_ENGINEGUIDS_H

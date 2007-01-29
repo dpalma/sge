@@ -24,6 +24,7 @@ sourceFiles = Split("""
    modelutils.cpp
    ms3dread.cpp
    saveloadmanager.cpp
+   scenario.cpp
    terrain.cpp
    terrainrender.cpp
    tixml.cpp

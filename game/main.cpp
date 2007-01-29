@@ -7,6 +7,7 @@
 #include "engine/engineapi.h"
 #include "engine/entityapi.h"
 #include "engine/saveloadapi.h"
+#include "engine/scenarioapi.h"
 #include "engine/terrainapi.h"
 #include "gui/guiapi.h"
 #include "gui/guielementapi.h"
@@ -25,6 +26,7 @@
 #include "tech/globalobj.h"
 #include "tech/multivar.h"
 #include "tech/schedulerapi.h"
+#include "tech/simapi.h"
 #include "tech/statemachine.h"
 #include "tech/statemachinetem.h"
 #include "tech/techtime.h"
@@ -465,8 +467,10 @@ static void RegisterGlobalObjects()
    RendererCreate();
    ResourceManagerCreate();
    SaveLoadManagerCreate();
+   ScenarioCreate();
    SchedulerCreate();
    ScriptInterpreterCreate();
+   SimCreate();
    SoundManagerCreate();
    TerrainModelCreate();
    TerrainRendererCreate();

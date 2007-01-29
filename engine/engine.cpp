@@ -22,27 +22,6 @@
 
 cRand g_engineRand;
 
-///////////////////////////////////////////////////////////////////////////////
-
-class cHackMapToken { private: int unused; };
-
-void * MapLoad(IReader * pReader)
-{
-   UseGlobal(SaveLoadManager);
-
-   if (pSaveLoadManager->Load(pReader) == S_OK)
-   {
-      return new cHackMapToken;
-   }
-
-   return NULL;
-}
-
-void MapUnload(void * pData)
-{
-   delete (cHackMapToken *)pData;
-}
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -250,7 +229,6 @@ tResult EngineRegisterResourceFormats()
       if (ModelMs3dResourceRegister() == S_OK
          && ModelSgemResourceRegister() == S_OK
          && TiXmlRegisterResourceFormat() == S_OK
-         && pResourceManager->RegisterFormat(kRT_Map, kMapExt, MapLoad, NULL, MapUnload) == S_OK
          && pResourceManager->RegisterFormat(kRT_MapProperties, kMapExt, MapPropertiesLoad, NULL, MapPropertiesUnload) == S_OK)
       {
          return S_OK;
