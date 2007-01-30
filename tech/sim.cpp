@@ -66,11 +66,7 @@ tResult cSim::Init()
 
 tResult cSim::Term()
 {
-   tSimClientList::iterator iter = m_simClients.begin();
-   for (; iter != m_simClients.end(); iter++)
-   {
-      (*iter)->Release();
-   }
+   std::for_each(m_simClients.begin(), m_simClients.end(), CTInterfaceMethod(&ISimClient::Release));
    m_simClients.clear();
 
    UseGlobal(Scheduler);
@@ -159,7 +155,7 @@ tResult cSim::Execute(double time)
       m_time += frameTime;
 
       tSimClientList::iterator iter = m_simClients.begin(), end = m_simClients.end();
-      for (; iter != m_simClients.end(); iter++)
+      for (; iter != end; ++iter)
       {
          cAutoIPtr<ISimClient> pSimClient(CTAddRef(*iter));
          pSimClient->OnSimFrame(frameTime, m_time);

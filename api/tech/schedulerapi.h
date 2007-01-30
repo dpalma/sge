@@ -4,6 +4,9 @@
 #ifndef INCLUDED_SCHEDULERAPI_H
 #define INCLUDED_SCHEDULERAPI_H
 
+/// @file schedulerapi.h
+/// Interface definitions for the task scheduler
+
 #include "techdll.h"
 #include "comtools.h"
 
@@ -11,8 +14,8 @@
 #pragma once
 #endif
 
-F_DECLARE_INTERFACE(ITask);
-F_DECLARE_INTERFACE(IScheduler);
+F_DECLARE_INTERFACE_GUID(ITask, "A237CD9F-32CA-4229-9AB2-705776BCAD9F");
+F_DECLARE_INTERFACE_GUID(IScheduler, "197D6E0A-DA84-4727-B9CB-7AECAACDC653");
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -37,6 +40,9 @@ interface IScheduler : IUnknown
 
 	virtual void NextFrame() = 0;
 
+   /// @brief Registers a task to run on every call to IScheduler::NextFrame
+   /// @param pTask specifies the task to run every frame
+   /// @return S_OK if successful, or an E_xxx error code
 	virtual tResult AddRenderTask(ITask * pTask) = 0;
 	virtual tResult RemoveRenderTask(ITask * pTask) = 0;
 

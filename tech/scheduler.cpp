@@ -5,6 +5,12 @@
 
 #include "scheduler.h"
 
+#include "tech/techtime.h"
+
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
+#endif
+
 #include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -16,6 +22,7 @@ LOG_DEFINE_CHANNEL(Scheduler);
 #define LocalMsg2(msg,a,b)       DebugMsgEx2(Scheduler,msg,(a),(b))
 #define LocalMsg3(msg,a,b,c)     DebugMsgEx3(Scheduler,msg,(a),(b),(c))
 #define LocalMsg4(msg,a,b,c,d)   DebugMsgEx4(Scheduler,msg,(a),(b),(c),(d))
+#define LocalMsg5(msg,a,b,c,d,e) DebugMsgEx5(Scheduler,msg,(a),(b),(c),(d),(e))
 
 #define LocalMsgIf(cond,msg)           DebugMsgIfEx(Scheduler,(cond),msg)
 #define LocalMsgIf1(cond,msg,a)        DebugMsgIfEx1(Scheduler,(cond),msg,(a))
@@ -299,9 +306,9 @@ void cScheduler::NextFrame()
 {
    m_clock.BeginFrame();
 
-   LocalMsg4("Frame %d: %d time tasks, %d frame tasks, %d render tasks\n",
-      m_clock.GetFrameCount(), m_timeTaskQueue.size(),
-      m_frameTaskQueue.size(), m_renderTaskQueue.size());
+   LocalMsg5("Frame %d, Time %f: %d time tasks, %d frame tasks, %d render tasks\n",
+      m_clock.GetFrameCount(), m_clock.GetFrameStart(),
+      m_timeTaskQueue.size(), m_frameTaskQueue.size(), m_renderTaskQueue.size());
 
    // Run time-based tasks
    while (!m_timeTaskQueue.empty())
@@ -329,6 +336,7 @@ void cScheduler::NextFrame()
          }
          else
          {
+            LocalMsg2("Time task %p expiring at %f\n", pTaskInfo->pTask, pTaskInfo->expiration);
             delete pTaskInfo;
          }
       }
@@ -366,6 +374,7 @@ void cScheduler::NextFrame()
          }
          else
          {
+            LocalMsg2("Frame task %p expiring at %f\n", pTaskInfo->pTask, pTaskInfo->expiration);
             delete pTaskInfo;
          }
       }
@@ -377,8 +386,8 @@ void cScheduler::NextFrame()
 
    // Run render tasks
    {
-      std::deque<ITask *>::iterator iter = m_renderTaskQueue.begin();
-      for (; iter != m_renderTaskQueue.end(); iter++)
+      std::deque<ITask *>::iterator iter = m_renderTaskQueue.begin(), end = m_renderTaskQueue.end();
+      for (; iter != end; ++iter)
       {
          (*iter)->Execute(m_clock.GetFrameCount());
       }
@@ -389,12 +398,86 @@ void cScheduler::NextFrame()
 
 tResult SchedulerCreate()
 {
-   cAutoIPtr<IScheduler> p(static_cast<IScheduler*>(new cScheduler));
-   if (!p)
+   cAutoIPtr<IScheduler> pScheduler(static_cast<IScheduler*>(new cScheduler));
+   if (!pScheduler)
    {
       return E_OUTOFMEMORY;
    }
-   return RegisterGlobalObject(IID_IScheduler, p);
+   return RegisterGlobalObject(IID_IScheduler, pScheduler);
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_UNITTESTPP
+
+class cCounterTask : public cComObject<IMPLEMENTS(ITask)>
+{
+public:
+   cCounterTask() : m_count(0) {}
+
+   virtual tResult Execute(double time)
+   {
+      ++m_count;
+      return S_OK;
+   }
+
+   int GetCount() const { return m_count; }
+
+private:
+   int m_count;
+};
+
+class cSchedulerTests
+{
+public:
+   cSchedulerTests();
+   ~cSchedulerTests();
+
+   IScheduler * AccessScheduler() { return static_cast<IScheduler*>(m_pScheduler); }
+   const IScheduler * AccessScheduler() const { return static_cast<const IScheduler*>(m_pScheduler); }
+
+private:
+   cAutoIPtr<cScheduler> m_pScheduler;
+};
+
+cSchedulerTests::cSchedulerTests()
+{
+   SafeRelease(m_pScheduler);
+   m_pScheduler = new cScheduler;
+   m_pScheduler->Init();
+}
+
+cSchedulerTests::~cSchedulerTests()
+{
+   if (!!m_pScheduler)
+   {
+      m_pScheduler->Term();
+      SafeRelease(m_pScheduler);
+   }
+}
+
+TEST_FIXTURE(cSchedulerTests, SchedulerFrameTaskExpiration)
+{
+   static const ulong kFrameTaskPeriod = 2;
+   static const ulong kFrameTaskDuration = 6;
+   static const ulong kMinFrames = static_cast<ulong>(kFrameTaskDuration / kFrameTaskPeriod);
+
+   cAutoIPtr<cCounterTask> pFrameTask(new cCounterTask);
+
+	CHECK(AccessScheduler()->AddFrameTask(pFrameTask, 0, kFrameTaskPeriod, kFrameTaskDuration) == S_OK);
+
+   // run the scheduler for at least as many frames as it takes to expire the task
+   AccessScheduler()->Start();
+   for (ulong nFrames = 0; nFrames < (kMinFrames + 2); ++nFrames)
+   {
+      AccessScheduler()->NextFrame();
+   }
+   AccessScheduler()->Stop();
+
+   CHECK_EQUAL(static_cast<int>(kFrameTaskDuration / kFrameTaskPeriod), pFrameTask->GetCount());
+}
+
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////

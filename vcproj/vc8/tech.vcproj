@@ -761,14 +761,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\tech\hashtbl.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\tech\hashtbltem.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\tech\image.h"
 				>
 			</File>

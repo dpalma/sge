@@ -16,7 +16,7 @@
 class cSchedulerClock
 {
    cSchedulerClock(const cSchedulerClock &);
-   void operator =(const cSchedulerClock &);
+   const cSchedulerClock & operator =(const cSchedulerClock &);
 
 public:
 	cSchedulerClock();
@@ -33,7 +33,6 @@ public:
 	void EndFrame();
 	void AdvanceTo(double newTime);
 
-	double GetRealTime();
 	double GetSimTime() const;
 	ulong GetFrameCount() const;
 	double GetFrameStart() const;
@@ -62,14 +61,6 @@ private:
 inline bool cSchedulerClock::IsRunning() const
 {
    return m_bRunning;
-}
-
-////////////////////////////////////////
-
-inline double cSchedulerClock::GetRealTime()
-{
-   UpdateRealTime();
-   return m_realTime;
 }
 
 ////////////////////////////////////////
