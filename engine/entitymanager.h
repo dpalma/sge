@@ -9,11 +9,11 @@
 #include "platform/inputapi.h"
 #include "engine/saveloadapi.h"
 
-#include "tech/schedulerapi.h"
 #include "tech/axisalignedbox.h"
 #include "tech/comenum.h"
 #include "tech/connptimpl.h"
 #include "tech/globalobjdef.h"
+#include "tech/simapi.h"
 
 #include <list>
 #include <map>
@@ -68,7 +68,7 @@ public:
    ~cEntityManager();
 
    DECLARE_NAME(EntityManager)
-   DECLARE_CONSTRAINTS()
+   DECLARE_NO_CONSTRAINTS()
 
    virtual tResult Init();
    virtual tResult Term();
@@ -116,10 +116,10 @@ public:
 private:
    bool IsSelected(IEntity * pEntity) const;
 
-   class cUpdateTask : public cComObject<IMPLEMENTS(ITask)>
+   class cSimClient : public cComObject<IMPLEMENTS(ISimClient)>
    {
    public:
-      cUpdateTask();
+      cSimClient();
       virtual void DeleteThis() {}
       virtual tResult Execute(double time);
       tResult AddUpdatable(IUpdatable * pUpdatable);
@@ -129,8 +129,8 @@ private:
       double m_lastTime;
       tUpdatableList m_updatables;
    };
-   friend class cUpdateTask;
-   cUpdateTask m_updateTask;
+   friend class cSimClient;
+   cSimClient m_simClient;
 
    class cInputListener : public cComObject<IMPLEMENTS(IInputListener)>
    {

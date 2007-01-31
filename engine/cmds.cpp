@@ -5,19 +5,21 @@
 
 #include "engine/engineapi.h"
 #include "engine/entityapi.h"
-#include "gui/guiapi.h"
-#include "platform/inputapi.h"
 #include "engine/saveloadapi.h"
-#include "script/scriptapi.h"
-#include "platform/sys.h"
-#include "platform/keys.h"
+#include "engine/scenarioapi.h"
 #include "engine/terrainapi.h"
+#include "gui/guiapi.h"
+#include "platform/keys.h"
+#include "platform/inputapi.h"
+#include "platform/sys.h"
+#include "script/scriptapi.h"
 
 #include "tech/dictionaryapi.h"
 #include "tech/filespec.h"
 #include "tech/globalobj.h"
 #include "tech/multivar.h"
 #include "tech/resourceapi.h"
+#include "tech/simapi.h"
 #include "tech/vec3.h"
 
 #include "tech/dbgalloc.h" // must be last header
@@ -325,20 +327,10 @@ int LoadMap(int argc, const tScriptVar * argv,
       return 0;
    }
 
-   cFileSpec terrainFile(static_cast<const tChar *>(argv[0]));
-   const tChar * pszFileExt = terrainFile.GetFileExt();
-   if (pszFileExt != NULL && _tcsicmp(pszFileExt, _T("sgm")) == 0)
+   UseGlobal(Scenario);
+   if (pScenario->Start(argv[0], argv[1], 0) != S_OK)
    {
-      UseGlobal(GUIContext);
-      pGUIContext->PushPage(argv[1]);
-
-      void * pData = NULL;
-      UseGlobal(ResourceManager);
-      pResourceManager->Load(argv[0], kRT_Map, NULL, &pData);
-   }
-   else
-   {
-      ErrorMsg("Invalid parameters to SetTerrain\n");
+      ErrorMsg1("Failed to run \"%s\"\n", argv[0].ToString());
    }
    
    return 0;
@@ -356,12 +348,23 @@ int UnloadMap(int argc, const tScriptVar * argv,
       return 0;
    }
 
-   UseGlobal(GUIContext);
-   pGUIContext->PopPage();
+   UseGlobal(Scenario);
+   pScenario->Stop();
 
-   UseGlobal(SaveLoadManager);
-   pSaveLoadManager->Reset();
+   return 0;
+}
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+int SetSimTimeScale(int argc, const tScriptVar * argv, 
+                    int nMaxResults, tScriptVar * pResults)
+{
+   if (argc == 1 && IsNumber(argv[0]))
+   {
+      UseGlobal(Sim);
+      pSim->SetTimeScale(argv[0]);
+   }
    return 0;
 }
 
@@ -378,8 +381,9 @@ sScriptReg cmds[] =
    { "ListResources", ListResources },
    { "GetMapProperties", GetMapProperties },
    { "SetEntityPanel", SetEntityPanel },
-   { "SetTerrain", LoadMap },
+   { "LoadMap", LoadMap },
    { "UnloadMap", UnloadMap },
+   { "SetSimTimeScale", SetSimTimeScale },
 };
 
 ENGINE_API tResult EngineRegisterScriptFunctions()

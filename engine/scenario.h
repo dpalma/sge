@@ -8,6 +8,7 @@
 #include "engine/saveloadapi.h"
 
 #include "tech/globalobjdef.h"
+#include "tech/techmath.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -37,8 +38,11 @@ public:
    virtual tResult Term();
 
    // IScenario
-   virtual tResult Start(const tChar * pszMap);
+   virtual tResult Start(const tChar * pszMap, const tChar * pszGUI, ulong randSeed);
    virtual tResult Stop();
+
+   virtual ulong NextRand();
+   virtual float NextRandFloat();
 
    // ISaveLoadListener methods
    virtual void OnBeginSave();
@@ -50,6 +54,7 @@ public:
    virtual void OnEndLoad();
 
 private:
+   cRand m_rand;
 };
 
 

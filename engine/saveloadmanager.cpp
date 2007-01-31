@@ -492,7 +492,7 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
    std::vector<sFileEntry> entries;
 
    std::vector<const GUID *>::iterator iter = saveOrder.begin();
-   for (uint index = 0; iter != saveOrder.end(); ++iter, ++index)
+   for (uint progress = 1; iter != saveOrder.end(); ++iter, ++progress)
    {
       cVersionedParticipant * pVP = NULL;
       {
@@ -550,7 +550,7 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
          entries.push_back(entry);
       }
 
-      ForEachConnection(&ISaveLoadListener::OnSaveProgress, index, saveOrder.size());
+      ForEachConnection(&ISaveLoadListener::OnSaveProgress, progress, saveOrder.size());
    }
 
    ulong tableOffset = 0, tableLength = entries.size() * sizeof(sFileEntry);
@@ -612,7 +612,7 @@ tResult cSaveLoadManager::Load(IReader * pReader)
 
    // Read the individual entries
    std::vector<sFileEntry>::iterator iter = entries.begin();
-   for (uint index = 0; iter != entries.end(); ++iter, ++index)
+   for (uint progress = 1; iter != entries.end(); ++iter, ++progress)
    {
       const sFileEntry & entry = *iter;
 
@@ -656,7 +656,7 @@ tResult cSaveLoadManager::Load(IReader * pReader)
          }
       }
 
-      ForEachConnection(&ISaveLoadListener::OnLoadProgress, index, entries.size());
+      ForEachConnection(&ISaveLoadListener::OnLoadProgress, progress, entries.size());
    }
 
    ForEachConnection(&ISaveLoadListener::OnEndLoad);

@@ -166,10 +166,10 @@ tResult cSim::Execute(double time)
 {
    if (m_bIsRunning)
    {
+      // If sim was stopped, catch up (elapsed will be zero this sim frame)
       if (m_lastSchedTime == 0)
       {
          m_lastSchedTime = time;
-         return S_OK;
       }
 
       double elapsed = time - m_lastSchedTime;

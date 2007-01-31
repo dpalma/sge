@@ -18,10 +18,11 @@
        style="placement:absolute;vertical-align:bottom;width:100%;height:20%"
        renderer="beveled">
 
-      <panel id="miniMap">
-      </panel>
-
-      <panel id="entityPortrait">
+      <panel id="otherControls" style="placement:absolute;align:left;width:60%;height:100%">
+         <button text="Sim x 1/2" onclick="SetSimTimeScale(0.5);" />
+         <button text="Sim x 1" onclick="SetSimTimeScale(1);" />
+         <button text="Sim x 2" onclick="SetSimTimeScale(2);" />
+         <button text="Sim x 4" onclick="SetSimTimeScale(4);" />
       </panel>
 
       <panel id="entityCommands" style="placement:absolute;align:right;width:40%;height:100%">

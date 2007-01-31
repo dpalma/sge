@@ -59,12 +59,6 @@ static const GUID SAVELOADID_EntityManager =
 
 static const int g_entityManagerVer = 2;
 
-////////////////////////////////////////
-
-BEGIN_CONSTRAINTS(cEntityManager)
-   AFTER_GUID(IID_IScheduler)
-END_CONSTRAINTS()
-
 ///////////////////////////////////////
 
 tResult cEntityManager::Init()
@@ -73,8 +67,8 @@ tResult cEntityManager::Init()
    pSaveLoadManager->RegisterSaveLoadParticipant(SAVELOADID_EntityManager,
       g_entityManagerVer, static_cast<ISaveLoadParticipant*>(this));
 
-   UseGlobal(Scheduler);
-   pScheduler->AddFrameTask(&m_updateTask, 0, 1, 0);
+   UseGlobal(Sim);
+   pSim->AddSimClient(&m_simClient);
 
    UseGlobal(Input);
    pInput->AddInputListener(&m_inputListener);
@@ -88,10 +82,10 @@ tResult cEntityManager::Init()
 
 tResult cEntityManager::Term()
 {
-   m_updateTask.RemoveAll();
+   m_simClient.RemoveAll();
 
-   UseGlobal(Scheduler);
-   pScheduler->RemoveFrameTask(&m_updateTask);
+   UseGlobal(Sim);
+   pSim->RemoveSimClient(&m_simClient);
 
    UseGlobal(Input);
    pInput->RemoveInputListener(&m_inputListener);
@@ -559,7 +553,7 @@ void cEntityManager::RegisterEntityUpdatables(IEntity * pEntity)
       if (pEntity->GetComponent(static_cast<eEntityComponentType>(i),
          IID_IUpdatable, &pUpdatableComponent) == S_OK)
       {
-         m_updateTask.AddUpdatable(pUpdatableComponent);
+         m_simClient.AddUpdatable(pUpdatableComponent);
       }
    }
 }
@@ -579,7 +573,7 @@ void cEntityManager::RevokeEntityUpdatables(IEntity * pEntity)
       if (pEntity->GetComponent(static_cast<eEntityComponentType>(i),
          IID_IUpdatable, &pUpdatableComponent) == S_OK)
       {
-         m_updateTask.RemoveUpdatable(pUpdatableComponent);
+         m_simClient.RemoveUpdatable(pUpdatableComponent);
       }
    }
 }
@@ -679,14 +673,14 @@ bool cEntityManager::IsSelected(IEntity * pEntity) const
 
 ///////////////////////////////////////
 
-cEntityManager::cUpdateTask::cUpdateTask()
+cEntityManager::cSimClient::cSimClient()
  : m_lastTime(0)
 {
 }
 
 ///////////////////////////////////////
 
-tResult cEntityManager::cUpdateTask::Execute(double time)
+tResult cEntityManager::cSimClient::Execute(double time)
 {
    double elapsed = fabs(time - m_lastTime);
    tUpdatableList::iterator iter = m_updatables.begin(), end = m_updatables.end();
@@ -700,21 +694,21 @@ tResult cEntityManager::cUpdateTask::Execute(double time)
 
 ///////////////////////////////////////
 
-tResult cEntityManager::cUpdateTask::AddUpdatable(IUpdatable * pUpdatable)
+tResult cEntityManager::cSimClient::AddUpdatable(IUpdatable * pUpdatable)
 {
    return add_interface(m_updatables, pUpdatable) ? S_OK : E_FAIL;
 }
 
 ///////////////////////////////////////
 
-tResult cEntityManager::cUpdateTask::RemoveUpdatable(IUpdatable * pUpdatable)
+tResult cEntityManager::cSimClient::RemoveUpdatable(IUpdatable * pUpdatable)
 {
    return remove_interface(m_updatables, pUpdatable) ? S_OK : E_FAIL;
 }
 
 ///////////////////////////////////////
 
-void cEntityManager::cUpdateTask::RemoveAll()
+void cEntityManager::cSimClient::RemoveAll()
 {
    tUpdatableList::iterator iter = m_updatables.begin(), end = m_updatables.end();
    for (; iter != end; ++iter)

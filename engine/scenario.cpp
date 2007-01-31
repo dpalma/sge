@@ -4,11 +4,29 @@
 #include "stdhdr.h"
 
 #include "scenario.h"
-#include "engine/engineapi.h"
 
+#include "engine/engineapi.h"
+#include "gui/guiapi.h"
 #include "tech/resourceapi.h"
+#include "tech/simapi.h"
+#include "tech/techtime.h"
 
 #include "tech/dbgalloc.h" // must be last header
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+LOG_DEFINE_CHANNEL(Scenario);
+
+#define LocalMsg(msg)            DebugMsgEx(Scenario,msg)
+#define LocalMsg1(msg,a)         DebugMsgEx1(Scenario,msg,(a))
+#define LocalMsg2(msg,a,b)       DebugMsgEx2(Scenario,msg,(a),(b))
+#define LocalMsg3(msg,a,b,c)     DebugMsgEx3(Scenario,msg,(a),(b),(c))
+
+#define LocalMsgIf(cond,msg)           DebugMsgIfEx(Scenario,(cond),msg)
+#define LocalMsgIf1(cond,msg,a)        DebugMsgIfEx1(Scenario,(cond),msg,(a))
+#define LocalMsgIf2(cond,msg,a,b)      DebugMsgIfEx2(Scenario,(cond),msg,(a),(b))
+#define LocalMsgIf3(cond,msg,a,b,c)    DebugMsgIfEx3(Scenario,(cond),msg,(a),(b),(c))
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -90,16 +108,67 @@ tResult cScenario::Term()
 
 ////////////////////////////////////////
 
-tResult cScenario::Start(const tChar * pszMap)
+tResult cScenario::Start(const tChar * pszMap, const tChar * pszGUI, ulong randSeed)
 {
-   return E_NOTIMPL;
+   if (pszMap == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (randSeed == 0)
+   {
+      randSeed = static_cast<ulong>(ReadTSC());
+   }
+
+   m_rand.Seed(randSeed);
+
+   void * pData = NULL;
+   UseGlobal(ResourceManager);
+   if (pResourceManager->Load(pszMap, kRT_Map, NULL, &pData) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   if (pszGUI != NULL)
+   {
+      UseGlobal(GUIContext);
+      pGUIContext->PushPage(pszGUI);
+   }
+
+   UseGlobal(Sim);
+   pSim->Start();
+
+   return S_OK;
 }
 
 ////////////////////////////////////////
 
 tResult cScenario::Stop()
 {
-   return E_NOTIMPL;
+   UseGlobal(Sim);
+   pSim->Stop();
+
+   UseGlobal(SaveLoadManager);
+   pSaveLoadManager->Reset();
+
+   UseGlobal(GUIContext);
+   pGUIContext->PopPage();
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+ulong cScenario::NextRand()
+{
+   return m_rand.Next();
+}
+
+////////////////////////////////////////
+
+float cScenario::NextRandFloat()
+{
+   return m_rand.NextFloat();
 }
 
 ////////////////////////////////////////
@@ -130,6 +199,7 @@ void cScenario::OnBeginLoad()
 
 void cScenario::OnLoadProgress(uint current, uint bound)
 {
+   LocalMsg2("Load progress: %d/%d\n", current, bound);
 }
 
 ////////////////////////////////////////
