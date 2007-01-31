@@ -46,7 +46,7 @@ TECH_API tResult SimCreate();
 
 interface ISimClient : IUnknown
 {
-   virtual void OnSimFrame(double frameTime, double time) = 0;
+   virtual tResult Execute(double time) = 0;
 };
 
 

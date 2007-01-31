@@ -89,6 +89,7 @@ const sTaskInfo & sTaskInfo::operator =(const sTaskInfo & other)
 ////////////////////////////////////////
 
 cScheduler::cScheduler()
+ : m_lockRenderTaskQueue(0)
 {
 }
 
@@ -110,11 +111,7 @@ tResult cScheduler::Init()
 tResult cScheduler::Term()
 {
    {
-      std::deque<ITask *>::iterator iter = m_renderTaskQueue.begin();
-      for (; iter != m_renderTaskQueue.end(); iter++)
-      {
-         (*iter)->Release();
-      }
+      std::for_each(m_renderTaskQueue.begin(), m_renderTaskQueue.end(), CTInterfaceMethod(&ITask::Release));
       m_renderTaskQueue.clear();
    }
 
@@ -165,6 +162,11 @@ tResult cScheduler::AddRenderTask(ITask * pTask)
       return E_POINTER;
    }
 
+   if (m_lockRenderTaskQueue != 0)
+   {
+      return E_FAIL;
+   }
+
    LocalMsg1("Adding render task %p\n", pTask);
 
    m_renderTaskQueue.push_back(CTAddRef(pTask));
@@ -179,8 +181,14 @@ tResult cScheduler::RemoveRenderTask(ITask * pTask)
    {
       return E_POINTER;
    }
-   std::deque<ITask *>::iterator iter = m_renderTaskQueue.begin();
-   for (; iter != m_renderTaskQueue.end(); iter++)
+
+   if (m_lockRenderTaskQueue != 0)
+   {
+      return E_FAIL;
+   }
+
+   std::deque<ITask *>::iterator iter = m_renderTaskQueue.begin(), end = m_renderTaskQueue.end();
+   for (; iter != end; ++iter)
    {
       if (CTIsSameObject(pTask, *iter))
       {
@@ -189,6 +197,7 @@ tResult cScheduler::RemoveRenderTask(ITask * pTask)
          return S_OK;
       }
    }
+
    return S_FALSE;
 }
 
@@ -386,11 +395,16 @@ void cScheduler::NextFrame()
 
    // Run render tasks
    {
+      ++m_lockRenderTaskQueue;
       std::deque<ITask *>::iterator iter = m_renderTaskQueue.begin(), end = m_renderTaskQueue.end();
       for (; iter != end; ++iter)
       {
-         (*iter)->Execute(m_clock.GetFrameCount());
+         if ((*iter)->Execute(m_clock.GetFrameCount()) != S_OK)
+         {
+            iter = m_renderTaskQueue.erase(iter);
+         }
       }
+      --m_lockRenderTaskQueue;
    }
 }
 
@@ -426,6 +440,39 @@ public:
 
 private:
    int m_count;
+};
+
+enum eSchedulerTaskType
+{
+   kRenderTask, kFrameTask, kTimeTask
+};
+
+class cRemoveSelfTask : public cComObject<IMPLEMENTS(ITask)>
+{
+public:
+   cRemoveSelfTask(IScheduler * pScheduler, eSchedulerTaskType taskType)
+      : m_pScheduler(pScheduler), m_taskType(taskType) {}
+
+   virtual tResult Execute(double time)
+   {
+      if (m_taskType == kRenderTask)
+      {
+         m_pScheduler->RemoveRenderTask(static_cast<ITask*>(this));
+      }
+      else if (m_taskType == kFrameTask)
+      {
+         m_pScheduler->RemoveFrameTask(static_cast<ITask*>(this));
+      }
+      else if (m_taskType == kTimeTask)
+      {
+         m_pScheduler->RemoveTimeTask(static_cast<ITask*>(this));
+      }
+      return S_OK;
+   }
+
+private:
+   IScheduler * m_pScheduler;
+   eSchedulerTaskType m_taskType;
 };
 
 class cSchedulerTests
@@ -476,6 +523,20 @@ TEST_FIXTURE(cSchedulerTests, SchedulerFrameTaskExpiration)
    AccessScheduler()->Stop();
 
    CHECK_EQUAL(static_cast<int>(kFrameTaskDuration / kFrameTaskPeriod), pFrameTask->GetCount());
+}
+
+// Ensure nothing bad happens when tasks attempt to remove themselves during an update
+TEST_FIXTURE(cSchedulerTests, SchedulerRemoveTaskDuringFrame)
+{
+   cAutoIPtr<ITask> pFrameTask(new cRemoveSelfTask(AccessScheduler(), kFrameTask));
+   cAutoIPtr<ITask> pRenderTask(new cRemoveSelfTask(AccessScheduler(), kRenderTask));
+
+	CHECK(AccessScheduler()->AddFrameTask(pFrameTask, 0, 1, 0) == S_OK);
+	CHECK(AccessScheduler()->AddRenderTask(pRenderTask) == S_OK);
+
+   AccessScheduler()->Start();
+   AccessScheduler()->NextFrame();
+   AccessScheduler()->Stop();
 }
 
 #endif // HAVE_UNITTESTPP

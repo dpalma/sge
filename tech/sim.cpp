@@ -35,8 +35,10 @@ LOG_DEFINE_CHANNEL(Sim);
 
 cSim::cSim()
  : m_bIsRunning(false)
- , m_time(0)
+ , m_lastSchedTime(0)
+ , m_simTime(0)
  , m_timeScale(1)
+ , m_lockSimClients(0)
 {
 }
 
@@ -85,6 +87,7 @@ tResult cSim::Start()
    }
 
    m_bIsRunning = true;
+   m_lastSchedTime = 0;
    return S_OK;
 }
 
@@ -119,6 +122,11 @@ double cSim::GetTimeScale() const
 
 void cSim::SetTimeScale(double scale)
 {
+   if (scale < 0 || scale > 25)
+   {
+      ErrorMsg1("Attempt to set insane sim time scale, %f\n", scale);
+      return;
+   }
    m_timeScale = scale;
 }
 
@@ -129,6 +137,10 @@ tResult cSim::AddSimClient(ISimClient * pSimClient)
    if (pSimClient == NULL)
    {
       return E_POINTER;
+   }
+   if (m_lockSimClients != 0)
+   {
+      return E_FAIL;
    }
    return add_interface(m_simClients, pSimClient) ? S_OK : S_FALSE;
 }
@@ -141,6 +153,10 @@ tResult cSim::RemoveSimClient(ISimClient * pSimClient)
    {
       return E_POINTER;
    }
+   if (m_lockSimClients != 0)
+   {
+      return E_FAIL;
+   }
    return remove_interface(m_simClients, pSimClient) ? S_OK : S_FALSE;
 }
 
@@ -150,16 +166,31 @@ tResult cSim::Execute(double time)
 {
    if (m_bIsRunning)
    {
-      double frameTime = time * m_timeScale;
+      if (m_lastSchedTime == 0)
+      {
+         m_lastSchedTime = time;
+         return S_OK;
+      }
 
-      m_time += frameTime;
+      double elapsed = time - m_lastSchedTime;
 
+      double frameTime = elapsed * m_timeScale;
+
+      m_simTime += frameTime;
+
+      ++m_lockSimClients;
       tSimClientList::iterator iter = m_simClients.begin(), end = m_simClients.end();
       for (; iter != end; ++iter)
       {
          cAutoIPtr<ISimClient> pSimClient(CTAddRef(*iter));
-         pSimClient->OnSimFrame(frameTime, m_time);
+         if (pSimClient->Execute(m_simTime) != S_OK)
+         {
+            iter = m_simClients.erase(iter);
+         }
       }
+      --m_lockSimClients;
+
+      m_lastSchedTime = time;
    }
 
    return S_OK;

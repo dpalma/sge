@@ -47,11 +47,13 @@ public:
 
 private:
    bool m_bIsRunning;
-   double m_time;
+   double m_lastSchedTime; // the time argument from the last ITask::Execute
+   double m_simTime;
    double m_timeScale;
 
    typedef std::list<ISimClient*> tSimClientList;
    tSimClientList m_simClients;
+   uint m_lockSimClients;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

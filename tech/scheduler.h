@@ -86,6 +86,7 @@ private:
    tTaskQueue m_frameTaskQueue;
    tTaskQueue m_timeTaskQueue;
    std::deque<ITask *> m_renderTaskQueue;
+   uint m_lockRenderTaskQueue;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
