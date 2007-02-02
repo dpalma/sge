@@ -990,16 +990,24 @@ tResult cRendererGL::SetCamera(IRenderCamera * pCamera)
 #ifdef HAVE_CG
 void cRendererGL::CgErrorHandler(CGcontext cgContext, CGerror cgError, void * pData)
 {
+   static bool bInHere = false;
+
+   if (bInHere)
+   {
+      return;
+   }
+
+   bInHere = true;
+
    if (cgError)
    {
       const char * pszCgError = cgGetErrorString(cgError);
       ErrorMsgIf1(pszCgError != NULL, "%s\n", pszCgError);
-      const char * pszListing = cgGetLastListing(cgContext);
-      if (pszListing != NULL)
-      {
-         ErrorMsg1("   %s\n", pszListing);
-      }
+      // Note: calling any other Cg functions here would likely just
+      // cause the same error over and over
    }
+
+   bInHere = false;
 }
 #endif
 

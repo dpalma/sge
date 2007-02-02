@@ -368,7 +368,7 @@ tResult cEntityBrainComponent::Create(IEntity * pEntity, IEntityBrainComponent *
    tResult result = E_FAIL;
 
    cAutoIPtr<IAIAgent> pAgent;
-   if ((result = AIAgentCreate(&pAgent)) != S_OK)
+   if ((result = AIAgentCreate(pEntity->GetId(), &pAgent)) != S_OK)
    {
       return result;
    }

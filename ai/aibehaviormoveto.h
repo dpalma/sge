@@ -4,7 +4,7 @@
 #ifndef INCLUDED_AIBEHAVIORMOVETO_H
 #define INCLUDED_AIBEHAVIORMOVETO_H
 
-#include "ai/aiapi.h"
+#include "ai/aiagentapi.h"
 
 #include "tech/statemachine.h"
 #include "tech/vec3.h"

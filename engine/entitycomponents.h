@@ -8,7 +8,7 @@
 
 #include "engine/entityapi.h"
 
-#include "ai/aiapi.h"
+#include "ai/aiagentapi.h"
 
 #include "engine/modelapi.h"
 #include "engine/modeltypes.h"

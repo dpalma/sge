@@ -3,6 +3,7 @@
 
 #include "stdhdr.h"
 
+#include "ai/aiagentapi.h"
 #include "engine/cameraapi.h"
 #include "engine/engineapi.h"
 #include "engine/entityapi.h"
@@ -455,6 +456,7 @@ tResult cMainInitTask::CreateMainWindow()
 
 static void RegisterGlobalObjects()
 {
+   AIAgentMessageRouterCreate();
    CameraControlCreate();
    EntityManagerCreate();
    EntityCommandManagerCreate();

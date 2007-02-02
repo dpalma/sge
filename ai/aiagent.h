@@ -4,7 +4,7 @@
 #ifndef INCLUDED_AIAGENT_H
 #define INCLUDED_AIAGENT_H
 
-#include "ai/aiapi.h"
+#include "ai/aiagentapi.h"
 
 #include <list>
 
@@ -21,7 +21,7 @@
 class cAIAgent : public cComObject<IMPLEMENTS(IAIAgent)>
 {
 public:
-   cAIAgent();
+   cAIAgent(tAIAgentID id);
    ~cAIAgent();
 
    virtual tResult SetDefaultBehavior(IAIBehavior * pBehavior);
@@ -38,7 +38,11 @@ public:
    virtual tResult SetAnimationProvider(IAIAgentAnimationProvider * pAnimationProvider);
    virtual tResult GetAnimationProvider(IAIAgentAnimationProvider * * ppAnimationProvider);
 
+   virtual tResult HandleMessage(IAIAgentMessage * pMessage);
+
 private:
+   tAIAgentID m_id;
+
    cAutoIPtr<IAIBehavior> m_pDefaultBehavior;
 
    typedef std::list<IAIBehavior*> tAIBehaviorList;

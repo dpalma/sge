@@ -4,7 +4,7 @@
 #ifndef INCLUDED_AIBEHAVIORWANDER_H
 #define INCLUDED_AIBEHAVIORWANDER_H
 
-#include "ai/aiapi.h"
+#include "ai/aiagentapi.h"
 
 #include "tech/statemachine.h"
 #include "tech/vec3.h"

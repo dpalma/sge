@@ -5,6 +5,8 @@
 
 #include "aiagent.h"
 
+#include "tech/globalobj.h"
+
 #include "tech/dbgalloc.h" // must be last header
 
 
@@ -15,7 +17,8 @@
 
 ////////////////////////////////////////
 
-cAIAgent::cAIAgent()
+cAIAgent::cAIAgent(tAIAgentID id)
+ : m_id(id)
 {
 }
 
@@ -127,17 +130,45 @@ tResult cAIAgent::GetAnimationProvider(IAIAgentAnimationProvider * * ppAnimation
 
 ////////////////////////////////////////
 
-tResult AIAgentCreate(IAIAgent * * ppAgent)
+tResult cAIAgent::HandleMessage(IAIAgentMessage * pMessage)
 {
+   if (pMessage == NULL)
+   {
+      return E_POINTER;
+   }
+
+   eAIAgentMessageType msgType = pMessage->GetMessageType();
+
+   return S_FALSE;
+}
+
+////////////////////////////////////////
+
+tResult AIAgentCreate(tAIAgentID id, IAIAgent * * ppAgent)
+{
+   if (id == 0)
+   {
+      return E_INVALIDARG;
+   }
    if (ppAgent == NULL)
    {
       return E_POINTER;
    }
-   cAutoIPtr<IAIAgent> pAgent(static_cast<IAIAgent *>(new cAIAgent));
+
+   cAutoIPtr<IAIAgent> pAgent(static_cast<IAIAgent *>(new cAIAgent(id)));
    if (!pAgent)
    {
       return E_OUTOFMEMORY;
    }
+
+   UseGlobal(AIAgentMessageRouter);
+   if (!!pAIAgentMessageRouter)
+   {
+      pAIAgentMessageRouter->RegisterAgent(id, pAgent);
+   }
+
+   ErrorMsgIf(!pAIAgentMessageRouter, "No AI agent message router\n");
+
    return pAgent.GetPointer(ppAgent);
 }
 

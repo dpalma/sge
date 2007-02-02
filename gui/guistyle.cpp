@@ -1013,28 +1013,24 @@ static tResult GUIStyleParseAndSetAttribute(const char * pszAttrib, IGUIStyle * 
 
    const tChar * pszAttribEnd = SkipSpaceBack(pszSep);
    int attribNameLength = pszAttribEnd - pszAttrib;
-   tChar * pszAttribName = static_cast<tChar *>(alloca((attribNameLength + 1) * sizeof(tChar)));
-   _tcsncpy(pszAttribName, pszAttrib, attribNameLength);
-   pszAttribName[attribNameLength] = 0;
+   cStr attribName(pszAttrib, attribNameLength);
 
    const tChar * pszValueStart = SkipSpaceFwd(pszSep + 1);
    const tChar * pszValueEnd = SkipSpaceBack(pszValueStart + strlen(pszValueStart));
    int valueLength = pszValueEnd - pszValueStart;
-   tChar * pszValue = static_cast<tChar *>(alloca((valueLength + 1) * sizeof(tChar)));
-   _tcsncpy(pszValue, pszValueStart, valueLength);
-   pszValue[valueLength] = 0;
+   cStr attribValue(pszValueStart, valueLength);
 
    for (int i = 0; i < _countof(g_GUIStyleParseAndSetAttribTable); i++)
    {
-      if (strcmp(pszAttribName, g_GUIStyleParseAndSetAttribTable[i].pszAttrib) == 0)
+      if (strcmp(attribName.c_str(), g_GUIStyleParseAndSetAttribTable[i].pszAttrib) == 0)
       {
-         tResult result = (*g_GUIStyleParseAndSetAttribTable[i].pfnParseAndSet)(pszValue, pStyle);
-         WarnMsgIf2(result != S_OK, "Invalid value \"%s\" for attribute \"%s\"\n", pszValue, pszAttribName);
+         tResult result = (*g_GUIStyleParseAndSetAttribTable[i].pfnParseAndSet)(attribValue.c_str(), pStyle);
+         WarnMsgIf2(result != S_OK, "Invalid value \"%s\" for attribute \"%s\"\n", attribValue.c_str(), attribName.c_str());
          return result;
       }
    }
 
-   return pStyle->SetAttribute(pszAttribName, pszValue);
+   return pStyle->SetAttribute(attribName.c_str(), attribValue.c_str());
 }
 
 
@@ -1082,11 +1078,12 @@ tResult GUIStyleParseInline(const tChar * pszStyle, long length, IGUIStyle * pCl
       int attribLength = pszIterEnd - pszIter;
       if (attribLength > 0)
       {
-         tChar * pszAttrib = static_cast<tChar *>(alloca((attribLength + 1) * sizeof(tChar)));
-         _tcsncpy(pszAttrib, pszIter, attribLength);
-         pszAttrib[attribLength] = 0;
+         //tChar * pszAttrib = static_cast<tChar *>(alloca((attribLength + 1) * sizeof(tChar)));
+         //_tcsncpy(pszAttrib, pszIter, attribLength);
+         //pszAttrib[attribLength] = 0;
+         cStr attrib(pszIter, attribLength);
 
-         if (FAILED(GUIStyleParseAndSetAttribute(pszAttrib, pStyle)))
+         if (FAILED(GUIStyleParseAndSetAttribute(attrib.c_str(), pStyle)))
          {
             return E_FAIL;
          }

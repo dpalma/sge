@@ -1,0 +1,333 @@
+///////////////////////////////////////////////////////////////////////////////
+// $Id$
+
+#include "stdhdr.h"
+
+#include "aiagentmessagerouter.h"
+
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
+#endif
+
+#include "tech/dbgalloc.h" // must be last header
+
+///////////////////////////////////////////////////////////////////////////////
+
+extern tResult AIAgentMessageCreate(tAIAgentID receiver, tAIAgentID sender, double deliveryTime,
+                                    eAIAgentMessageType messageType, uint nArgs, const cMultiVar * args,
+                                    IAIAgentMessage * * ppAgentMessage);
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cAIAgentMessageRouter
+//
+
+////////////////////////////////////////
+
+cAIAgentMessageRouter::cAIAgentMessageRouter(bool bAutoConnectToSim)
+ : m_bAutoConnectToSim(bAutoConnectToSim)
+ , m_msgQueueIndex(0)
+{
+}
+
+////////////////////////////////////////
+
+cAIAgentMessageRouter::~cAIAgentMessageRouter()
+{
+}
+
+////////////////////////////////////////
+
+tResult cAIAgentMessageRouter::Init()
+{
+   if (m_bAutoConnectToSim)
+   {
+      UseGlobal(Sim);
+      pSim->AddSimClient(static_cast<ISimClient*>(this));
+   }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cAIAgentMessageRouter::Term()
+{
+   UseGlobal(Sim);
+   pSim->RemoveSimClient(static_cast<ISimClient*>(this));
+
+   tAgentMap::iterator iter = m_agentMap.begin(), end = m_agentMap.end();
+   for (; iter != end; ++iter)
+   {
+      iter->second->Release();
+   }
+   m_agentMap.clear();
+
+   for (int i = 0; i < _countof(m_msgQueue); ++i)
+   {
+      std::for_each(m_msgQueue[i].begin(), m_msgQueue[i].end(), CTInterfaceMethod(&IAIAgentMessage::Release));
+      m_msgQueue[i].clear();
+   }
+
+   while (!m_delayedMsgQueue.empty())
+   {
+      IAIAgentMessage * pMsg = m_delayedMsgQueue.top();
+      m_delayedMsgQueue.pop();
+      SafeRelease(pMsg);
+   }
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cAIAgentMessageRouter::SendMessage(tAIAgentID receiver,
+                                           tAIAgentID sender,
+                                           eAIAgentMessageType messageType,
+                                           uint nArgs,
+                                           const cMultiVar * args)
+{
+   tResult result = E_FAIL;
+   cAutoIPtr<IAIAgentMessage> pMsg;
+   if ((result = AIAgentMessageCreate(receiver, sender, 0, messageType, nArgs, args, &pMsg)) == S_OK)
+   {
+      uint otherMsgQueueIndex = (m_msgQueueIndex + 1) & 1;
+      m_msgQueue[otherMsgQueueIndex].push_back(CTAddRef(pMsg));
+   }
+   return result;
+}
+
+////////////////////////////////////////
+
+tResult cAIAgentMessageRouter::SendMessage(tAIAgentID receiver,
+                                           tAIAgentID sender,
+                                           double deliveryTime,
+                                           eAIAgentMessageType messageType,
+                                           uint nArgs,
+                                           const cMultiVar * args)
+{
+   tResult result = E_FAIL;
+   cAutoIPtr<IAIAgentMessage> pMsg;
+   if ((result = AIAgentMessageCreate(receiver, sender, deliveryTime, messageType, nArgs, args, &pMsg)) == S_OK)
+   {
+      m_delayedMsgQueue.push(CTAddRef(pMsg));
+   }
+   return result;
+}
+
+////////////////////////////////////////
+
+tResult cAIAgentMessageRouter::RegisterAgent(tAIAgentID id, IAIAgent * pAgent)
+{
+   if (id == 0)
+   {
+      return E_INVALIDARG;
+   }
+
+   if (pAgent == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tAgentMap::iterator f = m_agentMap.find(id);
+   if (f != m_agentMap.end())
+   {
+      ErrorMsg1("An agent with id %d is already registered\n", id);
+      return E_FAIL;
+   }
+
+   m_agentMap.insert(std::make_pair(id, CTAddRef(pAgent)));
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cAIAgentMessageRouter::RevokeAgent(tAIAgentID id)
+{
+   tAgentMap::iterator f = m_agentMap.find(id);
+   if (f == m_agentMap.end())
+   {
+      WarnMsg1("No agent with id %d is registered\n", id);
+      return S_FALSE;
+   }
+   else
+   {
+      f->second->Release();
+      m_agentMap.erase(f);
+      return S_OK;
+   }
+}
+
+////////////////////////////////////////
+
+tResult cAIAgentMessageRouter::Execute(double time)
+{
+   PumpMessages(time);
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+void cAIAgentMessageRouter::PumpMessages(double time)
+{
+   tMsgList & msgQueue = m_msgQueue[m_msgQueueIndex];
+   while (!msgQueue.empty())
+   {
+      cAutoIPtr<IAIAgentMessage> pMsg = msgQueue.front();
+      msgQueue.pop_front();
+      DeliverMessage(pMsg);
+   }
+   m_msgQueueIndex = (m_msgQueueIndex + 1) & 1;
+
+   while (!m_delayedMsgQueue.empty())
+   {
+      cAutoIPtr<IAIAgentMessage> pMsg = m_delayedMsgQueue.top();
+      if (pMsg->GetDeliveryTime() <= time)
+      {
+         m_delayedMsgQueue.pop();
+         DeliverMessage(pMsg);
+      }
+      else
+      {
+         break;
+      }
+   }
+}
+
+////////////////////////////////////////
+
+void cAIAgentMessageRouter::DeliverMessage(IAIAgentMessage * pMsg)
+{
+   tAgentMap::iterator f = m_agentMap.find(pMsg->GetReceiver());
+   if (f != m_agentMap.end())
+   {
+      cAutoIPtr<IAIAgent> pAgent(CTAddRef(f->second));
+      pAgent->HandleMessage(pMsg);
+   }
+}
+
+////////////////////////////////////////
+
+tResult AIAgentMessageRouterCreate()
+{
+   cAutoIPtr<IAIAgentMessageRouter> pMessageRouter(static_cast<IAIAgentMessageRouter*>(new cAIAgentMessageRouter(true)));
+   if (!pMessageRouter)
+   {
+      return E_OUTOFMEMORY;
+   }
+   return RegisterGlobalObject(IID_IAIAgentMessageRouter, pMessageRouter);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_UNITTESTPP
+
+class cAIAgentMessageRouterTests
+{
+public:
+   cAIAgentMessageRouterTests();
+   ~cAIAgentMessageRouterTests();
+
+   IAIAgentMessageRouter * AccessMsgRouter() { return static_cast<IAIAgentMessageRouter*>(m_pMsgRouter); }
+   const IAIAgentMessageRouter * AccessMsgRouter() const { return static_cast<const IAIAgentMessageRouter*>(m_pMsgRouter); }
+
+   cAutoIPtr<cAIAgentMessageRouter> m_pMsgRouter;
+};
+
+cAIAgentMessageRouterTests::cAIAgentMessageRouterTests()
+{
+   SafeRelease(m_pMsgRouter);
+   m_pMsgRouter = new cAIAgentMessageRouter(false);
+   m_pMsgRouter->Init();
+}
+
+cAIAgentMessageRouterTests::~cAIAgentMessageRouterTests()
+{
+   if (!!m_pMsgRouter)
+   {
+      m_pMsgRouter->Term();
+      SafeRelease(m_pMsgRouter);
+   }
+}
+
+class cMessageCollectingAgent : public cComObject<IMPLEMENTS(IAIAgent)>
+{
+public:
+   cMessageCollectingAgent() {}
+   ~cMessageCollectingAgent() { ClearMessages(); }
+
+   virtual tResult SetDefaultBehavior(IAIBehavior *) { return E_NOTIMPL; }
+   virtual tResult GetDefaultBehavior(IAIBehavior * *) { return E_NOTIMPL; }
+
+   virtual tResult PushBehavior(IAIBehavior *) { return E_NOTIMPL; }
+   virtual tResult PopBehavior() { return E_NOTIMPL; }
+
+   virtual tResult GetActiveBehavior(IAIBehavior * *) { return E_NOTIMPL; }
+
+   virtual tResult SetLocationProvider(IAIAgentLocationProvider *) { return E_NOTIMPL; }
+   virtual tResult GetLocationProvider(IAIAgentLocationProvider * *) { return E_NOTIMPL; }
+
+   virtual tResult SetAnimationProvider(IAIAgentAnimationProvider *) { return E_NOTIMPL; }
+   virtual tResult GetAnimationProvider(IAIAgentAnimationProvider * *) { return E_NOTIMPL; }
+
+   virtual tResult HandleMessage(IAIAgentMessage * pMsg) { m_msgs.push_back(CTAddRef(pMsg)); return S_OK; }
+
+   std::deque<IAIAgentMessage *>::iterator GetFirstMessage() { return m_msgs.begin(); }
+   std::deque<IAIAgentMessage *>::iterator GetLastMessage() { return m_msgs.end(); }
+   void ClearMessages() { std::for_each(m_msgs.begin(), m_msgs.end(), CTInterfaceMethod(&IAIAgentMessage::Release)), m_msgs.clear(); }
+
+private:
+   std::deque<IAIAgentMessage *> m_msgs;
+};
+
+TEST_FIXTURE(cAIAgentMessageRouterTests, ProperAgentMessageOrder)
+{
+   cAutoIPtr<cMessageCollectingAgent> pAgent(new cMessageCollectingAgent);
+
+   static const tAIAgentID id = 1;
+   CHECK_EQUAL(S_OK, AccessMsgRouter()->RegisterAgent(id, pAgent));
+
+   static const struct 
+   {
+      eAIAgentMessageType msgType;
+      double deliveryTime;
+   }
+   msgs[] =
+   {
+      { kAIAMT_Stop, 4 },
+      { kAIAMT_MoveTo, 2 },
+      { kAIAMT_MoveTo, 5 },
+      { kAIAMT_MoveTo, 8 },
+      { kAIAMT_Stop, 6 },
+      { kAIAMT_Stop, 3 },
+      { kAIAMT_Stop, 9 },
+      { kAIAMT_Stop, 1 },
+      { kAIAMT_MoveTo, 7 },
+   };
+
+   double maxTime = -99999;
+   for (int i = 0; i < _countof(msgs); ++i)
+   {
+      CHECK_EQUAL(S_OK, AccessMsgRouter()->SendMessage(id, 0, msgs[i].deliveryTime, msgs[i].msgType, 0, NULL));
+      if (msgs[i].deliveryTime > maxTime)
+      {
+         maxTime = msgs[i].deliveryTime;
+      }
+   }
+
+   m_pMsgRouter->PumpMessages(maxTime);
+
+   std::deque<IAIAgentMessage *>::iterator iter = pAgent->GetFirstMessage(), end = pAgent->GetLastMessage();
+   for (double index = 1; iter != end; ++iter, ++index)
+   {
+      CHECK(index == (*iter)->GetDeliveryTime());
+   }
+
+   CHECK_EQUAL(S_OK, AccessMsgRouter()->RevokeAgent(id));
+}
+
+#endif // HAVE_UNITTESTPP
+
+///////////////////////////////////////////////////////////////////////////////

@@ -4,7 +4,7 @@
 #ifndef INCLUDED_AIBEHAVIORSTAND_H
 #define INCLUDED_AIBEHAVIORSTAND_H
 
-#include "ai/aiapi.h"
+#include "ai/aiagentapi.h"
 
 #ifdef _MSC_VER
 #pragma once

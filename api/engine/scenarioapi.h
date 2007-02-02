@@ -36,23 +36,5 @@ ENGINE_API tResult ScenarioCreate();
 
 
 ////////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IScenarioEditor
-//
-
-interface IScenarioEditor : IUnknown
-{
-   virtual tResult SetMapProperties(const tChar * pszTitle, const tChar * pszAuthor,
-                                    const tChar * pszDescription, int nPlayers) = 0;
-   virtual tResult GetMapProperties(cStr * pTitle, cStr * pAuthor,
-                                    cStr * pDescription, int * pnPlayers) = 0;
-};
-
-///////////////////////////////////////
-
-ENGINE_API tResult ScenarioEditorCreate();
-
-
-////////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_SCENARIOAPI_H

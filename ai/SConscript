@@ -5,6 +5,8 @@ Import('env')
 
 sourceFiles = Split("""
    aiagent.cpp
+   aiagentmessage.cpp
+   aiagentmessagerouter.cpp
    aibehaviormoveto.cpp
    aibehaviorstand.cpp
    aibehaviorwander.cpp
