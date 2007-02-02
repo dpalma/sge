@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "aibehaviormoveto.h"
+#include "aiagenttaskmoveto.h"
 
 #include "tech/statemachinetem.h"
 
@@ -12,14 +12,14 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cAIBehaviorMoveTo
+// CLASS: cAIAgentTaskMoveTo
 //
 
 ////////////////////////////////////////
 
-cAIBehaviorMoveTo::cAIBehaviorMoveTo(const tVec3 & point)
- : m_movingState(&cAIBehaviorMoveTo::OnEnterMoving, &cAIBehaviorMoveTo::OnUpdateMoving, &cAIBehaviorMoveTo::OnExitMoving)
- , m_arrivedState(&cAIBehaviorMoveTo::OnEnterArrived, &cAIBehaviorMoveTo::OnUpdateArrived, &cAIBehaviorMoveTo::OnExitArrived)
+cAIAgentTaskMoveTo::cAIAgentTaskMoveTo(const tVec3 & point)
+ : m_movingState(&cAIAgentTaskMoveTo::OnEnterMoving, &cAIAgentTaskMoveTo::OnUpdateMoving, &cAIAgentTaskMoveTo::OnExitMoving)
+ , m_arrivedState(&cAIAgentTaskMoveTo::OnEnterArrived, &cAIAgentTaskMoveTo::OnUpdateArrived, &cAIAgentTaskMoveTo::OnExitArrived)
  , m_moveGoal(point)
  , m_lastDistSqr(999999)
 {
@@ -27,13 +27,13 @@ cAIBehaviorMoveTo::cAIBehaviorMoveTo(const tVec3 & point)
 
 ////////////////////////////////////////
 
-cAIBehaviorMoveTo::~cAIBehaviorMoveTo()
+cAIAgentTaskMoveTo::~cAIAgentTaskMoveTo()
 {
 }
 
 ////////////////////////////////////////
 
-tResult cAIBehaviorMoveTo::Update(IAIAgent * pAgent, double elapsedTime)
+tResult cAIAgentTaskMoveTo::Update(IAIAgent * pAgent, double elapsedTime)
 {
    SafeRelease(m_pLocationProvider);
    SafeRelease(m_pAnimationProvider);
@@ -43,19 +43,19 @@ tResult cAIBehaviorMoveTo::Update(IAIAgent * pAgent, double elapsedTime)
       pAgent->GetAnimationProvider(&m_pAnimationProvider);
    }
 
-   cStateMachine<cAIBehaviorMoveTo, double>::Update(elapsedTime);
+   cStateMachine<cAIAgentTaskMoveTo, double>::Update(elapsedTime);
 
    if (IsCurrentState(&m_arrivedState))
    {
-      return S_AI_BEHAVIOR_DONE;
+      return S_AI_AGENT_TASK_DONE;
    }
 
-   return S_AI_BEHAVIOR_CONTINUE;
+   return S_AI_AGENT_TASK_CONTINUE;
 }
 
 ////////////////////////////////////////
 
-void cAIBehaviorMoveTo::OnInitialStateUpdate(double)
+void cAIAgentTaskMoveTo::OnInitialStateUpdate(double)
 {
    // Go to the moving state immediately
    GotoState(&m_movingState);
@@ -63,7 +63,7 @@ void cAIBehaviorMoveTo::OnInitialStateUpdate(double)
 
 ////////////////////////////////////////
 
-void cAIBehaviorMoveTo::OnEnterMoving()
+void cAIAgentTaskMoveTo::OnEnterMoving()
 {
    if (!!m_pAnimationProvider)
    {
@@ -73,7 +73,7 @@ void cAIBehaviorMoveTo::OnEnterMoving()
 
 ////////////////////////////////////////
 
-void cAIBehaviorMoveTo::OnUpdateMoving(double elapsed)
+void cAIAgentTaskMoveTo::OnUpdateMoving(double elapsed)
 {
    if (!m_pLocationProvider)
    {
@@ -118,13 +118,13 @@ void cAIBehaviorMoveTo::OnUpdateMoving(double elapsed)
 
 ////////////////////////////////////////
 
-void cAIBehaviorMoveTo::OnExitMoving()
+void cAIAgentTaskMoveTo::OnExitMoving()
 {
 }
 
 ////////////////////////////////////////
 
-void cAIBehaviorMoveTo::OnEnterArrived()
+void cAIAgentTaskMoveTo::OnEnterArrived()
 {
    if (!!m_pAnimationProvider)
    {
@@ -134,30 +134,30 @@ void cAIBehaviorMoveTo::OnEnterArrived()
 
 ////////////////////////////////////////
 
-void cAIBehaviorMoveTo::OnUpdateArrived(double elapsed)
+void cAIAgentTaskMoveTo::OnUpdateArrived(double elapsed)
 {
 }
 
 ////////////////////////////////////////
 
-void cAIBehaviorMoveTo::OnExitArrived()
+void cAIAgentTaskMoveTo::OnExitArrived()
 {
 }
 
 ////////////////////////////////////////
 
-tResult AIBehaviorMoveToCreate(const tVec3 & point, IAIBehavior * * ppBehavior)
+tResult AIAgentTaskMoveToCreate(const tVec3 & point, IAIAgentTask * * ppTask)
 {
-   if (ppBehavior == NULL)
+   if (ppTask == NULL)
    {
       return E_POINTER;
    }
-   cAutoIPtr<IAIBehavior> pBehavior(static_cast<IAIBehavior *>(new cAIBehaviorMoveTo(point)));
-   if (!pBehavior)
+   cAutoIPtr<IAIAgentTask> pTask(static_cast<IAIAgentTask *>(new cAIAgentTaskMoveTo(point)));
+   if (!pTask)
    {
       return E_OUTOFMEMORY;
    }
-   return pBehavior.GetPointer(ppBehavior);
+   return pTask.GetPointer(ppTask);
 }
 
 

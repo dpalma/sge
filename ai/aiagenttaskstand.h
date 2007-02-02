@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_AIBEHAVIORSTAND_H
-#define INCLUDED_AIBEHAVIORSTAND_H
+#ifndef INCLUDED_AIAGENTTASKSTAND_H
+#define INCLUDED_AIAGENTTASKSTAND_H
 
 #include "ai/aiagentapi.h"
 
@@ -13,14 +13,14 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cAIBehaviorStand
+// CLASS: cAIAgentTaskStand
 //
 
-class cAIBehaviorStand : public cComObject<IMPLEMENTS(IAIBehavior)>
+class cAIAgentTaskStand : public cComObject<IMPLEMENTS(IAIAgentTask)>
 {
 public:
-   cAIBehaviorStand();
-   ~cAIBehaviorStand();
+   cAIAgentTaskStand();
+   ~cAIAgentTaskStand();
 
    virtual tResult Update(IAIAgent * pAgent, double elapsedTime);
 
@@ -31,4 +31,4 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#endif // !INCLUDED_AIBEHAVIORSTAND_H
+#endif // !INCLUDED_AIAGENTTASKSTAND_H

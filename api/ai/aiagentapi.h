@@ -15,9 +15,9 @@
 F_DECLARE_INTERFACE_GUID(IAIAgent, "FD56C9A7-ABED-4fab-BC3E-DDED0BFBE3CD");
 F_DECLARE_INTERFACE_GUID(IAIAgentAnimationProvider, "664659A6-82CF-4ed3-8602-40A056E417F9");
 F_DECLARE_INTERFACE_GUID(IAIAgentLocationProvider, "38DB75CF-1DC3-438f-A1C9-A4106E29DDB2");
-F_DECLARE_INTERFACE_GUID(IAIBehavior, "A80E9587-0037-46bd-BCBA-B97D6E6E15C4");
 F_DECLARE_INTERFACE_GUID(IAIAgentMessage, "6B5E445D-913A-4d47-B003-B41C7AC1D0AC");
 F_DECLARE_INTERFACE_GUID(IAIAgentMessageRouter, "7835EFCF-D50A-461d-BB4F-683C08E75C7F");
+F_DECLARE_INTERFACE_GUID(IAIAgentTask, "A80E9587-0037-46bd-BCBA-B97D6E6E15C4");
 
 class cMultiVar;
 
@@ -89,26 +89,20 @@ AI_API tResult AIAgentMessageRouterCreate();
 
 interface IAIAgent : IUnknown
 {
-   virtual tResult SetDefaultBehavior(IAIBehavior * pBehavior) = 0;
-   virtual tResult GetDefaultBehavior(IAIBehavior * * ppBehavior) = 0;
-
-   virtual tResult PushBehavior(IAIBehavior * pBehavior) = 0;
-   virtual tResult PopBehavior() = 0;
-
-   virtual tResult GetActiveBehavior(IAIBehavior * * ppBehavior) = 0;
-
    virtual tResult SetLocationProvider(IAIAgentLocationProvider * pLocationProvider) = 0;
    virtual tResult GetLocationProvider(IAIAgentLocationProvider * * ppLocationProvider) = 0;
 
    virtual tResult SetAnimationProvider(IAIAgentAnimationProvider * pAnimationProvider) = 0;
    virtual tResult GetAnimationProvider(IAIAgentAnimationProvider * * ppAnimationProvider) = 0;
 
+   virtual tResult Update(double time) = 0;
+
    virtual tResult HandleMessage(IAIAgentMessage * pMessage) = 0;
 };
 
 ////////////////////////////////////////
 
-AI_API tResult AIAgentCreate(tAIAgentID id, IAIAgent * * ppAgent);
+AI_API tResult AIAgentCreate(tAIAgentID id, IUnknown * pUnkOuter, IAIAgent * * ppAgent);
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -153,29 +147,29 @@ interface IAIAgentLocationProvider : IUnknown
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// INTERFACE: IAIBehavior
+// INTERFACE: IAIAgentTask
 //
 
 ////////////////////////////////////////
 
-enum eAIBehaviorResult
+enum eAIAgentTaskResult
 {
-   S_AI_BEHAVIOR_ERROR        = E_FAIL,
-   S_AI_BEHAVIOR_CONTINUE     = S_OK,
-   S_AI_BEHAVIOR_DONE         = S_FALSE,
+   S_AI_AGENT_TASK_ERROR      = E_FAIL,
+   S_AI_AGENT_TASK_CONTINUE   = S_OK,
+   S_AI_AGENT_TASK_DONE       = S_FALSE,
 };
 
 ////////////////////////////////////////
 
-interface IAIBehavior : IUnknown
+interface IAIAgentTask : IUnknown
 {
-   virtual tResult Update(IAIAgent * pAgent, double elapsedTime) = 0;
+   virtual tResult Update(IAIAgent * pAgent, double time) = 0;
 };
 
 ////////////////////////////////////////
 
-AI_API tResult AIBehaviorStandCreate(IAIBehavior * * ppBehavior);
-AI_API tResult AIBehaviorMoveToCreate(const tVec3 & point, IAIBehavior * * ppBehavior);
+AI_API tResult AIAgentTaskStandCreate(IAIAgentTask * * ppTask);
+AI_API tResult AIAgentTaskMoveToCreate(const tVec3 & point, IAIAgentTask * * ppTask);
 
 
 ////////////////////////////////////////////////////////////////////////////////

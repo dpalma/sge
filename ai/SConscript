@@ -7,9 +7,8 @@ sourceFiles = Split("""
    aiagent.cpp
    aiagentmessage.cpp
    aiagentmessagerouter.cpp
-   aibehaviormoveto.cpp
-   aibehaviorstand.cpp
-   aibehaviorwander.cpp
+   aiagenttaskmoveto.cpp
+   aiagenttaskstand.cpp
 """)
 
 libPaths = Split("""

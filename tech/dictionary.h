@@ -42,7 +42,7 @@ inline bool cStrLessNoCase::operator()(const cStr & lhs, const cStr & rhs) const
 class cDictionary : public cComAggregableObject<IMPLEMENTS(IDictionary)>
 {
    cDictionary(const cDictionary &);
-   void operator =(const cDictionary &);
+   const cDictionary & operator =(const cDictionary &);
 
    friend tResult DictionaryCreate(tPersistence persist, IDictionary * * ppDictionary);
    friend IUnknown * DictionaryCreate(tPersistence defaultPersist, IUnknown * pUnkOuter);

@@ -258,19 +258,13 @@ public:
    cMessageCollectingAgent() {}
    ~cMessageCollectingAgent() { ClearMessages(); }
 
-   virtual tResult SetDefaultBehavior(IAIBehavior *) { return E_NOTIMPL; }
-   virtual tResult GetDefaultBehavior(IAIBehavior * *) { return E_NOTIMPL; }
-
-   virtual tResult PushBehavior(IAIBehavior *) { return E_NOTIMPL; }
-   virtual tResult PopBehavior() { return E_NOTIMPL; }
-
-   virtual tResult GetActiveBehavior(IAIBehavior * *) { return E_NOTIMPL; }
-
    virtual tResult SetLocationProvider(IAIAgentLocationProvider *) { return E_NOTIMPL; }
    virtual tResult GetLocationProvider(IAIAgentLocationProvider * *) { return E_NOTIMPL; }
 
    virtual tResult SetAnimationProvider(IAIAgentAnimationProvider *) { return E_NOTIMPL; }
    virtual tResult GetAnimationProvider(IAIAgentAnimationProvider * *) { return E_NOTIMPL; }
+
+   virtual tResult Update(double time) { return E_NOTIMPL; }
 
    virtual tResult HandleMessage(IAIAgentMessage * pMsg) { m_msgs.push_back(CTAddRef(pMsg)); return S_OK; }
 

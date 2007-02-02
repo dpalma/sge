@@ -3,6 +3,8 @@
 
 #include "stdhdr.h"
 
+#include "ai/aiagentapi.h"
+
 #include "engine/entityapi.h"
 #include "engine/cameraapi.h"
 #include "engine/terrainapi.h"
@@ -266,25 +268,17 @@ tResult cMoveMode::OnTerrainClick(const tVec3 & location)
 {
    LocalMsg3("Issue move orders to (%f, %f, %f)\n", location.x, location.y, location.z);
 
-   cAutoIPtr<IEntityBrainComponent> pBrainComponent;
-   if (AccessEntity()->GetComponent(kECT_Brain, IID_IEntityBrainComponent, &pBrainComponent) == S_OK)
+   cMultiVar args[3] =
    {
-      if (pBrainComponent->MoveTo(location) == S_OK)
-      {
-         return S_OK;
-      }
-   }
+      cMultiVar(location.x),
+      cMultiVar(location.y),
+      cMultiVar(location.z),
+   };
 
-   cAutoIPtr<IEntityPositionComponent> pPositionComponent;
-   if (AccessEntity()->GetComponent(kECT_Position, IID_IEntityPositionComponent, &pPositionComponent) == S_OK)
-   {
-      Verify(pPositionComponent->SetPosition(location) == S_OK);
-      return S_OK;
-   }
+   UseGlobal(AIAgentMessageRouter);
+   pAIAgentMessageRouter->SendMessage(AccessEntity()->GetId(), 0, kAIAMT_MoveTo, _countof(args), &args[0]);
 
-   WarnMsgIf(!pPositionComponent, "Attempting to move an entity with no position component\n");
-
-   return S_FALSE;
+   return S_OK;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -310,11 +304,10 @@ tResult EntityCommandStop(IEntity * pEntity, const cMultiVar * pArgs, uint nArgs
    {
       return E_POINTER;
    }
-   cAutoIPtr<IEntityBrainComponent> pBrainComponent;
-   if (pEntity->GetComponent(kECT_Brain, IID_IEntityBrainComponent, &pBrainComponent) == S_OK)
-   {
-      pBrainComponent->Stop();
-   }
+
+   UseGlobal(AIAgentMessageRouter);
+   pAIAgentMessageRouter->SendMessage(pEntity->GetId(), 0, kAIAMT_Stop, 0, NULL);
+
    return S_OK;
 }
 

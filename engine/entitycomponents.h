@@ -109,10 +109,7 @@ public:
 
    static tResult Create(IEntity * pEntity, IEntityBrainComponent * * ppBrainComponent);
 
-   virtual tResult MoveTo(const tVec3 & point);
-   virtual tResult Stop();
-
-   virtual void Update(double elapsedTime);
+   virtual void Update(double time);
 
 private:
    cAutoIPtr<IAIAgent> m_pAgent;

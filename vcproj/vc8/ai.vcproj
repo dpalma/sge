@@ -480,15 +480,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\ai\aibehaviormoveto.cpp"
+				RelativePath="..\..\ai\aiagenttaskmoveto.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\ai\aibehaviorstand.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\ai\aibehaviorwander.cpp"
+				RelativePath="..\..\ai\aiagenttaskstand.cpp"
 				>
 			</File>
 			<File
@@ -553,15 +549,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\ai\aibehaviormoveto.h"
+				RelativePath="..\..\ai\aiagenttaskmoveto.h"
 				>
 			</File>
 			<File
-				RelativePath="..\..\ai\aibehaviorstand.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\ai\aibehaviorwander.h"
+				RelativePath="..\..\ai\aiagenttaskstand.h"
 				>
 			</File>
 			<File

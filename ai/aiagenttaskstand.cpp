@@ -3,32 +3,32 @@
 
 #include "stdhdr.h"
 
-#include "aibehaviorstand.h"
+#include "aiagenttaskstand.h"
 
 #include "tech/dbgalloc.h" // must be last header
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cAIBehaviorStand
+// CLASS: cAIAgentTaskStand
 //
 
 ////////////////////////////////////////
 
-cAIBehaviorStand::cAIBehaviorStand()
+cAIAgentTaskStand::cAIAgentTaskStand()
  : m_bAnimStarted(false)
 {
 }
 
 ////////////////////////////////////////
 
-cAIBehaviorStand::~cAIBehaviorStand()
+cAIAgentTaskStand::~cAIAgentTaskStand()
 {
 }
 
 ////////////////////////////////////////
 
-tResult cAIBehaviorStand::Update(IAIAgent * pAgent, double elapsedTime)
+tResult cAIAgentTaskStand::Update(IAIAgent * pAgent, double elapsedTime)
 {
    if (!m_bAnimStarted)
    {
@@ -41,23 +41,23 @@ tResult cAIBehaviorStand::Update(IAIAgent * pAgent, double elapsedTime)
       }
    }
 
-   return S_AI_BEHAVIOR_CONTINUE;
+   return S_AI_AGENT_TASK_CONTINUE;
 }
 
 ////////////////////////////////////////
 
-tResult AIBehaviorStandCreate(IAIBehavior * * ppBehavior)
+tResult AIAgentTaskStandCreate(IAIAgentTask * * ppTask)
 {
-   if (ppBehavior == NULL)
+   if (ppTask == NULL)
    {
       return E_POINTER;
    }
-   cAutoIPtr<IAIBehavior> pBehavior(static_cast<IAIBehavior *>(new cAIBehaviorStand));
-   if (!pBehavior)
+   cAutoIPtr<IAIAgentTask> pTask(static_cast<IAIAgentTask *>(new cAIAgentTaskStand));
+   if (!pTask)
    {
       return E_OUTOFMEMORY;
    }
-   return pBehavior.GetPointer(ppBehavior);
+   return pTask.GetPointer(ppTask);
 }
 
 

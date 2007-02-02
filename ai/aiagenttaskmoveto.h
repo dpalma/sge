@@ -1,8 +1,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_AIBEHAVIORWANDER_H
-#define INCLUDED_AIBEHAVIORWANDER_H
+#ifndef INCLUDED_AIAGENTTASKMOVETO_H
+#define INCLUDED_AIAGENTTASKMOVETO_H
 
 #include "ai/aiagentapi.h"
 
@@ -16,34 +16,34 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cAIBehaviorWander
+// CLASS: cAIAgentTaskMoveTo
 //
 
-class cAIBehaviorWander : public cComObject<IMPLEMENTS(IAIBehavior)>
-                        , public cStateMachine<cAIBehaviorWander, double>
+class cAIAgentTaskMoveTo : public cComObject<IMPLEMENTS(IAIAgentTask)>
+                         , public cStateMachine<cAIAgentTaskMoveTo, double>
 {
 public:
-   cAIBehaviorWander();
-   ~cAIBehaviorWander();
+   cAIAgentTaskMoveTo(const tVec3 & point);
+   ~cAIAgentTaskMoveTo();
 
    virtual tResult Update(IAIAgent * pAgent, double elapsedTime);
 
+   void OnInitialStateUpdate(double);
+
 private:
-   void MoveTo(const tVec3 & point);
-   void Stop();
-
-   void OnEnterIdle();
-   void OnIdle(double elapsed);
-   void OnExitIdle();
-
    void OnEnterMoving();
-   void OnMoving(double elapsed);
+   void OnUpdateMoving(double elapsed);
    void OnExitMoving();
 
-   tState m_idleState;
+   void OnEnterArrived();
+   void OnUpdateArrived(double elapsed);
+   void OnExitArrived();
+
    tState m_movingState;
+   tState m_arrivedState;
 
    tVec3 m_moveGoal;
+   float m_lastDistSqr;
 
    cAutoIPtr<IAIAgentLocationProvider> m_pLocationProvider;
    cAutoIPtr<IAIAgentAnimationProvider> m_pAnimationProvider;
@@ -52,4 +52,4 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-#endif // !INCLUDED_AIBEHAVIORWANDER_H
+#endif // !INCLUDED_AIAGENTTASKMOVETO_H

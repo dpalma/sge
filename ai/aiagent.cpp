@@ -6,6 +6,10 @@
 #include "aiagent.h"
 
 #include "tech/globalobj.h"
+#include "tech/multivar.h"
+#include "tech/vec3.h"
+
+#include <algorithm>
 
 #include "tech/dbgalloc.h" // must be last header
 
@@ -17,8 +21,9 @@
 
 ////////////////////////////////////////
 
-cAIAgent::cAIAgent(tAIAgentID id)
- : m_id(id)
+cAIAgent::cAIAgent(tAIAgentID id, IUnknown * pUnkOuter)
+ : cComAggregableObject<IMPLEMENTS(IAIAgent)>(pUnkOuter)
+ , m_id(id)
 {
 }
 
@@ -26,72 +31,90 @@ cAIAgent::cAIAgent(tAIAgentID id)
 
 cAIAgent::~cAIAgent()
 {
-   tAIBehaviorList::iterator iter = m_behaviorStack.begin(), end = m_behaviorStack.end();
-   for (; iter != end; ++iter)
-   {
-      (*iter)->Release();
-   }
-   m_behaviorStack.clear();
+   RemoveAllTasks();
 }
 
 ////////////////////////////////////////
 
-tResult cAIAgent::SetDefaultBehavior(IAIBehavior * pBehavior)
+tResult cAIAgent::SetDefaultTask(IAIAgentTask * pTask)
 {
-   SafeRelease(m_pDefaultBehavior);
-   m_pDefaultBehavior = CTAddRef(pBehavior);
+   SafeRelease(m_pDefaultTask);
+   m_pDefaultTask = CTAddRef(pTask);
    return S_OK;
 }
 
 ////////////////////////////////////////
 
-tResult cAIAgent::GetDefaultBehavior(IAIBehavior * * ppBehavior)
+tResult cAIAgent::GetDefaultTask(IAIAgentTask * * ppTask)
 {
-   return m_pDefaultBehavior.GetPointer(ppBehavior);
+   return m_pDefaultTask.GetPointer(ppTask);
 }
 
 ////////////////////////////////////////
 
-tResult cAIAgent::PushBehavior(IAIBehavior * pBehavior)
+tResult cAIAgent::AddTask(IAIAgentTask * pTask)
 {
-   if (pBehavior == NULL)
+   if (pTask == NULL)
    {
       return E_POINTER;
    }
-   m_behaviorStack.push_front(CTAddRef(pBehavior));
+   m_taskQueue.push_back(CTAddRef(pTask));
    return S_OK;
 }
 
 ////////////////////////////////////////
 
-tResult cAIAgent::PopBehavior()
+tResult cAIAgent::RemoveTask(IAIAgentTask * pTask)
 {
-   if (m_behaviorStack.empty())
+   if (pTask == NULL)
    {
-      return E_FAIL;
+      return E_POINTER;
    }
-   IAIBehavior * pBehavior = m_behaviorStack.front();
-   m_behaviorStack.pop_front();
-   SafeRelease(pBehavior);
-   return S_OK;
+   if (!m_taskQueue.empty())
+   {
+      tTaskList::iterator iter = m_taskQueue.begin(), end = m_taskQueue.end();
+      for (; iter != end; ++iter)
+      {
+         if (CTIsSameObject(pTask, *iter))
+         {
+            (*iter)->Release();
+            m_taskQueue.erase(iter);
+            return S_OK;
+         }
+      }
+   }
+   return S_FALSE;
 }
 
 ////////////////////////////////////////
 
-tResult cAIAgent::GetActiveBehavior(IAIBehavior * * ppBehavior)
+tResult cAIAgent::RemoveAllTasks()
 {
-   if (m_behaviorStack.empty())
+   if (!m_taskQueue.empty())
    {
-      return GetDefaultBehavior(ppBehavior);
+      std::for_each(m_taskQueue.begin(), m_taskQueue.end(), CTInterfaceMethod(&IUnknown::Release));
+      m_taskQueue.clear();
+      return S_OK;
+   }
+   return S_FALSE;
+}
+
+////////////////////////////////////////
+
+tResult cAIAgent::GetActiveTask(IAIAgentTask * * ppTask)
+{
+   if (m_taskQueue.empty())
+   {
+      return GetDefaultTask(ppTask);
    }
    else
    {
-      IAIBehavior * pBehavior = m_behaviorStack.front();
-      if (pBehavior == NULL)
+      IAIAgentTask * pTask = m_taskQueue.front();
+      if (pTask == NULL)
       {
          return E_FAIL; // but, this shouldn't ever happen
       }
-      *ppBehavior = CTAddRef(pBehavior);
+      *ppTask = CTAddRef(pTask);
       return S_OK;
    }
 }
@@ -130,6 +153,50 @@ tResult cAIAgent::GetAnimationProvider(IAIAgentAnimationProvider * * ppAnimation
 
 ////////////////////////////////////////
 
+tResult cAIAgent::Update(double time)
+{
+   cAutoIPtr<IAIAgentTask> pTask;
+   if (!m_taskQueue.empty())
+   {
+      pTask = CTAddRef(m_taskQueue.front());
+      if (pTask->Update(static_cast<IAIAgent*>(this), time) == S_AI_AGENT_TASK_DONE)
+      {
+         SafeRelease(m_taskQueue.front());
+         m_taskQueue.pop_front();
+      }
+   }
+   else if (!!m_pDefaultTask)
+   {
+      if (m_pDefaultTask->Update(static_cast<IAIAgent*>(this), time) == S_AI_AGENT_TASK_DONE)
+      {
+         SafeRelease(m_pDefaultTask);
+      }
+   }
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+static bool GetVec3(IAIAgentMessage * pMessage, tVec3 * pVec)
+{
+   if (pMessage->GetArgumentCount() == 3)
+   {
+      cMultiVar args[3];
+      for (int i = 0; i < _countof(args); ++i)
+      {
+         if (pMessage->GetArgument(i, &args[i]) != S_OK || !IsNumber(args[i]))
+         {
+            return false;
+         }
+      }
+
+      *pVec = tVec3(args[0].ToFloat(), args[1].ToFloat(), args[2].ToFloat());
+      return true;
+   }
+
+   return false;
+}
+
 tResult cAIAgent::HandleMessage(IAIAgentMessage * pMessage)
 {
    if (pMessage == NULL)
@@ -139,12 +206,41 @@ tResult cAIAgent::HandleMessage(IAIAgentMessage * pMessage)
 
    eAIAgentMessageType msgType = pMessage->GetMessageType();
 
-   return S_FALSE;
+   switch (msgType)
+   {
+      case kAIAMT_Stop:
+      {
+         RemoveAllTasks();
+         cAutoIPtr<IAIAgentTask> pTask;
+         if (AIAgentTaskStandCreate(&pTask) == S_OK)
+         {
+            SetDefaultTask(pTask);
+         }
+         break;
+      }
+
+      case kAIAMT_MoveTo:
+      {
+         RemoveAllTasks();
+         tVec3 point;
+         if (GetVec3(pMessage, &point))
+         {
+            cAutoIPtr<IAIAgentTask> pTask;
+            if (AIAgentTaskMoveToCreate(point, &pTask) == S_OK)
+            {
+               SetDefaultTask(pTask);
+            }
+         }
+         break;
+      }
+   }
+
+   return S_OK;
 }
 
 ////////////////////////////////////////
 
-tResult AIAgentCreate(tAIAgentID id, IAIAgent * * ppAgent)
+tResult AIAgentCreate(tAIAgentID id, IUnknown * pUnkOuter, IAIAgent * * ppAgent)
 {
    if (id == 0)
    {
@@ -155,7 +251,7 @@ tResult AIAgentCreate(tAIAgentID id, IAIAgent * * ppAgent)
       return E_POINTER;
    }
 
-   cAutoIPtr<IAIAgent> pAgent(static_cast<IAIAgent *>(new cAIAgent(id)));
+   cAutoIPtr<IAIAgent> pAgent(static_cast<IAIAgent *>(new cAIAgent(id, pUnkOuter)));
    if (!pAgent)
    {
       return E_OUTOFMEMORY;

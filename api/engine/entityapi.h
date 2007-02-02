@@ -123,8 +123,6 @@ interface IEntitySpawnComponent : IEntityComponent
 
 interface IEntityBrainComponent : IEntityComponent
 {
-   virtual tResult MoveTo(const tVec3 & point) = 0;
-   virtual tResult Stop() = 0;
 };
 
 

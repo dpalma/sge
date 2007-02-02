@@ -368,7 +368,7 @@ tResult cEntityBrainComponent::Create(IEntity * pEntity, IEntityBrainComponent *
    tResult result = E_FAIL;
 
    cAutoIPtr<IAIAgent> pAgent;
-   if ((result = AIAgentCreate(pEntity->GetId(), &pAgent)) != S_OK)
+   if ((result = AIAgentCreate(pEntity->GetId(), NULL, &pAgent)) != S_OK)
    {
       return result;
    }
@@ -397,17 +397,6 @@ tResult cEntityBrainComponent::Create(IEntity * pEntity, IEntityBrainComponent *
       }
    }
 
-   cAutoIPtr<IAIBehavior> pDefaultBehavior;
-   if ((result = AIBehaviorStandCreate(&pDefaultBehavior)) != S_OK)
-   {
-      return result;
-   }
-
-   if ((result = pAgent->SetDefaultBehavior(pDefaultBehavior)) != S_OK)
-   {
-      return result;
-   }
-
    cAutoIPtr<cEntityBrainComponent> pBrainComponent = new cEntityBrainComponent(pAgent);
    if (!pBrainComponent)
    {
@@ -420,46 +409,10 @@ tResult cEntityBrainComponent::Create(IEntity * pEntity, IEntityBrainComponent *
 
 ///////////////////////////////////////
 
-tResult cEntityBrainComponent::MoveTo(const tVec3 & point)
+void cEntityBrainComponent::Update(double time)
 {
    Assert(!!m_pAgent);
-
-   cAutoIPtr<IAIBehavior> pMoveToBehavior;
-   if (AIBehaviorMoveToCreate(point, &pMoveToBehavior) == S_OK)
-   {
-      m_pAgent->PushBehavior(pMoveToBehavior);
-      return S_OK;
-   }
-
-   return E_FAIL;
-}
-
-///////////////////////////////////////
-
-tResult cEntityBrainComponent::Stop()
-{
-   Assert(!!m_pAgent);
-   int sanityCheck = 1000;
-   while ((m_pAgent->PopBehavior() == S_OK) && (--sanityCheck > 0))
-   {
-      // do nothing
-   }
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-void cEntityBrainComponent::Update(double elapsedTime)
-{
-   Assert(!!m_pAgent);
-   cAutoIPtr<IAIBehavior> pBehavior;
-   if (m_pAgent->GetActiveBehavior(&pBehavior) == S_OK)
-   {
-      if (pBehavior->Update(m_pAgent, elapsedTime) == S_AI_BEHAVIOR_DONE)
-      {
-         m_pAgent->PopBehavior();
-      }
-   }
+   m_pAgent->Update(time);
 }
 
 ///////////////////////////////////////
