@@ -39,6 +39,8 @@ public:
    explicit cMultiVar(IUnknown * pUnk);
    ~cMultiVar();
 
+   bool IsEqual(const cMultiVar & other) const;
+
    void Assign(const cMultiVar & multiVar);
    void Assign(int value);
    void Assign(float value);

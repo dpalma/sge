@@ -13,6 +13,23 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
+LOG_DEFINE_CHANNEL(AIAgentMessageRouter);
+
+#define LocalMsg(msg)            DebugMsgEx(AIAgentMessageRouter,msg)
+#define LocalMsg1(msg,a)         DebugMsgEx1(AIAgentMessageRouter,msg,(a))
+#define LocalMsg2(msg,a,b)       DebugMsgEx2(AIAgentMessageRouter,msg,(a),(b))
+#define LocalMsg3(msg,a,b,c)     DebugMsgEx3(AIAgentMessageRouter,msg,(a),(b),(c))
+#define LocalMsg4(msg,a,b,c,d)   DebugMsgEx4(AIAgentMessageRouter,msg,(a),(b),(c),(d))
+
+#define LocalMsgIf(cond,msg)           DebugMsgIfEx(AIAgentMessageRouter,(cond),msg)
+#define LocalMsgIf1(cond,msg,a)        DebugMsgIfEx1(AIAgentMessageRouter,(cond),msg,(a))
+#define LocalMsgIf2(cond,msg,a,b)      DebugMsgIfEx2(AIAgentMessageRouter,(cond),msg,(a),(b))
+#define LocalMsgIf3(cond,msg,a,b,c)    DebugMsgIfEx3(AIAgentMessageRouter,(cond),msg,(a),(b),(c))
+#define LocalMsgIf4(cond,msg,a,b,c,d)  DebugMsgIfEx4(AIAgentMessageRouter,(cond),msg,(a),(b),(c),(d))
+
+
+///////////////////////////////////////////////////////////////////////////////
+
 extern tResult AIAgentMessageCreate(tAIAgentID receiver, tAIAgentID sender, double deliveryTime,
                                     eAIAgentMessageType messageType, uint nArgs, const cMultiVar * args,
                                     IAIAgentMessage * * ppAgentMessage);
@@ -28,6 +45,7 @@ extern tResult AIAgentMessageCreate(tAIAgentID receiver, tAIAgentID sender, doub
 cAIAgentMessageRouter::cAIAgentMessageRouter(bool bAutoConnectToSim)
  : m_bAutoConnectToSim(bAutoConnectToSim)
  , m_msgQueueIndex(0)
+ , m_lastSimTime(0)
 {
 }
 
@@ -57,13 +75,29 @@ tResult cAIAgentMessageRouter::Term()
    UseGlobal(Sim);
    pSim->RemoveSimClient(static_cast<ISimClient*>(this));
 
+   ClearMessages();
+
+   RevokeAllAgents();
+
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+void cAIAgentMessageRouter::RevokeAllAgents()
+{
    tAgentMap::iterator iter = m_agentMap.begin(), end = m_agentMap.end();
    for (; iter != end; ++iter)
    {
       iter->second->Release();
    }
    m_agentMap.clear();
+}
 
+////////////////////////////////////////
+
+void cAIAgentMessageRouter::ClearMessages()
+{
    for (int i = 0; i < _countof(m_msgQueue); ++i)
    {
       std::for_each(m_msgQueue[i].begin(), m_msgQueue[i].end(), CTInterfaceMethod(&IAIAgentMessage::Release));
@@ -76,8 +110,6 @@ tResult cAIAgentMessageRouter::Term()
       m_delayedMsgQueue.pop();
       SafeRelease(pMsg);
    }
-
-   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -118,17 +150,14 @@ tResult cAIAgentMessageRouter::SendMessage(tAIAgentID receiver,
 
 ////////////////////////////////////////
 
-tResult cAIAgentMessageRouter::RegisterAgent(tAIAgentID id, IAIAgent * pAgent)
+tResult cAIAgentMessageRouter::RegisterAgent(IAIAgent * pAgent)
 {
-   if (id == 0)
-   {
-      return E_INVALIDARG;
-   }
-
    if (pAgent == NULL)
    {
       return E_POINTER;
    }
+
+   tAIAgentID id = pAgent->GetID();
 
    tAgentMap::iterator f = m_agentMap.find(id);
    if (f != m_agentMap.end())
@@ -143,8 +172,15 @@ tResult cAIAgentMessageRouter::RegisterAgent(tAIAgentID id, IAIAgent * pAgent)
 
 ////////////////////////////////////////
 
-tResult cAIAgentMessageRouter::RevokeAgent(tAIAgentID id)
+tResult cAIAgentMessageRouter::RevokeAgent(IAIAgent * pAgent)
 {
+   if (pAgent == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tAIAgentID id = pAgent->GetID();
+
    tAgentMap::iterator f = m_agentMap.find(id);
    if (f == m_agentMap.end())
    {
@@ -175,6 +211,7 @@ void cAIAgentMessageRouter::PumpMessages(double time)
    while (!msgQueue.empty())
    {
       cAutoIPtr<IAIAgentMessage> pMsg = msgQueue.front();
+      AssertMsg(!!pMsg, "NULL message pointer should never have been queued");
       msgQueue.pop_front();
       DeliverMessage(pMsg);
    }
@@ -183,6 +220,7 @@ void cAIAgentMessageRouter::PumpMessages(double time)
    while (!m_delayedMsgQueue.empty())
    {
       cAutoIPtr<IAIAgentMessage> pMsg = m_delayedMsgQueue.top();
+      AssertMsg(!!pMsg, "NULL message pointer should never have been queued");
       if (pMsg->GetDeliveryTime() <= time)
       {
          m_delayedMsgQueue.pop();
@@ -193,6 +231,15 @@ void cAIAgentMessageRouter::PumpMessages(double time)
          break;
       }
    }
+
+   double elapsed = (m_lastSimTime == 0) ? 0 : (time - m_lastSimTime);
+   tAgentMap::iterator iter = m_agentMap.begin(), end = m_agentMap.end();
+   for (; iter != end; ++iter)
+   {
+      cAutoIPtr<IAIAgent> pAgent(CTAddRef(iter->second));
+      pAgent->Update(elapsed);
+   }
+   m_lastSimTime = time;
 }
 
 ////////////////////////////////////////
@@ -204,6 +251,9 @@ void cAIAgentMessageRouter::DeliverMessage(IAIAgentMessage * pMsg)
    {
       cAutoIPtr<IAIAgent> pAgent(CTAddRef(f->second));
       pAgent->HandleMessage(pMsg);
+
+      LocalMsg4("AIAgentMessage delivered: receiver %d, sender %d, delivery %f, type %d\n",
+         pMsg->GetReceiver(), pMsg->GetSender(), pMsg->GetDeliveryTime(), pMsg->GetMessageType());
    }
 }
 
@@ -255,8 +305,10 @@ cAIAgentMessageRouterTests::~cAIAgentMessageRouterTests()
 class cMessageCollectingAgent : public cComObject<IMPLEMENTS(IAIAgent)>
 {
 public:
-   cMessageCollectingAgent() {}
+   cMessageCollectingAgent(tAIAgentID id) : m_id(id) {}
    ~cMessageCollectingAgent() { ClearMessages(); }
+
+   virtual tAIAgentID GetID() const { return m_id; }
 
    virtual tResult SetLocationProvider(IAIAgentLocationProvider *) { return E_NOTIMPL; }
    virtual tResult GetLocationProvider(IAIAgentLocationProvider * *) { return E_NOTIMPL; }
@@ -273,15 +325,16 @@ public:
    void ClearMessages() { std::for_each(m_msgs.begin(), m_msgs.end(), CTInterfaceMethod(&IAIAgentMessage::Release)), m_msgs.clear(); }
 
 private:
+   tAIAgentID m_id;
    std::deque<IAIAgentMessage *> m_msgs;
 };
 
 TEST_FIXTURE(cAIAgentMessageRouterTests, ProperAgentMessageOrder)
 {
-   cAutoIPtr<cMessageCollectingAgent> pAgent(new cMessageCollectingAgent);
-
    static const tAIAgentID id = 1;
-   CHECK_EQUAL(S_OK, AccessMsgRouter()->RegisterAgent(id, pAgent));
+   cAutoIPtr<cMessageCollectingAgent> pAgent(new cMessageCollectingAgent(id));
+
+   CHECK_EQUAL(S_OK, AccessMsgRouter()->RegisterAgent(pAgent));
 
    static const struct 
    {
@@ -319,7 +372,7 @@ TEST_FIXTURE(cAIAgentMessageRouterTests, ProperAgentMessageOrder)
       CHECK(index == (*iter)->GetDeliveryTime());
    }
 
-   CHECK_EQUAL(S_OK, AccessMsgRouter()->RevokeAgent(id));
+   CHECK_EQUAL(S_OK, AccessMsgRouter()->RevokeAgent(pAgent));
 }
 
 #endif // HAVE_UNITTESTPP

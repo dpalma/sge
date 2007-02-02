@@ -710,11 +710,7 @@ tResult cEntityManager::cSimClient::RemoveUpdatable(IUpdatable * pUpdatable)
 
 void cEntityManager::cSimClient::RemoveAll()
 {
-   tUpdatableList::iterator iter = m_updatables.begin(), end = m_updatables.end();
-   for (; iter != end; ++iter)
-   {
-      (*iter)->Release();
-   }
+   std::for_each(m_updatables.begin(), m_updatables.end(), CTInterfaceMethod(&IUnknown::Release));
    m_updatables.clear();
 }
 

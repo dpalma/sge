@@ -121,6 +121,13 @@ tResult cAIAgent::GetActiveTask(IAIAgentTask * * ppTask)
 
 ////////////////////////////////////////
 
+tAIAgentID cAIAgent::GetID() const
+{
+   return m_id;
+}
+
+////////////////////////////////////////
+
 tResult cAIAgent::SetLocationProvider(IAIAgentLocationProvider * pLocationProvider)
 {
    SafeRelease(m_pLocationProvider);
@@ -199,10 +206,7 @@ static bool GetVec3(IAIAgentMessage * pMessage, tVec3 * pVec)
 
 tResult cAIAgent::HandleMessage(IAIAgentMessage * pMessage)
 {
-   if (pMessage == NULL)
-   {
-      return E_POINTER;
-   }
+   Assert(pMessage != NULL);
 
    eAIAgentMessageType msgType = pMessage->GetMessageType();
 
@@ -246,6 +250,7 @@ tResult AIAgentCreate(tAIAgentID id, IUnknown * pUnkOuter, IAIAgent * * ppAgent)
    {
       return E_INVALIDARG;
    }
+
    if (ppAgent == NULL)
    {
       return E_POINTER;
@@ -258,12 +263,11 @@ tResult AIAgentCreate(tAIAgentID id, IUnknown * pUnkOuter, IAIAgent * * ppAgent)
    }
 
    UseGlobal(AIAgentMessageRouter);
+   ErrorMsgIf(!pAIAgentMessageRouter, "No AI agent message router\n");
    if (!!pAIAgentMessageRouter)
    {
-      pAIAgentMessageRouter->RegisterAgent(id, pAgent);
+      pAIAgentMessageRouter->RegisterAgent(pAgent);
    }
-
-   ErrorMsgIf(!pAIAgentMessageRouter, "No AI agent message router\n");
 
    return pAgent.GetPointer(ppAgent);
 }

@@ -5,6 +5,10 @@
 
 #include "aiagentmessage.h"
 
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
+#endif
+
 #include "tech/dbgalloc.h" // must be last header
 
 
@@ -90,6 +94,26 @@ tResult cAIAgentMessage::GetArgument(uint index, cMultiVar * pArg) const
 
 ////////////////////////////////////////
 
+tResult cAIAgentMessage::GetArguments(uint * pnArgs, cMultiVar * pArgs) const
+{
+   if (pnArgs == NULL || pArgs == NULL)
+   {
+      return E_POINTER;
+   }
+
+   uint nReturned = Min(*pnArgs, m_args.size());
+   for (uint i = 0; i < nReturned; ++i)
+   {
+      *pArgs++ = m_args[i];
+   }
+
+   *pnArgs = nReturned;
+
+   return (nReturned == m_args.size()) ? S_OK : S_FALSE;
+}
+
+////////////////////////////////////////
+
 tResult AIAgentMessageCreate(tAIAgentID receiver, tAIAgentID sender, double deliveryTime,
                              eAIAgentMessageType messageType, uint nArgs, const cMultiVar * args,
                              IAIAgentMessage * * ppAgentMessage)
@@ -114,5 +138,50 @@ tResult AIAgentMessageCreate(tAIAgentID receiver, tAIAgentID sender, double deli
    return pMsg.GetPointer(ppAgentMessage);
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_UNITTESTPP
+
+TEST(AIAgentMessageGetArguments)
+{
+   static const cMultiVar expectedArgs[] =
+   {
+      cMultiVar(3.1415f),
+      cMultiVar(_T("test string")),
+      cMultiVar(NULL),
+      cMultiVar(10000),
+   };
+
+   cAutoIPtr<IAIAgentMessage> pMsg;
+   CHECK_EQUAL(S_OK, AIAgentMessageCreate(1, 0, 0, kAIAMT_Stop, _countof(expectedArgs), expectedArgs, &pMsg));
+
+   {
+      cMultiVar actualArgs[_countof(expectedArgs)];
+
+      uint nActualArgs = _countof(actualArgs);
+      CHECK_EQUAL(S_OK, pMsg->GetArguments(&nActualArgs, actualArgs));
+
+      for (uint i = 0; i < nActualArgs; ++i)
+      {
+         CHECK(expectedArgs[i].IsEqual(actualArgs[i]));
+      }
+   }
+
+   {
+      cMultiVar notEnoughArgs[_countof(expectedArgs) / 2];
+
+      uint nNotEnoughArgs = _countof(notEnoughArgs);
+      CHECK_EQUAL(S_FALSE, pMsg->GetArguments(&nNotEnoughArgs, notEnoughArgs));
+      CHECK_EQUAL(nNotEnoughArgs, _countof(notEnoughArgs));
+
+      for (uint i = 0; i < nNotEnoughArgs; ++i)
+      {
+         CHECK(expectedArgs[i].IsEqual(notEnoughArgs[i]));
+      }
+   }
+}
+
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////

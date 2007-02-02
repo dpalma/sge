@@ -36,8 +36,9 @@ const tAIAgentID kInvalidAIAgentID = 0;
 
 enum eAIAgentMessageType
 {
-   kAIAMT_Stop,
-   kAIAMT_MoveTo,
+   kAIAMT_Stop,               // no arguments
+   kAIAMT_MoveTo,             // three floats indicating the goal position
+   kAIAMT_TimeOut,            // integer for use as a timer identifier
 };
 
 
@@ -57,6 +58,7 @@ interface IAIAgentMessage : IUnknown
 
    virtual uint GetArgumentCount() const = 0;
    virtual tResult GetArgument(uint index, cMultiVar * pArg) const = 0;
+   virtual tResult GetArguments(uint * pnArgs, cMultiVar * pArgs) const = 0;
 };
 
 
@@ -73,8 +75,8 @@ interface IAIAgentMessageRouter : IUnknown
    virtual tResult SendMessage(tAIAgentID receiver, tAIAgentID sender, double deliveryTime,
       eAIAgentMessageType messageType, uint nArgs, const cMultiVar * args) = 0;
 
-   virtual tResult RegisterAgent(tAIAgentID id, IAIAgent * pAgent) = 0;
-   virtual tResult RevokeAgent(tAIAgentID id) = 0;
+   virtual tResult RegisterAgent(IAIAgent * pAgent) = 0;
+   virtual tResult RevokeAgent(IAIAgent * pAgent) = 0;
 };
 
 ////////////////////////////////////////
@@ -89,6 +91,8 @@ AI_API tResult AIAgentMessageRouterCreate();
 
 interface IAIAgent : IUnknown
 {
+   virtual tAIAgentID GetID() const = 0;
+
    virtual tResult SetLocationProvider(IAIAgentLocationProvider * pLocationProvider) = 0;
    virtual tResult GetLocationProvider(IAIAgentLocationProvider * * ppLocationProvider) = 0;
 
@@ -107,29 +111,28 @@ AI_API tResult AIAgentCreate(tAIAgentID id, IUnknown * pUnkOuter, IAIAgent * * p
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// ENUM: eAIAgentAnimation
-//
-
-enum eAIAgentAnimation
-{
-   kAIAgentAnimIdle,
-   kAIAgentAnimWalk,
-   kAIAgentAnimRun,
-   kAIAgentAnimMeleeAttack,
-   kAIAgentAnimRangedAttack,
-   kAIAgentAnimDie,
-   kAIAgentAnimTakeDamage,
-};
-
-
-////////////////////////////////////////////////////////////////////////////////
-//
 // INTERFACE: IAIAgentAnimationProvider
 //
 
+////////////////////////////////////////
+
+enum eAIAgentAnimation
+{
+   kAIAA_Stand,
+   kAIAA_Fidget,
+   kAIAA_Walk,
+   kAIAA_Run,
+   kAIAA_MeleeAttack,
+   kAIAA_RangedAttack,
+   kAIAA_Die,
+   kAIAA_TakeDamage,
+};
+
+////////////////////////////////////////
+
 interface IAIAgentAnimationProvider : IUnknown
 {
-   virtual tResult SetAnimation(eAIAgentAnimation anim) = 0;
+   virtual tResult RequestAnimation(eAIAgentAnimation anim) = 0;
 };
 
 
@@ -142,6 +145,16 @@ interface IAIAgentLocationProvider : IUnknown
 {
    virtual tResult SetPosition(const tVec3 & position) = 0;
    virtual tResult GetPosition(tVec3 * pPosition) const = 0;
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IAIAgentBehavior
+//
+
+interface IAIAgentBehavior : IUnknown
+{
 };
 
 

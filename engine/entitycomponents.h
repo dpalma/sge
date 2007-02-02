@@ -65,7 +65,7 @@ public:
 
    virtual void Update(double elapsedTime);
 
-   virtual tResult SetAnimation(eAIAgentAnimation anim);
+   virtual tResult RequestAnimation(eAIAgentAnimation anim);
 
 private:
    cAnimatedModelRenderer m_mainModel;
@@ -100,7 +100,7 @@ private:
 // CLASS: cEntityBrainComponent
 //
 
-class cEntityBrainComponent : public cComObject2<IMPLEMENTS(IEntityBrainComponent), IMPLEMENTS(IUpdatable)>
+class cEntityBrainComponent : public cComObject<IMPLEMENTS(IEntityBrainComponent)>
 {
    cEntityBrainComponent(IAIAgent * pAgent);
 
@@ -108,8 +108,6 @@ public:
    ~cEntityBrainComponent();
 
    static tResult Create(IEntity * pEntity, IEntityBrainComponent * * ppBrainComponent);
-
-   virtual void Update(double time);
 
 private:
    cAutoIPtr<IAIAgent> m_pAgent;

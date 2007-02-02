@@ -33,6 +33,7 @@ public:
    virtual eAIAgentMessageType GetMessageType() const;
    virtual uint GetArgumentCount() const;
    virtual tResult GetArgument(uint index, cMultiVar * pArg) const;
+   virtual tResult GetArguments(uint * pnArgs, cMultiVar * pArgs) const;
 
 private:
    tAIAgentID m_receiver;

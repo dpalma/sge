@@ -37,7 +37,7 @@ tResult cAIAgentTaskStand::Update(IAIAgent * pAgent, double elapsedTime)
       cAutoIPtr<IAIAgentAnimationProvider> pAnimationProvider;
       if (pAgent != NULL && pAgent->GetAnimationProvider(&pAnimationProvider) == S_OK)
       {
-         pAnimationProvider->SetAnimation(kAIAgentAnimIdle);
+         pAnimationProvider->RequestAnimation(kAIAA_Fidget);
       }
    }
 

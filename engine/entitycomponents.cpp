@@ -164,7 +164,7 @@ void cEntityRenderComponent::Update(double elapsedTime)
 
 ///////////////////////////////////////
 
-tResult cEntityRenderComponent::SetAnimation(eAIAgentAnimation anim)
+tResult cEntityRenderComponent::RequestAnimation(eAIAgentAnimation anim)
 {
    static const struct
    {
@@ -173,13 +173,13 @@ tResult cEntityRenderComponent::SetAnimation(eAIAgentAnimation anim)
    }
    animMap[] =
    {
-      { kAIAgentAnimIdle, kMAT_Idle },
-      { kAIAgentAnimWalk, kMAT_Walk },
-      { kAIAgentAnimRun, kMAT_Run },
-      { kAIAgentAnimMeleeAttack, kMAT_Attack },
-      { kAIAgentAnimRangedAttack, kMAT_Attack },
-      { kAIAgentAnimDie, kMAT_Death },
-      { kAIAgentAnimTakeDamage, kMAT_Damage },
+      { kAIAA_Fidget,            kMAT_Idle },
+      { kAIAA_Walk,              kMAT_Walk },
+      { kAIAA_Run,               kMAT_Run },
+      { kAIAA_MeleeAttack,       kMAT_Attack },
+      { kAIAA_RangedAttack,      kMAT_Attack },
+      { kAIAA_Die,               kMAT_Death },
+      { kAIAA_TakeDamage,        kMAT_Damage },
    };
    for (int i = 0; i < _countof(animMap); ++i)
    {
@@ -405,14 +405,6 @@ tResult cEntityBrainComponent::Create(IEntity * pEntity, IEntityBrainComponent *
 
    *ppBrainComponent = static_cast<IEntityBrainComponent *>(CTAddRef(pBrainComponent));
    return S_OK;
-}
-
-///////////////////////////////////////
-
-void cEntityBrainComponent::Update(double time)
-{
-   Assert(!!m_pAgent);
-   m_pAgent->Update(time);
 }
 
 ///////////////////////////////////////

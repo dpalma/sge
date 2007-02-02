@@ -67,7 +67,7 @@ void cAIAgentTaskMoveTo::OnEnterMoving()
 {
    if (!!m_pAnimationProvider)
    {
-      m_pAnimationProvider->SetAnimation(kAIAgentAnimWalk);
+      m_pAnimationProvider->RequestAnimation(kAIAA_Walk);
    }
 }
 
@@ -95,7 +95,7 @@ void cAIAgentTaskMoveTo::OnUpdateMoving(double elapsed)
       // Force idle immediately
       if (!!m_pAnimationProvider)
       {
-         m_pAnimationProvider->SetAnimation(kAIAgentAnimIdle);
+         m_pAnimationProvider->RequestAnimation(kAIAA_Fidget);
       }
    }
    else
@@ -128,7 +128,7 @@ void cAIAgentTaskMoveTo::OnEnterArrived()
 {
    if (!!m_pAnimationProvider)
    {
-      m_pAnimationProvider->SetAnimation(kAIAgentAnimIdle);
+      m_pAnimationProvider->RequestAnimation(kAIAA_Fidget);
    }
 }
 

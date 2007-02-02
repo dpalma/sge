@@ -32,6 +32,8 @@ public:
    tResult RemoveAllTasks();
    tResult GetActiveTask(IAIAgentTask * * ppTask);
 
+   virtual tAIAgentID GetID() const;
+
    virtual tResult SetLocationProvider(IAIAgentLocationProvider * pLocationProvider);
    virtual tResult GetLocationProvider(IAIAgentLocationProvider * * ppLocationProvider);
 

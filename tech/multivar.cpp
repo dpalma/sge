@@ -107,6 +107,43 @@ cMultiVar::~cMultiVar()
 
 ////////////////////////////////////////
 
+bool cMultiVar::IsEqual(const cMultiVar & other) const
+{
+   if (GetType() == other.GetType())
+   {
+      switch (GetType())
+      {
+         case kMVT_Empty:
+         {
+            return true;
+         }
+         case kMVT_Int:
+         {
+            return m_value.i == other.m_value.i;
+         }
+         case kMVT_Float:
+         {
+            return m_value.f == other.m_value.f;
+         }
+         case kMVT_Double:
+         {
+            return m_value.d == other.m_value.d;
+         }
+         case kMVT_String:
+         {
+            return _tcscmp(m_value.psz, other.m_value.psz) == 0;
+         }
+         case kMVT_Interface:
+         {
+            return CTIsSameObject(m_value.pUnk, other.m_value.pUnk);
+         }
+      }
+   }
+   return false;
+}
+
+////////////////////////////////////////
+
 void cMultiVar::Assign(const cMultiVar & multiVar)
 {
    if (GetType() != multiVar.GetType())

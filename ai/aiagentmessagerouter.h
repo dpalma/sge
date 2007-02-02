@@ -49,13 +49,16 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
+   void RevokeAllAgents();
+   void ClearMessages();
+
    virtual tResult SendMessage(tAIAgentID receiver, tAIAgentID sender,
       eAIAgentMessageType messageType, uint nArgs, const cMultiVar * args);
    virtual tResult SendMessage(tAIAgentID receiver, tAIAgentID sender, double deliveryTime,
       eAIAgentMessageType messageType, uint nArgs, const cMultiVar * args);
 
-   virtual tResult RegisterAgent(tAIAgentID id, IAIAgent * pAgent);
-   virtual tResult RevokeAgent(tAIAgentID id);
+   virtual tResult RegisterAgent(IAIAgent * pAgent);
+   virtual tResult RevokeAgent(IAIAgent * pAgent);
 
    virtual tResult Execute(double time);
 
@@ -75,6 +78,8 @@ private:
 
    typedef std::priority_queue<IAIAgentMessage *, std::deque<IAIAgentMessage *>, sAIAgentMessageCompare> tMsgQueue;
    tMsgQueue m_delayedMsgQueue;
+
+   double m_lastSimTime; // HACK: for calculating elapsed (maybe tasks should take the time itself instead of elapsed)
 };
 
 
