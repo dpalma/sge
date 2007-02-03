@@ -26,10 +26,6 @@ def main(argv):
 		usage()
 		return -1
 		
-	if len(opts) == 0:
-		usage()
-		return -1
-		
 	repos = None
 	bldlabel = None
 	nobuild = False
