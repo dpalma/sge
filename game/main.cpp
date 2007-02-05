@@ -269,7 +269,7 @@ cMainInitTask::cMainInitTask(const tChar * pszArgv0)
  : m_argv0((pszArgv0 != NULL) ? pszArgv0 : _T(""))
  , m_currentStage(0)
  , m_errorState(&cMainInitTask::OnEnterErrorState, NULL, NULL)
- , m_stagedInitState(NULL, &cMainInitTask::OnRunInitStages, NULL)
+ , m_stagedInitState(NULL, NULL, &cMainInitTask::OnRunInitStages)
  , m_finishedState(&cMainInitTask::OnEnterFinishedState, NULL, NULL)
 {
    memset(m_stages, 0, sizeof(m_stages));
@@ -289,7 +289,7 @@ tResult cMainInitTask::Execute(double time)
 
 ////////////////////////////////////////
 
-void cMainInitTask::OnInitialStateUpdate(double time)
+void cMainInitTask::OnInitialStateUpdate(double)
 {
    cUnitTestThread * pUnitTestThread = new cUnitTestThread(true);
    if (pUnitTestThread != NULL)
@@ -312,7 +312,7 @@ void cMainInitTask::OnEnterErrorState()
 
 ////////////////////////////////////////
 
-void cMainInitTask::OnRunInitStages(double time)
+void cMainInitTask::OnRunInitStages(double)
 {
    Assert(m_currentStage >= 0);
 

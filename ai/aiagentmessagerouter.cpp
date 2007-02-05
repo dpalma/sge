@@ -316,6 +316,17 @@ public:
    virtual tResult SetAnimationProvider(IAIAgentAnimationProvider *) { return E_NOTIMPL; }
    virtual tResult GetAnimationProvider(IAIAgentAnimationProvider * *) { return E_NOTIMPL; }
 
+   virtual tResult SetDefaultBehavior(IAIAgentBehavior * pBehavior) { return E_NOTIMPL; }
+   virtual tResult GetDefaultBehavior(IAIAgentBehavior * * ppBehavior) { return E_NOTIMPL; }
+
+   virtual tResult PushBehavior(IAIAgentBehavior * pBehavior) { return E_NOTIMPL; }
+   virtual tResult PopBehavior() { return E_NOTIMPL; }
+
+   virtual tResult GetActiveBehavior(IAIAgentBehavior * * ppBehavior) { return E_NOTIMPL; }
+
+   virtual tResult SetActiveTask(IAIAgentTask * pTask) { return E_NOTIMPL; }
+   virtual tResult GetActiveTask(IAIAgentTask * * ppTask) { return E_NOTIMPL; }
+
    virtual tResult Update(double time) { return E_NOTIMPL; }
 
    virtual tResult HandleMessage(IAIAgentMessage * pMsg) { m_msgs.push_back(CTAddRef(pMsg)); return S_OK; }

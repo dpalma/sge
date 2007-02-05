@@ -27,17 +27,17 @@ class cState
 
 public:
    cState();
-   cState(tStateEnterExitFn pfnStateEnter, tStateUpdateFn pfnStateUpdate, tStateEnterExitFn pfnStateExit);
+   cState(tStateEnterExitFn pfnStateEnter, tStateEnterExitFn pfnStateExit, tStateUpdateFn pfnStateUpdate);
    ~cState();
 
    void ExecuteStateEnter(T * pT) const;
-   void ExecuteStateUpdate(T * pT, UPDATEARG arg) const;
    void ExecuteStateExit(T * pT) const;
+   void ExecuteStateUpdate(T * pT, UPDATEARG arg) const;
 
 private:
    tStateEnterExitFn m_pfnStateEnter;
-   tStateUpdateFn m_pfnStateUpdate;
    tStateEnterExitFn m_pfnStateExit;
+   tStateUpdateFn m_pfnStateUpdate;
 };
 
 
@@ -46,7 +46,7 @@ private:
 // CLASS: cStateMachine
 //
 
-template <class T, typename UPDATEARG>
+template <class T, typename UPDATEARG, class STATE = cState<T, UPDATEARG> >
 class cStateMachine
 {
 public:
@@ -56,7 +56,7 @@ public:
    void Update(UPDATEARG arg);
 
 protected:
-   typedef cState<T, UPDATEARG> tState;
+   typedef STATE tState;
 
    bool IsCurrentState(const tState * pState) const;
    void GotoState(const tState * pNewState);
@@ -65,14 +65,14 @@ protected:
    void GotoInitialState();
 
    void InitialStateEnter();
-   void InitialStateUpdate(UPDATEARG arg);
    void InitialStateExit();
+   void InitialStateUpdate(UPDATEARG arg);
 
    // Derived classes may over-ride these methods
    // to change the initial state behavior
    void OnInitialStateEnter() {}
-   void OnInitialStateUpdate(UPDATEARG) {}
    void OnInitialStateExit() {}
+   void OnInitialStateUpdate(UPDATEARG) {}
 
 private:
    tState m_initialState;

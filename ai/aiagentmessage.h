@@ -43,6 +43,35 @@ private:
    std::vector<cMultiVar> m_args;
 };
 
+////////////////////////////////////////
+
+tResult AIAgentMessageCreate(tAIAgentID receiver, tAIAgentID sender, double deliveryTime,
+                             eAIAgentMessageType messageType, uint nArgs, const cMultiVar * args,
+                             IAIAgentMessage * * ppAgentMessage);
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cAIAgentMessageNoSelfDelete
+//
+
+class cAIAgentMessageNoSelfDelete : public cAIAgentMessage
+{
+   // TODO: prevent heap allocation
+
+public:
+   cAIAgentMessageNoSelfDelete(tAIAgentID receiver, tAIAgentID sender, double deliveryTime,
+      eAIAgentMessageType messageType, uint nArgs, const cMultiVar * args)
+    : cAIAgentMessage(receiver, sender, deliveryTime, messageType, nArgs, args)
+   {
+   }
+
+   virtual void DeleteThis()
+   {
+      // Don't actually delete
+   }
+};
+
 
 ////////////////////////////////////////////////////////////////////////////////
 

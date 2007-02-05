@@ -22,6 +22,8 @@
 class cAIAgentTaskMoveTo : public cComObject<IMPLEMENTS(IAIAgentTask)>
                          , public cStateMachine<cAIAgentTaskMoveTo, double>
 {
+   typedef cStateMachine<cAIAgentTaskMoveTo, double> tStateMachineBase;
+
 public:
    cAIAgentTaskMoveTo(const tVec3 & point);
    ~cAIAgentTaskMoveTo();

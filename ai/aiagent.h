@@ -24,14 +24,6 @@ public:
    cAIAgent(tAIAgentID id, IUnknown * pUnkOuter);
    ~cAIAgent();
 
-   tResult SetDefaultTask(IAIAgentTask * pTask);
-   tResult GetDefaultTask(IAIAgentTask * * ppTask);
-
-   tResult AddTask(IAIAgentTask * pTask);
-   tResult RemoveTask(IAIAgentTask * pTask);
-   tResult RemoveAllTasks();
-   tResult GetActiveTask(IAIAgentTask * * ppTask);
-
    virtual tAIAgentID GetID() const;
 
    virtual tResult SetLocationProvider(IAIAgentLocationProvider * pLocationProvider);
@@ -40,6 +32,14 @@ public:
    virtual tResult SetAnimationProvider(IAIAgentAnimationProvider * pAnimationProvider);
    virtual tResult GetAnimationProvider(IAIAgentAnimationProvider * * ppAnimationProvider);
 
+   virtual tResult PushBehavior(IAIAgentBehavior * pBehavior);
+   virtual tResult PopBehavior();
+
+   tResult GetActiveBehavior(IAIAgentBehavior * * ppBehavior);
+
+   virtual tResult SetActiveTask(IAIAgentTask * pTask);
+   virtual tResult GetActiveTask(IAIAgentTask * * ppTask);
+
    virtual tResult Update(double time);
 
    virtual tResult HandleMessage(IAIAgentMessage * pMessage);
@@ -47,13 +47,13 @@ public:
 private:
    tAIAgentID m_id;
 
-   cAutoIPtr<IAIAgentTask> m_pDefaultTask;
-
-   typedef std::list<IAIAgentTask*> tTaskList;
-   tTaskList m_taskQueue;
-
    cAutoIPtr<IAIAgentLocationProvider> m_pLocationProvider;
    cAutoIPtr<IAIAgentAnimationProvider> m_pAnimationProvider;
+
+   typedef std::list<IAIAgentBehavior*> tBehaviorList;
+   tBehaviorList m_behaviorStack;
+
+   cAutoIPtr<IAIAgentTask> m_pActiveTask;
 };
 
 

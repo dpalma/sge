@@ -41,7 +41,7 @@ tResult cAIAgentTaskStand::Update(IAIAgent * pAgent, double elapsedTime)
       }
    }
 
-   return S_AI_AGENT_TASK_CONTINUE;
+   return S_AI_CONTINUE;
 }
 
 ////////////////////////////////////////

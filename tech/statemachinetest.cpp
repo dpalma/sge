@@ -63,7 +63,9 @@ private:
 ////////////////////////////////////////
 
 cCppIdentifierRecognizer::cCppIdentifierRecognizer()
- : m_charOkState(&cCppIdentifierRecognizer::OnEnterCharOk, &cCppIdentifierRecognizer::OnCharOk, &cCppIdentifierRecognizer::OnExitCharOk)
+ : m_charOkState(&cCppIdentifierRecognizer::OnEnterCharOk,
+                 &cCppIdentifierRecognizer::OnExitCharOk,
+                 &cCppIdentifierRecognizer::OnCharOk)
 {
 }
 

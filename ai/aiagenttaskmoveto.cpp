@@ -18,8 +18,12 @@
 ////////////////////////////////////////
 
 cAIAgentTaskMoveTo::cAIAgentTaskMoveTo(const tVec3 & point)
- : m_movingState(&cAIAgentTaskMoveTo::OnEnterMoving, &cAIAgentTaskMoveTo::OnUpdateMoving, &cAIAgentTaskMoveTo::OnExitMoving)
- , m_arrivedState(&cAIAgentTaskMoveTo::OnEnterArrived, &cAIAgentTaskMoveTo::OnUpdateArrived, &cAIAgentTaskMoveTo::OnExitArrived)
+ : m_movingState(&cAIAgentTaskMoveTo::OnEnterMoving,
+                 &cAIAgentTaskMoveTo::OnExitMoving,
+                 &cAIAgentTaskMoveTo::OnUpdateMoving)
+ , m_arrivedState(&cAIAgentTaskMoveTo::OnEnterArrived,
+                  &cAIAgentTaskMoveTo::OnExitArrived,
+                  &cAIAgentTaskMoveTo::OnUpdateArrived)
  , m_moveGoal(point)
  , m_lastDistSqr(999999)
 {
@@ -43,14 +47,14 @@ tResult cAIAgentTaskMoveTo::Update(IAIAgent * pAgent, double elapsedTime)
       pAgent->GetAnimationProvider(&m_pAnimationProvider);
    }
 
-   cStateMachine<cAIAgentTaskMoveTo, double>::Update(elapsedTime);
+   tStateMachineBase::Update(elapsedTime);
 
    if (IsCurrentState(&m_arrivedState))
    {
-      return S_AI_AGENT_TASK_DONE;
+      return S_AI_DONE;
    }
 
-   return S_AI_AGENT_TASK_CONTINUE;
+   return S_AI_CONTINUE;
 }
 
 ////////////////////////////////////////
