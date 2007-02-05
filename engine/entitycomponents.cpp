@@ -373,6 +373,12 @@ tResult cEntityBrainComponent::Create(IEntity * pEntity, IEntityBrainComponent *
       return result;
    }
 
+   cAutoIPtr<IAIAgentBehavior> pBehavior;
+   if (AIAgentBehaviorFollowOrdersCreate(&pBehavior) == S_OK)
+   {
+      pAgent->PushBehavior(pBehavior);
+   }
+
    {
       cAutoIPtr<IEntityPositionComponent> pPosition;
       if (pEntity->GetComponent(kECT_Position, IID_IEntityPositionComponent, &pPosition) == S_OK)

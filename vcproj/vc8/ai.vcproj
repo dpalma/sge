@@ -472,6 +472,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\ai\aiagentbehaviorfolloworders.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\ai\aiagentbehaviorwander.cpp"
 				>
 			</File>
@@ -542,6 +546,10 @@
 			>
 			<File
 				RelativePath="..\..\ai\aiagent.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\ai\aiagentbehaviorfolloworders.h"
 				>
 			</File>
 			<File

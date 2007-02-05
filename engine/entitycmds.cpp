@@ -276,7 +276,7 @@ tResult cMoveMode::OnTerrainClick(const tVec3 & location)
    };
 
    UseGlobal(AIAgentMessageRouter);
-   pAIAgentMessageRouter->SendMessage(AccessEntity()->GetId(), 0, kAIAMT_MoveTo, _countof(args), &args[0]);
+   pAIAgentMessageRouter->SendMessage(AccessEntity()->GetId(), 0, kAIAMT_OrderMoveTo, _countof(args), &args[0]);
 
    return S_OK;
 }
@@ -306,7 +306,7 @@ tResult EntityCommandStop(IEntity * pEntity, const cMultiVar * pArgs, uint nArgs
    }
 
    UseGlobal(AIAgentMessageRouter);
-   pAIAgentMessageRouter->SendMessage(pEntity->GetId(), 0, kAIAMT_Stop, 0, NULL);
+   pAIAgentMessageRouter->SendMessage(pEntity->GetId(), 0, kAIAMT_OrderStop, 0, NULL);
 
    return S_OK;
 }

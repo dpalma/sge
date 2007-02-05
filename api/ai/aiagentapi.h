@@ -37,14 +37,16 @@ const tAIAgentID kInvalidAIAgentID = 0;
 
 enum eAIAgentMessageType
 {
-   kAIAMT_Stop,               // no arguments
-   kAIAMT_MoveTo,             // three floats indicating the goal position (x,y,z)
-   kAIAMT_TimeOut,            // optional integer for use as a timer identifier
-   kAIAMT_TaskDone,           // IAIAgentTask interface pointer
-   kAIAMT_BehaviorBegin,      // IAIAgentBehavior interface pointer
-   kAIAMT_BehaviorEnd,        // IAIAgentBehavior interface pointer
-   kAIAMT_BehaviorPause,      // IAIAgentBehavior interface pointer
-   kAIAMT_BehaviorResume,     // IAIAgentBehavior interface pointer
+   kAIAMT_TimeOut             = 1,     // optional integer for use as a timer identifier
+   kAIAMT_TaskDone,                    // IAIAgentTask interface pointer
+   kAIAMT_BehaviorBegin,               // IAIAgentBehavior interface pointer
+   kAIAMT_BehaviorEnd,                 // IAIAgentBehavior interface pointer
+   kAIAMT_BehaviorPause,               // IAIAgentBehavior interface pointer
+   kAIAMT_BehaviorResume,              // IAIAgentBehavior interface pointer
+
+   kAIAMT_OrderStop           = 100,   // no arguments
+   kAIAMT_OrderMoveTo,                 // three floats indicating the goal position (x,y,z)
+   kAIAMT_OrderAttack,                 // goal (x,y,z), or integer entity id
 };
 
 
@@ -185,6 +187,7 @@ interface IAIAgentBehavior : IUnknown
 
 ////////////////////////////////////////
 
+AI_API tResult AIAgentBehaviorFollowOrdersCreate(IAIAgentBehavior * * ppBehavior);
 AI_API tResult AIAgentBehaviorWanderCreate(IAIAgentBehavior * * ppBehavior);
 
 

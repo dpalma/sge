@@ -354,15 +354,15 @@ TEST_FIXTURE(cAIAgentMessageRouterTests, ProperAgentMessageOrder)
    }
    msgs[] =
    {
-      { kAIAMT_Stop, 4 },
-      { kAIAMT_MoveTo, 2 },
-      { kAIAMT_MoveTo, 5 },
-      { kAIAMT_MoveTo, 8 },
-      { kAIAMT_Stop, 6 },
-      { kAIAMT_Stop, 3 },
-      { kAIAMT_Stop, 9 },
-      { kAIAMT_Stop, 1 },
-      { kAIAMT_MoveTo, 7 },
+      { kAIAMT_OrderStop, 4 },
+      { kAIAMT_OrderMoveTo, 2 },
+      { kAIAMT_OrderMoveTo, 5 },
+      { kAIAMT_OrderMoveTo, 8 },
+      { kAIAMT_OrderStop, 6 },
+      { kAIAMT_OrderStop, 3 },
+      { kAIAMT_OrderStop, 9 },
+      { kAIAMT_OrderStop, 1 },
+      { kAIAMT_OrderMoveTo, 7 },
    };
 
    double maxTime = -99999;

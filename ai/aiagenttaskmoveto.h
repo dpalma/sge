@@ -9,6 +9,8 @@
 #include "tech/statemachine.h"
 #include "tech/vec3.h"
 
+#include <utility>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -19,25 +21,25 @@
 // CLASS: cAIAgentTaskMoveTo
 //
 
+typedef std::pair<IAIAgent *, double> tAgentDoublePair;
+
 class cAIAgentTaskMoveTo : public cComObject<IMPLEMENTS(IAIAgentTask)>
-                         , public cStateMachine<cAIAgentTaskMoveTo, double>
+                         , public cStateMachine<cAIAgentTaskMoveTo, const tAgentDoublePair &>
 {
 public:
    cAIAgentTaskMoveTo(const tVec3 & point);
    ~cAIAgentTaskMoveTo();
 
-   virtual tResult Update(IAIAgent * pAgent, double elapsedTime);
-
-   void OnInitialStateUpdate(double);
+   virtual tResult Update(IAIAgent * pAgent, double time);
 
 private:
    void OnEnterMoving();
-   void OnUpdateMoving(double elapsed);
    void OnExitMoving();
+   void OnUpdateMoving(const tAgentDoublePair &);
 
    void OnEnterArrived();
-   void OnUpdateArrived(double elapsed);
    void OnExitArrived();
+   void OnUpdateArrived(const tAgentDoublePair &);
 
    tState m_movingState;
    tState m_arrivedState;
@@ -45,8 +47,7 @@ private:
    tVec3 m_moveGoal;
    float m_lastDistSqr;
 
-   cAutoIPtr<IAIAgentLocationProvider> m_pLocationProvider;
-   cAutoIPtr<IAIAgentAnimationProvider> m_pAnimationProvider;
+   bool m_bJustStarted;
 };
 
 

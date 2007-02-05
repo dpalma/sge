@@ -32,7 +32,7 @@ cAIAgent::cAIAgent(tAIAgentID id, IUnknown * pUnkOuter)
 
 cAIAgent::~cAIAgent()
 {
-   std::for_each(m_behaviorStack.begin(), m_behaviorStack.end(), CTInterfaceMethod(&IUnknown::Release));
+   std::for_each(m_behaviorStack.begin(), m_behaviorStack.end(), CTInterfaceMethod(&IAIAgentBehavior::Release));
    m_behaviorStack.clear();
 }
 
@@ -87,13 +87,13 @@ tResult cAIAgent::PushBehavior(IAIAgentBehavior * pBehavior)
    if (!m_behaviorStack.empty())
    {
       cAutoIPtr<IAIAgentBehavior> pCurrentBehavior(CTAddRef(m_behaviorStack.front()));
-      cMultiVar msgArg(CTAddRef(pCurrentBehavior));
+      cMultiVar msgArg(pCurrentBehavior);
       cAIAgentMessageNoSelfDelete msg(m_id, m_id, 0, kAIAMT_BehaviorPause, 1, &msgArg);
       HandleMessage(static_cast<IAIAgentMessage*>(&msg));
    }
 
    {
-      cMultiVar msgArg(CTAddRef(pBehavior));
+      cMultiVar msgArg(pBehavior);
       cAIAgentMessageNoSelfDelete msg(m_id, m_id, 0, kAIAMT_BehaviorBegin, 1, &msgArg);
       HandleMessage(static_cast<IAIAgentMessage*>(&msg));
    }
@@ -183,7 +183,7 @@ tResult cAIAgent::Update(double time)
       }
       else if (result == S_AI_DONE)
       {
-         cMultiVar msgArg(CTAddRef(m_pActiveTask));
+         cMultiVar msgArg(m_pActiveTask);
          cAIAgentMessageNoSelfDelete msg(m_id, m_id, time, kAIAMT_TaskDone, 1, &msgArg);
          HandleMessage(static_cast<IAIAgentMessage*>(&msg));
 

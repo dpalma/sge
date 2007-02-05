@@ -27,6 +27,7 @@ cAIAgentTaskMoveTo::cAIAgentTaskMoveTo(const tVec3 & point)
                   &cAIAgentTaskMoveTo::OnUpdateArrived)
  , m_moveGoal(point)
  , m_lastDistSqr(999999)
+ , m_bJustStarted(true)
 {
 }
 
@@ -38,17 +39,9 @@ cAIAgentTaskMoveTo::~cAIAgentTaskMoveTo()
 
 ////////////////////////////////////////
 
-tResult cAIAgentTaskMoveTo::Update(IAIAgent * pAgent, double elapsedTime)
+tResult cAIAgentTaskMoveTo::Update(IAIAgent * pAgent, double time)
 {
-   SafeRelease(m_pLocationProvider);
-   SafeRelease(m_pAnimationProvider);
-   if (pAgent != NULL)
-   {
-      pAgent->GetLocationProvider(&m_pLocationProvider);
-      pAgent->GetAnimationProvider(&m_pAnimationProvider);
-   }
-
-   tStateMachine::Update(elapsedTime);
+   tStateMachine::Update(std::make_pair(pAgent, time));
 
    if (IsCurrentState(&m_arrivedState))
    {
@@ -60,33 +53,36 @@ tResult cAIAgentTaskMoveTo::Update(IAIAgent * pAgent, double elapsedTime)
 
 ////////////////////////////////////////
 
-void cAIAgentTaskMoveTo::OnInitialStateUpdate(double)
-{
-   // Go to the moving state immediately
-   GotoState(&m_movingState);
-}
-
-////////////////////////////////////////
-
 void cAIAgentTaskMoveTo::OnEnterMoving()
 {
-   if (!!m_pAnimationProvider)
-   {
-      m_pAnimationProvider->RequestAnimation(kAIAA_Walk);
-   }
 }
 
 ////////////////////////////////////////
 
-void cAIAgentTaskMoveTo::OnUpdateMoving(double elapsed)
+void cAIAgentTaskMoveTo::OnExitMoving()
 {
-   if (!m_pLocationProvider)
+}
+
+////////////////////////////////////////
+
+void cAIAgentTaskMoveTo::OnUpdateMoving(const tAgentDoublePair & adp)
+{
+   cAutoIPtr<IAIAgentAnimationProvider> pAnimationProvider;
+   cAutoIPtr<IAIAgentLocationProvider> pLocationProvider;
+   if (adp.first->GetAnimationProvider(&pAnimationProvider) != S_OK
+      || adp.first->GetLocationProvider(&pLocationProvider) != S_OK)
    {
       return;
    }
 
+   if (m_bJustStarted)
+   {
+      pAnimationProvider->RequestAnimation(kAIAA_Walk);
+      m_bJustStarted = false;
+   }
+
    tVec3 curPos;
-   if (m_pLocationProvider->GetPosition(&curPos) != S_OK)
+   if (pLocationProvider->GetPosition(&curPos) != S_OK)
    {
       return;
    }
@@ -98,10 +94,7 @@ void cAIAgentTaskMoveTo::OnUpdateMoving(double elapsed)
    {
       GotoState(&m_arrivedState);
       // Force idle immediately
-      if (!!m_pAnimationProvider)
-      {
-         m_pAnimationProvider->RequestAnimation(kAIAA_Fidget);
-      }
+      pAnimationProvider->RequestAnimation(kAIAA_Fidget);
    }
    else
    {
@@ -116,36 +109,26 @@ void cAIAgentTaskMoveTo::OnUpdateMoving(double elapsed)
 
       tVec3 dir = m_moveGoal - curPos;
       dir.Normalize();
-      curPos += (dir * 10.0f * static_cast<float>(elapsed));
-      m_pLocationProvider->SetPosition(curPos);
+      curPos += (dir * 10.0f * static_cast<float>(adp.second)); // second member of pair is elapsed time
+      pLocationProvider->SetPosition(curPos);
    }
-}
-
-////////////////////////////////////////
-
-void cAIAgentTaskMoveTo::OnExitMoving()
-{
 }
 
 ////////////////////////////////////////
 
 void cAIAgentTaskMoveTo::OnEnterArrived()
 {
-   if (!!m_pAnimationProvider)
-   {
-      m_pAnimationProvider->RequestAnimation(kAIAA_Fidget);
-   }
-}
-
-////////////////////////////////////////
-
-void cAIAgentTaskMoveTo::OnUpdateArrived(double elapsed)
-{
 }
 
 ////////////////////////////////////////
 
 void cAIAgentTaskMoveTo::OnExitArrived()
+{
+}
+
+////////////////////////////////////////
+
+void cAIAgentTaskMoveTo::OnUpdateArrived(const tAgentDoublePair &)
 {
 }
 

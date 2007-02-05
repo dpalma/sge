@@ -154,7 +154,7 @@ TEST(AIAgentMessageGetArguments)
    };
 
    cAutoIPtr<IAIAgentMessage> pMsg;
-   CHECK_EQUAL(S_OK, AIAgentMessageCreate(1, 0, 0, kAIAMT_Stop, _countof(expectedArgs), expectedArgs, &pMsg));
+   CHECK_EQUAL(S_OK, AIAgentMessageCreate(1, 0, 0, kAIAMT_OrderStop, _countof(expectedArgs), expectedArgs, &pMsg));
 
    {
       cMultiVar actualArgs[_countof(expectedArgs)];

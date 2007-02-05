@@ -27,8 +27,6 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#define IsFlagSet(f, b) (((f)&(b))==(b))
-
 extern tResult EntityCreate(const tChar * pszTypeName, tEntityId id, IEntity * * ppEntity);
 extern void RegisterBuiltInComponents();
 
