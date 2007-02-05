@@ -26,8 +26,6 @@ typedef std::pair<IAIAgent*, IAIAgentMessage*> tAgentMessagePair;
 class cAIAgentBehaviorWander : public cComObject<IMPLEMENTS(IAIAgentBehavior)>
                              , public cStateMachine<cAIAgentBehaviorWander, const tAgentMessagePair &>
 {
-   typedef cStateMachine<cAIAgentBehaviorWander, const tAgentMessagePair &> tStateMachineBase;
-
 public:
    cAIAgentBehaviorWander();
    ~cAIAgentBehaviorWander();

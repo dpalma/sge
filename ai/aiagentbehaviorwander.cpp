@@ -42,7 +42,8 @@ static bool GetVec3(IAIAgentMessage * pMessage, tVec3 * pVec)
 ////////////////////////////////////////
 
 cAIAgentBehaviorWander::cAIAgentBehaviorWander()
- : m_idleState(&cAIAgentBehaviorWander::OnEnterIdle,
+ : tStateMachine(&m_idleState)
+ , m_idleState(&cAIAgentBehaviorWander::OnEnterIdle,
                &cAIAgentBehaviorWander::OnExitIdle,
                &cAIAgentBehaviorWander::OnHandleMessageIdle)
  , m_movingState(&cAIAgentBehaviorWander::OnEnterMoving,
@@ -69,7 +70,7 @@ tResult cAIAgentBehaviorWander::HandleMessage(IAIAgent * pAgent, IAIAgentMessage
 
    tAgentMessagePair agentMessagePair = std::make_pair(pAgent, pMessage);
 
-   tStateMachineBase::Update(agentMessagePair);
+   tStateMachine::Update(agentMessagePair);
 
    return S_OK;
 }

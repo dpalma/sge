@@ -18,7 +18,8 @@
 ////////////////////////////////////////
 
 cAIAgentTaskMoveTo::cAIAgentTaskMoveTo(const tVec3 & point)
- : m_movingState(&cAIAgentTaskMoveTo::OnEnterMoving,
+ : tStateMachine(&m_movingState)
+ , m_movingState(&cAIAgentTaskMoveTo::OnEnterMoving,
                  &cAIAgentTaskMoveTo::OnExitMoving,
                  &cAIAgentTaskMoveTo::OnUpdateMoving)
  , m_arrivedState(&cAIAgentTaskMoveTo::OnEnterArrived,
@@ -47,7 +48,7 @@ tResult cAIAgentTaskMoveTo::Update(IAIAgent * pAgent, double elapsedTime)
       pAgent->GetAnimationProvider(&m_pAnimationProvider);
    }
 
-   tStateMachineBase::Update(elapsedTime);
+   tStateMachine::Update(elapsedTime);
 
    if (IsCurrentState(&m_arrivedState))
    {

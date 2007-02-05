@@ -51,10 +51,11 @@ public:
    bool GetIdentifier(cStr * pIdent) const;
 
    void OnEnterCharOk();
-   void OnCharOk(int);
    void OnExitCharOk();
+   void OnUpdateCharOk(int);
 
 private:
+   tState m_initialState;
    tState m_charOkState;
    tState m_errorState;
    cStr m_identifier;
@@ -63,9 +64,10 @@ private:
 ////////////////////////////////////////
 
 cCppIdentifierRecognizer::cCppIdentifierRecognizer()
- : m_charOkState(&cCppIdentifierRecognizer::OnEnterCharOk,
+ : tStateMachine(&m_initialState)
+ , m_charOkState(&cCppIdentifierRecognizer::OnEnterCharOk,
                  &cCppIdentifierRecognizer::OnExitCharOk,
-                 &cCppIdentifierRecognizer::OnCharOk)
+                 &cCppIdentifierRecognizer::OnUpdateCharOk)
 {
 }
 
@@ -79,7 +81,7 @@ cCppIdentifierRecognizer::~cCppIdentifierRecognizer()
 
 void cCppIdentifierRecognizer::Reset()
 {
-   GotoInitialState();
+   GotoState(&m_initialState);
    m_identifier.clear();
 }
 
@@ -87,7 +89,7 @@ void cCppIdentifierRecognizer::Reset()
 
 void cCppIdentifierRecognizer::AddChar(cStr::value_type c)
 {
-   if (IsCurrentInitialState())
+   if (IsCurrentState(&m_initialState))
    {
       if ((c == _T('_')) || _istalpha(c))
       {
@@ -133,13 +135,13 @@ void cCppIdentifierRecognizer::OnEnterCharOk()
 
 ////////////////////////////////////////
 
-void cCppIdentifierRecognizer::OnCharOk(int)
+void cCppIdentifierRecognizer::OnExitCharOk()
 {
 }
 
 ////////////////////////////////////////
 
-void cCppIdentifierRecognizer::OnExitCharOk()
+void cCppIdentifierRecognizer::OnUpdateCharOk(int)
 {
 }
 

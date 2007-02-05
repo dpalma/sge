@@ -258,6 +258,7 @@ private:
    tInitStageFn m_stages[4];
    int m_currentStage;
 
+   tState m_initialState;
    tState m_errorState;
    tState m_stagedInitState;
    tState m_finishedState;
@@ -266,8 +267,10 @@ private:
 ////////////////////////////////////////
 
 cMainInitTask::cMainInitTask(const tChar * pszArgv0)
- : m_argv0((pszArgv0 != NULL) ? pszArgv0 : _T(""))
+ : tStateMachine(&m_initialState)
+ , m_argv0((pszArgv0 != NULL) ? pszArgv0 : _T(""))
  , m_currentStage(0)
+ , m_initialState(NULL, NULL, &cMainInitTask::OnInitialStateUpdate)
  , m_errorState(&cMainInitTask::OnEnterErrorState, NULL, NULL)
  , m_stagedInitState(NULL, NULL, &cMainInitTask::OnRunInitStages)
  , m_finishedState(&cMainInitTask::OnEnterFinishedState, NULL, NULL)

@@ -50,32 +50,19 @@ template <class T, typename UPDATEARG, class STATE = cState<T, UPDATEARG> >
 class cStateMachine
 {
 public:
-   cStateMachine();
+   typedef cStateMachine<T, UPDATEARG, STATE> tStateMachine;
+   typedef STATE tState;
+
+   cStateMachine(const tState * pInitialState);
    ~cStateMachine();
 
    void Update(UPDATEARG arg);
 
 protected:
-   typedef STATE tState;
-
    bool IsCurrentState(const tState * pState) const;
    void GotoState(const tState * pNewState);
 
-   bool IsCurrentInitialState() const;
-   void GotoInitialState();
-
-   void InitialStateEnter();
-   void InitialStateExit();
-   void InitialStateUpdate(UPDATEARG arg);
-
-   // Derived classes may over-ride these methods
-   // to change the initial state behavior
-   void OnInitialStateEnter() {}
-   void OnInitialStateExit() {}
-   void OnInitialStateUpdate(UPDATEARG) {}
-
 private:
-   tState m_initialState;
    const tState * m_pCurrentState;
 };
 
