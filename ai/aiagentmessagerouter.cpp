@@ -210,7 +210,7 @@ void cAIAgentMessageRouter::PumpMessages(double time)
    tMsgList & msgQueue = m_msgQueue[m_msgQueueIndex];
    while (!msgQueue.empty())
    {
-      cAutoIPtr<IAIAgentMessage> pMsg = msgQueue.front();
+      cAutoIPtr<IAIAgentMessage> pMsg(msgQueue.front());
       AssertMsg(!!pMsg, "NULL message pointer should never have been queued");
       msgQueue.pop_front();
       DeliverMessage(pMsg);
@@ -219,12 +219,13 @@ void cAIAgentMessageRouter::PumpMessages(double time)
 
    while (!m_delayedMsgQueue.empty())
    {
-      cAutoIPtr<IAIAgentMessage> pMsg = m_delayedMsgQueue.top();
+      IAIAgentMessage * pMsg = m_delayedMsgQueue.top();
       AssertMsg(!!pMsg, "NULL message pointer should never have been queued");
       if (pMsg->GetDeliveryTime() <= time)
       {
          m_delayedMsgQueue.pop();
          DeliverMessage(pMsg);
+         SafeRelease(pMsg);
       }
       else
       {

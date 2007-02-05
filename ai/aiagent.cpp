@@ -10,6 +10,10 @@
 #include "tech/multivar.h"
 #include "tech/vec3.h"
 
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
+#endif
+
 #include <algorithm>
 
 #include "tech/dbgalloc.h" // must be last header
@@ -92,13 +96,14 @@ tResult cAIAgent::PushBehavior(IAIAgentBehavior * pBehavior)
       HandleMessage(static_cast<IAIAgentMessage*>(&msg));
    }
 
+   m_behaviorStack.push_front(CTAddRef(pBehavior));
+
    {
       cMultiVar msgArg(pBehavior);
       cAIAgentMessageNoSelfDelete msg(m_id, m_id, 0, kAIAMT_BehaviorBegin, 1, &msgArg);
       HandleMessage(static_cast<IAIAgentMessage*>(&msg));
    }
 
-   m_behaviorStack.push_front(CTAddRef(pBehavior));
    return S_OK;
 }
 
@@ -112,7 +117,7 @@ tResult cAIAgent::PopBehavior()
    }
 
    {
-      cMultiVar msgArg(CTAddRef(m_behaviorStack.front()));
+      cMultiVar msgArg(m_behaviorStack.front());
       cAIAgentMessageNoSelfDelete msg(m_id, m_id, 0, kAIAMT_BehaviorEnd, 1, &msgArg);
       HandleMessage(static_cast<IAIAgentMessage*>(&msg));
    }
@@ -124,7 +129,7 @@ tResult cAIAgent::PopBehavior()
    if (!m_behaviorStack.empty())
    {
       cAutoIPtr<IAIAgentBehavior> pNextBehavior(CTAddRef(m_behaviorStack.front()));
-      cMultiVar msgArg(CTAddRef(pNextBehavior));
+      cMultiVar msgArg(pNextBehavior);
       cAIAgentMessageNoSelfDelete msg(m_id, m_id, 0, kAIAMT_BehaviorResume, 1, &msgArg);
       HandleMessage(static_cast<IAIAgentMessage*>(&msg));
    }
@@ -242,5 +247,10 @@ tResult AIAgentCreate(tAIAgentID id, IUnknown * pUnkOuter, IAIAgent * * ppAgent)
    return pAgent.GetPointer(ppAgent);
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_UNITTESTPP
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////

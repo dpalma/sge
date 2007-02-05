@@ -33,7 +33,7 @@ public:
    virtual tResult HandleMessage(IAIAgent * pAgent, IAIAgentMessage * pMessage);
 
 private:
-   void MoveTo(const tVec3 & point);
+   void BeginIdle(IAIAgent * pAgent);
 
    void OnEnterIdle();
    void OnExitIdle();
@@ -45,8 +45,6 @@ private:
 
    tState m_idleState;
    tState m_movingState;
-
-   tVec3 m_moveGoal;
 };
 
 

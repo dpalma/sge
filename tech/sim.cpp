@@ -113,6 +113,13 @@ bool cSim::IsRunning() const
 
 ///////////////////////////////////////
 
+double cSim::GetTime() const
+{
+   return m_simTime;
+}
+
+///////////////////////////////////////
+
 double cSim::GetTimeScale() const
 {
    return m_timeScale;

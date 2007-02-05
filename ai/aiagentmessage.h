@@ -57,7 +57,11 @@ tResult AIAgentMessageCreate(tAIAgentID receiver, tAIAgentID sender, double deli
 
 class cAIAgentMessageNoSelfDelete : public cAIAgentMessage
 {
-   // TODO: prevent heap allocation
+   // prevent heap allocation
+   static void * operator new(size_t) { return NULL; }
+   static void * operator new[](size_t) { return NULL; }
+   static void operator delete(void *) {}
+   static void operator delete[](void *) {}
 
 public:
    cAIAgentMessageNoSelfDelete(tAIAgentID receiver, tAIAgentID sender, double deliveryTime,

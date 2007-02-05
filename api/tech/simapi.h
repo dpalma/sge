@@ -26,6 +26,8 @@ interface ISim : IUnknown
 	virtual tResult Stop() = 0;
 	virtual bool IsRunning() const = 0;
 
+   virtual double GetTime() const = 0;
+
    virtual double GetTimeScale() const = 0;
    virtual void SetTimeScale(double timeScale) = 0;
 

@@ -5,7 +5,12 @@
 
 #include "aiagentbehaviorwander.h"
 
+#include "engine/scenarioapi.h"
+#include "engine/terrainapi.h"
+
+#include "tech/globalobj.h"
 #include "tech/multivar.h"
+#include "tech/simapi.h"
 #include "tech/statemachinetem.h"
 
 #include "tech/dbgalloc.h" // must be last header
@@ -31,6 +36,27 @@ static bool GetVec3(IAIAgentMessage * pMessage, tVec3 * pVec)
    }
 
    return false;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+static bool GetWanderPoint(tVec3 * pVec)
+{
+   UseGlobal(Scenario);
+   UseGlobal(TerrainModel);
+
+   if (!pScenario || !pTerrainModel)
+   {
+      return false;
+   }
+
+   float nx = pScenario->NextRandFloat(), nz = pScenario->NextRandFloat();
+
+   Assert(nx >= 0 && nx <= 1);
+   Assert(nz >= 0 && nz <= 1);
+
+   return (pTerrainModel->GetPointOnTerrain(nx, nz, pVec) == S_OK);
 }
 
 
@@ -77,18 +103,18 @@ tResult cAIAgentBehaviorWander::HandleMessage(IAIAgent * pAgent, IAIAgentMessage
 
 ////////////////////////////////////////
 
-void cAIAgentBehaviorWander::MoveTo(const tVec3 & point)
+void cAIAgentBehaviorWander::BeginIdle(IAIAgent * pAgent)
 {
-   m_moveGoal = point;
-
-   GotoState(&m_movingState);
+   UseGlobal(Sim);
+   UseGlobal(AIAgentMessageRouter);
+   pAIAgentMessageRouter->SendMessage(pAgent->GetID(), pAgent->GetID(), pSim->GetTime() + 1, kAIAMT_TimeOut, 0, NULL);
+   GotoState(&m_idleState);
 }
 
 ////////////////////////////////////////
 
 void cAIAgentBehaviorWander::OnEnterIdle()
 {
-   // TODO: send timer message to self
 }
 
 ////////////////////////////////////////
@@ -107,16 +133,22 @@ void cAIAgentBehaviorWander::OnHandleMessageIdle(const tAgentMessagePair & amp)
    {
       case kAIAMT_TimeOut:
       {
-         // TODO: get random point on terrain
-         //tVec3 point;
-         //if ()
-         //{
-         //   cAutoIPtr<IAIAgentTask> pTask;
-         //   if (AIAgentTaskMoveToCreate(point, &pTask) == S_OK)
-         //   {
-         //      amp.first->SetActiveTask(pTask);
-         //   }
-         //}
+         tVec3 point;
+         if (GetWanderPoint(&point))
+         {
+            cAutoIPtr<IAIAgentTask> pTask;
+            if (AIAgentTaskMoveToCreate(point, &pTask) == S_OK)
+            {
+               amp.first->SetActiveTask(pTask);
+            }
+            GotoState(&m_movingState);
+         }
+         break;
+      }
+
+      case kAIAMT_BehaviorBegin:
+      {
+         BeginIdle(amp.first);
          break;
       }
    }
@@ -144,7 +176,7 @@ void cAIAgentBehaviorWander::OnHandleMessageMoving(const tAgentMessagePair & amp
    {
       case kAIAMT_TaskDone:
       {
-         GotoState(&m_idleState);
+         BeginIdle(amp.first);
          break;
       }
    }

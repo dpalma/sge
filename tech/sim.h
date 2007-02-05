@@ -36,6 +36,8 @@ public:
 	virtual tResult Stop();
 	virtual bool IsRunning() const;
 
+   virtual double GetTime() const;
+
    virtual double GetTimeScale() const;
    virtual void SetTimeScale(double timeScale);
 
