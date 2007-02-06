@@ -106,6 +106,11 @@ interface IWriter : IUnknown
    virtual tResult Write(const tChar * value) = 0;
    virtual tResult Write(const void * pValue, size_t cbValue,
                          size_t * pcbWritten = NULL) = 0;
+
+   inline tResult Write(tChar * value)
+   {
+      return Write(static_cast<const tChar *>(value));
+   }
 };
 
 ///////////////////////////////////////////////////////////////////////////////

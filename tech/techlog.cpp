@@ -3,12 +3,10 @@
 
 #include "stdhdr.h"
 
-#include "tech/techlog.h"
-#include "tech/techtypes.h"
 #include "tech/filespec.h"
+#include "tech/readwriteapi.h"
 
 #include <cstring>
-#include <cstdio>
 #include <cstdarg>
 
 #include "tech/dbgalloc.h" // must be last header
@@ -86,8 +84,12 @@ bool cLog::OpenLogFile(const cFileSpec & logFile)
 {
    if (m_pLogFile == NULL)
    {
-      m_pLogFile = _tfopen(logFile.CStr(), _T("w"));
-      return (m_pLogFile != NULL);
+      cAutoIPtr<IWriter> pWriter; 
+      if (FileWriterCreate(logFile, kFileModeText, &pWriter) == S_OK)
+      {
+         m_pLogFile = CTAddRef(pWriter);
+         return true;
+      }
    }
    return false;
 }
@@ -98,7 +100,7 @@ void cLog::CloseLogFile()
 {
    if (m_pLogFile != NULL)
    {
-      fclose(reinterpret_cast<FILE*>(m_pLogFile));
+      reinterpret_cast<IWriter *>(m_pLogFile)->Release();
       m_pLogFile = NULL;
    }
 }
@@ -160,16 +162,34 @@ bool cLog::EnableChannel(const tChar * pszChannel, bool bEnable)
 
 void cLog::Print(const tChar * pszFile, int line, eLogSeverity severity, const tChar * pszFormat, ...)
 {
-   size_t len = 0;
+   size_t fileAndLineLen = 0; // length of the file and line number part of the string
    if (pszFile && line)
    {
-      len = _sntprintf(m_szBuffer, _countof(m_szBuffer), _T("%s(%d) : "), pszFile, line);
+#if _MSC_VER >= 1400
+      fileAndLineLen = _sntprintf_s(m_szBuffer, sizeof(m_szBuffer), _countof(m_szBuffer), _T("%s(%d) : "), pszFile, line);
+#else
+      fileAndLineLen = _sntprintf(m_szBuffer, _countof(m_szBuffer), _T("%s(%d) : "), pszFile, line);
+#endif
    }
+
+   tChar * pMsgBuffer = m_szBuffer + fileAndLineLen;
+   size_t sizeofMsgBuffer = sizeof(m_szBuffer) - (fileAndLineLen * sizeof(tChar));
+   size_t maxMsgBufferChars = _countof(m_szBuffer) - fileAndLineLen;
 
    va_list args;
    va_start(args, pszFormat);
-   _vsntprintf(m_szBuffer + len, _countof(m_szBuffer) - len, pszFormat, args);
+#if _MSC_VER >= 1400
+   _vsntprintf_s(pMsgBuffer, sizeofMsgBuffer, maxMsgBufferChars, pszFormat, args);
+#else
+   _vsntprintf(pMsgBuffer, maxMsgBufferChars, pszFormat, args);
+#endif
    va_end(args);
+
+   if (m_pLogFile != NULL)
+   {
+      IWriter * pLogWriter = reinterpret_cast<IWriter *>(m_pLogFile);
+      pLogWriter->Write(pMsgBuffer);
+   }
 
    if (m_callback != NULL)
    {
