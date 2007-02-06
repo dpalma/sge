@@ -51,6 +51,9 @@ void * ScenarioMapLoad(IReader * pReader, void * typeParam)
 void ScenarioMapUnload(void * pData)
 {
    delete (cScenarioMapToken*)pData;
+
+   UseGlobal(SaveLoadManager);
+   pSaveLoadManager->Reset();
 }
 
 
@@ -129,6 +132,8 @@ tResult cScenario::Start(const tChar * pszMap, const tChar * pszGUI, ulong randS
       return E_FAIL;
    }
 
+   m_map.assign(pszMap);
+
    if (pszGUI != NULL)
    {
       UseGlobal(GUIContext);
@@ -148,8 +153,9 @@ tResult cScenario::Stop()
    UseGlobal(Sim);
    pSim->Stop();
 
-   UseGlobal(SaveLoadManager);
-   pSaveLoadManager->Reset();
+   UseGlobal(ResourceManager);
+   pResourceManager->Unload(m_map.c_str(), kRT_Map);
+   m_map.clear();
 
    UseGlobal(GUIContext);
    pGUIContext->PopPage();

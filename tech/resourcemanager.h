@@ -28,6 +28,8 @@ class cResourceManager : public cComObject3<IMPLEMENTS(IResourceManager),
 {
    friend class cResourceManagerTests;
 
+   typedef std::map<cResourceCacheKey, cResourceData> tResourceCache;
+
 public:
    cResourceManager();
    virtual ~cResourceManager();
@@ -45,6 +47,8 @@ public:
    virtual tResult Load(const tChar * pszName, tResourceType type, void * loadParam, void * * ppData);
    tResult LoadWithFormat(const tChar * pszName, tResourceType type, uint formatId, void * param, void * * ppData);
    virtual tResult Unload(const tChar * pszName, tResourceType type);
+   tResult Unload(tResourceCache::iterator iter);
+   void UnloadAll();
    virtual tResult RegisterFormat(tResourceType type,
                                   tResourceType typeDepend,
                                   const tChar * pszExtension,
@@ -67,7 +71,6 @@ private:
 
    cResourceFormatTable m_formats;
 
-   typedef std::map<cResourceCacheKey, cResourceData> tResourceCache;
    tResourceCache m_cache;
 };
 

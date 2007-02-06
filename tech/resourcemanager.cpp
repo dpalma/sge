@@ -85,23 +85,7 @@ tResult cResourceManager::Init()
 
 tResult cResourceManager::Term()
 {
-   {
-      tResourceCache::iterator iter = m_cache.begin();
-      for (; iter != m_cache.end(); iter++)
-      {
-         if (iter->second.GetData() != NULL)
-         {
-            WarnMsgIf(iter->second.GetFormatId() == kNoIndex, "No format id for loaded resource\n");
-            if (iter->second.GetFormatId() != kNoIndex)
-            {
-               cResourceFormat * pFormat = m_formats.GetFormat(iter->second.GetFormatId());
-               LocalMsg2("Unloading \"%s\" (%s)\n", iter->first.GetName(), ResourceTypeName(pFormat->type));
-               pFormat->Unload(iter->second.GetData());
-            }
-         }
-      }
-      m_cache.clear();
-   }
+   UnloadAll();
 
    {
       std::vector<cResourceStore *>::iterator iter = m_stores.begin();
@@ -336,8 +320,59 @@ tResult cResourceManager::Open(const tChar * pszName, IReader * * ppReader)
 
 tResult cResourceManager::Unload(const tChar * pszName, tResourceType type)
 {
-   // TODO: For now resources unloaded only on exit
-   return E_NOTIMPL;
+   if (pszName == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (!type)
+   {
+      return E_INVALIDARG;
+   }
+
+   tResourceCache::iterator f = m_cache.find(cResourceCacheKey(pszName, type));
+
+   if (f == m_cache.end())
+   {
+      WarnMsg2("Resource (\"%s\", %s) not found\n", pszName, ResourceTypeName(type));
+      return S_FALSE;
+   }
+
+   tResult result = Unload(f);
+
+   m_cache.erase(f);
+
+   return result;
+}
+
+////////////////////////////////////////
+
+tResult cResourceManager::Unload(tResourceCache::iterator iter)
+{
+   if (iter->second.GetData() != NULL)
+   {
+      WarnMsgIf(iter->second.GetFormatId() == kNoIndex, "No format id for loaded resource\n");
+      if (iter->second.GetFormatId() != kNoIndex)
+      {
+         cResourceFormat * pFormat = m_formats.GetFormat(iter->second.GetFormatId());
+         LocalMsg2("Unloading \"%s\" (%s)\n", iter->first.GetName(), ResourceTypeName(pFormat->type));
+         pFormat->Unload(iter->second.GetData());
+         return S_OK;
+      }
+   }
+   return E_FAIL;
+}
+
+////////////////////////////////////////
+
+void cResourceManager::UnloadAll()
+{
+   tResourceCache::iterator iter = m_cache.begin(), end = m_cache.end();
+   for (; iter != end; ++iter)
+   {
+      Unload(iter);
+   }
+   m_cache.clear();
 }
 
 ////////////////////////////////////////

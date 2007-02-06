@@ -54,6 +54,8 @@ public:
    virtual void OnEndLoad();
 
 private:
+   cStr m_map;
+
    cRand m_rand;
 };
 
