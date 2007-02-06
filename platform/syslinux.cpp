@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "platform/sys.h"
+#include "syscommon.h"
 #include "platform/keys.h"
 
 #include "tech/filepath.h"
@@ -31,15 +32,6 @@ Display *         g_display = NULL;
 Window            g_window = 0;
 GLXContext        g_context = NULL;
 XErrorHandler     g_nextErrorHandler = NULL;
-
-// from syscommon.cpp
-extern tSysDestroyFn    g_pfnDestroyCallback;
-extern tSysKeyEventFn   g_pfnKeyCallback;
-extern tSysMouseEventFn g_pfnMouseCallback;
-extern tSysFrameFn      g_pfnFrameCallback;
-extern tSysResizeFn     g_pfnResizeCallback;
-extern uint_ptr         g_keyCallbackUserData;
-extern uint_ptr         g_mouseCallbackUserData;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -409,6 +401,7 @@ int SysEventLoop(tSysFrameFn pfnFrameHandler, uint flags)
                      (*g_pfnKeyCallback)(keycode, event.type == KeyPress, eventTime, g_keyCallbackUserData);
                   }
                }
+#error ("Call char event callback when appropriate")
                break;
             }
 
@@ -445,9 +438,11 @@ int SysEventLoop(tSysFrameFn pfnFrameHandler, uint flags)
                   mouseState |= kRMouseDown;
                if (state & Button2Mask)
                   mouseState |= kMMouseDown;
-               if (g_pfnMouseCallback != NULL)
+               tSysMouseEventFn pfnMouse = (event.type == MotionNotify) ? g_pfnMouseMoveCallback : g_pfnMouseCallback;
+               uint_ptr userData = (event.type == MotionNotify) ? g_mouseMoveCallbackUserData : g_mouseCallbackUserData;
+               if (pfnMouse != NULL)
                {
-                  (*g_pfnMouseCallback)(event.xmotion.x, event.xmotion.y, mouseState, eventTime, g_mouseCallbackUserData);
+                  (*pfnMouse)(event.xmotion.x, event.xmotion.y, mouseState, eventTime, userData);
                }
                break;
             }

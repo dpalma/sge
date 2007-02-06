@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "platform/sys.h"
+#include "syscommon.h"
 #include "platform/keys.h"
 
 #include "tech/configapi.h"
@@ -31,16 +32,10 @@
 
 #include "tech/dbgalloc.h" // must be last header
 
+LOG_DEFINE_CHANNEL(WinKeyEvents);
+
 ///////////////////////////////////////////////////////////////////////////////
 
-// from syscommon.cpp
-extern tSysDestroyFn    g_pfnDestroyCallback;
-extern tSysKeyEventFn   g_pfnKeyCallback;
-extern tSysMouseEventFn g_pfnMouseCallback;
-extern tSysFrameFn      g_pfnFrameCallback;
-extern tSysResizeFn     g_pfnResizeCallback;
-extern uint_ptr         g_keyCallbackUserData;
-extern uint_ptr         g_mouseCallbackUserData;
 extern void SysUpdateFrameStats();
 
 bool           g_bAppActive = false;
@@ -662,54 +657,53 @@ bool SysHandleWindowsMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
          if (g_pfnResizeCallback != NULL)
          {
             (*g_pfnResizeCallback)(LOWORD(lParam), HIWORD(lParam), msgTime);
+            bHandled = true;
          }
-         bHandled = true;
          break;
       }
 
       case WM_SYSKEYDOWN:
       case WM_KEYDOWN:
       {
+         DebugMsgEx2(WinKeyEvents, "WM_KEYDOWN %d %d\n", wParam, lParam);
          long mapped = MapKey(lParam);
          if (mapped != 0)
          {
             if (g_pfnKeyCallback != NULL)
             {
                (*g_pfnKeyCallback)(mapped, true, msgTime, g_keyCallbackUserData);
+               bHandled = true;
             }
          }
-         bHandled = true;
          break;
       }
 
       case WM_SYSCHAR:
       case WM_CHAR:
       {
+         DebugMsgEx2(WinKeyEvents, "WM_CHAR %d %d\n", wParam, lParam);
          long mapped = MapKey(lParam);
-         if (mapped == 0)
+         if (g_pfnCharCallback != NULL)
          {
-            if (g_pfnKeyCallback != NULL)
-            {
-               (*g_pfnKeyCallback)(static_cast<long>(wParam), true, msgTime, g_keyCallbackUserData);
-            }
+            (*g_pfnCharCallback)(static_cast<tChar>(wParam), msgTime, g_charCallbackUserData);
+            bHandled = true;
          }
-         bHandled = true;
          break;
       }
 
       case WM_SYSKEYUP:
       case WM_KEYUP:
       {
+         DebugMsgEx2(WinKeyEvents, "WM_KEYUP %d %d\n", wParam, lParam);
          long mapped = MapKey(lParam);
-         if (mapped == 0)
+         if (mapped != 0)
          {
-            mapped = wParam;
+            if (g_pfnKeyCallback != NULL)
+            {
+               (*g_pfnKeyCallback)(mapped, false, msgTime, g_keyCallbackUserData);
+               bHandled = true;
+            }
          }
-         if (g_pfnKeyCallback != NULL)
-         {
-            (*g_pfnKeyCallback)(mapped, false, msgTime, g_keyCallbackUserData);
-         }
-         bHandled = true;
          break;
       }
 
@@ -739,8 +733,8 @@ bool SysHandleWindowsMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
          {
             (*g_pfnKeyCallback)(key, true, msgTime, g_keyCallbackUserData);
             (*g_pfnKeyCallback)(key, false, msgTime, g_keyCallbackUserData);
+            bHandled = true;
          }
-         bHandled = true;
          break;
       }
 
@@ -759,13 +753,15 @@ bool SysHandleWindowsMessage(HWND hWnd, UINT message, WPARAM wParam, LPARAM lPar
             mouseState |= kRMouseDown;
          if (wParam & MK_MBUTTON)
             mouseState |= kMMouseDown;
-         if (g_pfnMouseCallback != NULL)
+         tSysMouseEventFn pfnMouse = (message == WM_MOUSEMOVE) ? g_pfnMouseMoveCallback : g_pfnMouseCallback;
+         uint_ptr userData = (message == WM_MOUSEMOVE) ? g_mouseMoveCallbackUserData : g_mouseCallbackUserData;
+         if (pfnMouse != NULL)
          {
-            (*g_pfnMouseCallback)(static_cast<int>(LOWORD(lParam)),
-                                  static_cast<int>(HIWORD(lParam)),
-                                  mouseState, msgTime, g_mouseCallbackUserData);
+            (*pfnMouse)(static_cast<int>(LOWORD(lParam)),
+                        static_cast<int>(HIWORD(lParam)),
+                        mouseState, msgTime, userData);
+            bHandled = true;
          }
-         bHandled = true;
          break;
       }
    }

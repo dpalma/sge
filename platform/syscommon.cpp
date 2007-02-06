@@ -23,12 +23,16 @@ LOG_DEFINE_CHANNEL(VerboseUnitTests);
 ///////////////////////////////////////////////////////////////////////////////
 
 tSysDestroyFn        g_pfnDestroyCallback = NULL;
+tSysCharEventFn      g_pfnCharCallback = NULL;
 tSysKeyEventFn       g_pfnKeyCallback = NULL;
+tSysMouseEventFn     g_pfnMouseMoveCallback = NULL;
 tSysMouseEventFn     g_pfnMouseCallback = NULL;
 tSysFrameFn          g_pfnFrameCallback = NULL;
 tSysResizeFn         g_pfnResizeCallback = NULL;
 
+uint_ptr             g_charCallbackUserData = 0;
 uint_ptr             g_keyCallbackUserData = 0;
+uint_ptr             g_mouseMoveCallbackUserData = 0;
 uint_ptr             g_mouseCallbackUserData = 0;
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -40,10 +44,22 @@ tSysDestroyFn SysSetDestroyCallback(tSysDestroyFn pfn)
    return pfnFormer;
 }
 
+void SysSetCharEventCallback(tSysCharEventFn pfn, uint_ptr userData)
+{
+   g_pfnCharCallback = pfn;
+   g_charCallbackUserData = userData;
+}
+
 void SysSetKeyEventCallback(tSysKeyEventFn pfn, uint_ptr userData)
 {
    g_pfnKeyCallback = pfn;
    g_keyCallbackUserData = userData;
+}
+
+void SysSetMouseMoveCallback(tSysMouseEventFn pfn, uint_ptr userData)
+{
+   g_pfnMouseMoveCallback = pfn;
+   g_mouseMoveCallbackUserData = userData;
 }
 
 void SysSetMouseEventCallback(tSysMouseEventFn pfn, uint_ptr userData)

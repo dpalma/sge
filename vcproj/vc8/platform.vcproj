@@ -583,6 +583,10 @@
 				RelativePath="..\..\platform\stdhdr.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\platform\syscommon.h"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="API"

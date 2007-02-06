@@ -14,6 +14,34 @@
 #pragma once
 #endif
 
+
+const int kMaxKeys = 256;
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cKeyBindings
+//
+
+class cKeyBindings
+{
+public:
+   cKeyBindings();
+   ~cKeyBindings();
+
+   void Bind(long key, const char * pszDownCmd, const char * pszUpCmd);
+   void Unbind(long key);
+   void UnbindAll();
+
+   const char * GetDownBinding(long key) const;
+   const char * GetUpBinding(long key) const;
+
+private:
+   char * m_keyDownBindings[kMaxKeys];
+   char * m_keyUpBindings[kMaxKeys];
+};
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cInput
@@ -21,6 +49,7 @@
 
 class cInput : public cComObject2<IMPLEMENTS(IInput), IMPLEMENTS(IGlobalObject)>
              , public cConnectionPointEx<cInput, IInputListener>
+             , public cKeyBindings
 {
 public:
    cInput();
@@ -50,13 +79,12 @@ private:
    void ReportKeyEvent(long key, bool down, double time);
    void ReportMouseEvent(int x, int y, uint mouseState, double time);
 
+   static void OnSysCharEvent(tChar c, double time, uint_ptr userData);
    static void OnSysKeyEvent(long key, bool down, double time, uint_ptr userData);
+   static void OnSysMouseMove(int x, int y, uint mouseState, double time, uint_ptr userData);
    static void OnSysMouseEvent(int x, int y, uint mouseState, double time, uint_ptr userData);
 
    bool DispatchInputEvent(int x, int y, long key, bool down, double time);
-
-   const char * KeyGetDownBinding(long key) const;
-   const char * KeyGetUpBinding(long key) const;
 
    class cInputModalListeners : public cComObject<IMPLEMENTS(IInputListener)>
    {
@@ -74,35 +102,10 @@ private:
    friend class cInputModalListeners;
    cInputModalListeners m_modalListeners;
 
-   enum { kMaxKeys = 256 };
    ulong m_keyRepeats[kMaxKeys];
-   char * m_keyDownBindings[kMaxKeys];
-   char * m_keyUpBindings[kMaxKeys];
 
    uint m_oldMouseState;
 };
-
-///////////////////////////////////////
-
-inline const char * cInput::KeyGetDownBinding(long key) const
-{
-   Assert(key > -1 && key < kMaxKeys);
-   if (key > -1 && key < kMaxKeys)
-      return m_keyDownBindings[key];
-   else
-      return NULL;
-}
-
-///////////////////////////////////////
-
-inline const char * cInput::KeyGetUpBinding(long key) const
-{
-   Assert(key > -1 && key < kMaxKeys);
-   if (key > -1 && key < kMaxKeys)
-      return m_keyUpBindings[key];
-   else
-      return NULL;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 
