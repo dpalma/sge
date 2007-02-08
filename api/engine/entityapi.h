@@ -6,10 +6,11 @@
 
 #include "enginedll.h"
 
-#include "engine/modelapi.h"
+#include "modelapi.h"
 
 #include "tech/comtools.h"
 #include "tech/matrix4.h"
+#include "tech/quat.h"
 #include "tech/techstring.h"
 #include "tech/vec3.h"
 
@@ -33,8 +34,6 @@ F_DECLARE_INTERFACE_GUID(IEntityManagerListener, "1EC6DB1A-C833-4b68-8705-D1A9FB
 class cMultiVar;
 class cRay;
 class TiXmlElement;
-
-F_DECLARE_INTERFACE(IDictionary);
 
 template <typename T> class cAxisAlignedBox;
 typedef class cAxisAlignedBox<float> tAxisAlignedBox;
@@ -76,6 +75,9 @@ interface IEntityPositionComponent : IEntityComponent
 {
    virtual tResult SetPosition(const tVec3 & position) = 0;
    virtual tResult GetPosition(tVec3 * pPosition) const = 0;
+
+   virtual tResult SetOrientation(const tQuat & orientation) = 0;
+   virtual tResult GetOrientation(tQuat * pOrientation) const = 0;
 
    virtual const tMatrix4 & GetWorldTransform() const = 0;
 };

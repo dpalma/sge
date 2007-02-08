@@ -159,6 +159,9 @@ interface IAIAgentLocationProvider : IUnknown
 {
    virtual tResult SetPosition(const tVec3 & position) = 0;
    virtual tResult GetPosition(tVec3 * pPosition) const = 0;
+
+   virtual tResult SetOrientation(const tQuat & orientation) = 0;
+   virtual tResult GetOrientation(tQuat * pOrientation) const = 0;
 };
 
 

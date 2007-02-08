@@ -15,7 +15,6 @@
 
 #include "tech/dbgalloc.h" // must be last header
 
-#pragma warning(disable:4355) // 'this' : used in base member initializer list
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -31,7 +30,9 @@
 
 cEntityPositionComponent::cEntityPositionComponent()
  : m_position(0,0,0)
- , m_bUpdateWorldTransform(true)
+ , m_orientation(tVec3(0,1,0),0) // rotation of 0 about y-axis by default
+ , m_updateWorldTransform(kUpdateAll)
+ , m_worldTransform(tMatrix4::GetIdentity())
 {
 }
 
@@ -46,7 +47,7 @@ cEntityPositionComponent::~cEntityPositionComponent()
 tResult cEntityPositionComponent::SetPosition(const tVec3 & position)
 {
    m_position = position;
-   m_bUpdateWorldTransform = true;
+   m_updateWorldTransform |= kUpdateTranslation;
    return S_OK;
 }
 
@@ -64,13 +65,56 @@ tResult cEntityPositionComponent::GetPosition(tVec3 * pPosition) const
 
 ///////////////////////////////////////
 
+tResult cEntityPositionComponent::SetOrientation(const tQuat & orientation)
+{
+   m_orientation = orientation;
+   m_updateWorldTransform |= kUpdateRotation;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cEntityPositionComponent::GetOrientation(tQuat * pOrientation) const
+{
+   if (pOrientation == NULL)
+   {
+      return E_POINTER;
+   }
+   *pOrientation = m_orientation;
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 const tMatrix4 & cEntityPositionComponent::GetWorldTransform() const
 {
-   if (m_bUpdateWorldTransform)
+   if ((m_updateWorldTransform & kUpdateRotation) == kUpdateRotation)
    {
-      m_bUpdateWorldTransform = false;
-      MatrixTranslate(m_position.x, m_position.y, m_position.z, &m_worldTransform);
+      m_updateWorldTransform &= ~kUpdateRotation;
+
+      tMatrix3 orientationMatrix;
+      m_orientation.ToMatrix(&orientationMatrix);
+
+      m_worldTransform.m00 = orientationMatrix.m00;
+      m_worldTransform.m10 = orientationMatrix.m10;
+      m_worldTransform.m20 = orientationMatrix.m20;
+      m_worldTransform.m01 = orientationMatrix.m01;
+      m_worldTransform.m11 = orientationMatrix.m11;
+      m_worldTransform.m21 = orientationMatrix.m21;
+      m_worldTransform.m02 = orientationMatrix.m02;
+      m_worldTransform.m12 = orientationMatrix.m12;
+      m_worldTransform.m22 = orientationMatrix.m22;
    }
+
+   if ((m_updateWorldTransform & kUpdateTranslation) == kUpdateTranslation)
+   {
+      m_updateWorldTransform &= ~kUpdateTranslation;
+
+      m_worldTransform.m03 = m_position.x;
+      m_worldTransform.m13 = m_position.y;
+      m_worldTransform.m23 = m_position.z;
+   }
+
    return m_worldTransform;
 }
 

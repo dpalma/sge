@@ -36,12 +36,23 @@ public:
    virtual tResult SetPosition(const tVec3 & position);
    virtual tResult GetPosition(tVec3 * pPosition) const;
 
+   virtual tResult SetOrientation(const tQuat & orientation);
+   virtual tResult GetOrientation(tQuat * pOrientation) const;
+
    virtual const tMatrix4 & GetWorldTransform() const;
 
 private:
    tVec3 m_position;
+   tQuat m_orientation;
 
-   mutable bool m_bUpdateWorldTransform;
+   enum eUpdateWorldTransformFlags
+   {
+      kUpdateNone = 0,
+      kUpdateRotation = 1,
+      kUpdateTranslation = 2,
+      kUpdateAll = 0xFF,
+   };
+   mutable uint m_updateWorldTransform;
    mutable tMatrix4 m_worldTransform;
 };
 
