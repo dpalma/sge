@@ -12,7 +12,10 @@
 
 #include <cstring>
 #include <cstdlib>
+#include <fcntl.h>
+#include <io.h>
 #include <locale>
+#include <sys/stat.h>
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -310,6 +313,26 @@ cFilePath cFilePath::GetCwd()
 #endif
    return cFilePath(szCwd);
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+bool FilePathExists(const cFilePath & path)
+{
+   bool bResult = false;
+
+   struct _stat buffer;
+   if (_tstat(path.CStr(), &buffer) != -1)
+   {
+      if ((buffer.st_mode & _S_IFDIR) == _S_IFDIR)
+      {
+         bResult = true;
+      }
+   }
+
+   return bResult;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 

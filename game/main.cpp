@@ -238,6 +238,7 @@ class cMainInitTask : public cComObject<IMPLEMENTS(ITask)>
 {
 public:
    cMainInitTask(const tChar * pszArgv0);
+   ~cMainInitTask();
 
    virtual tResult Execute(double time);
 
@@ -252,6 +253,8 @@ private:
    tResult CreateMainWindow();
 
    cStr m_argv0;
+
+   cUnitTestThread * m_pUnitTestThread;
 
    typedef tResult (cMainInitTask::*tInitStageFn)();
 
@@ -269,6 +272,7 @@ private:
 cMainInitTask::cMainInitTask(const tChar * pszArgv0)
  : tStateMachine(&m_initialState)
  , m_argv0((pszArgv0 != NULL) ? pszArgv0 : _T(""))
+ , m_pUnitTestThread(NULL)
  , m_currentStage(0)
  , m_initialState(NULL, NULL, &cMainInitTask::OnInitialStateUpdate)
  , m_errorState(&cMainInitTask::OnEnterErrorState, NULL, NULL)
@@ -279,6 +283,13 @@ cMainInitTask::cMainInitTask(const tChar * pszArgv0)
    m_stages[0] = &cMainInitTask::SetupResourceManager;
    m_stages[1] = &cMainInitTask::RunStartupScript;
    m_stages[2] = &cMainInitTask::CreateMainWindow;
+}
+
+////////////////////////////////////////
+
+cMainInitTask::~cMainInitTask()
+{
+   delete m_pUnitTestThread, m_pUnitTestThread = NULL;
 }
 
 ////////////////////////////////////////
@@ -294,12 +305,13 @@ tResult cMainInitTask::Execute(double time)
 
 void cMainInitTask::OnInitialStateUpdate(double)
 {
-   cUnitTestThread * pUnitTestThread = new cUnitTestThread(true);
-   if (pUnitTestThread != NULL)
+   Assert(m_pUnitTestThread == NULL);
+   m_pUnitTestThread = new cUnitTestThread(false);
+   if (m_pUnitTestThread != NULL)
    {
-      if (!pUnitTestThread->Create())
+      if (!m_pUnitTestThread->Create())
       {
-         delete pUnitTestThread;
+         delete m_pUnitTestThread;
       }
    }
 
@@ -311,6 +323,7 @@ void cMainInitTask::OnInitialStateUpdate(double)
 void cMainInitTask::OnEnterErrorState()
 {
    SysQuit();
+   GotoState(&m_finishedState);
 }
 
 ////////////////////////////////////////
@@ -339,6 +352,10 @@ void cMainInitTask::OnRunInitStages(double)
 
 void cMainInitTask::OnEnterFinishedState()
 {
+   if (m_pUnitTestThread != NULL)
+   {
+      m_pUnitTestThread->Join();
+   }
 }
 
 ////////////////////////////////////////
@@ -558,6 +575,33 @@ static tResult InitGlobalConfig(int argc, tChar * argv[])
    LoadIniFile(argv[0], g_pConfig);
 
    ParseCommandLine(argc, argv, g_pConfig);
+
+   // If no data directory was given, try to look for the default (sort of a hack)
+   cStr temp;
+   if (ConfigGet(_T("data"), &temp) != S_OK)
+   {
+      cFilePath path;
+      if (cFileSpec(argv[0]).GetPath(&path))
+      {
+         for (int i = 0; i < 3; ++i)
+         {
+            // On the first try (i == 0), add just "data" with no parent directory ("..")
+            if (i > 0)
+            {
+               path.AddRelative(_T(".."));
+            }
+            cFilePath tempPath(path);
+            tempPath.AddRelative("data");
+            tempPath = tempPath.CollapseDots();
+            if (FilePathExists(tempPath.CollapseDots()))
+            {
+               WarnMsg1("No data directory specified; Using \"%s\"\n", tempPath.CStr());
+               g_pConfig->Set(_T("data"), tempPath.CStr());
+               break;
+            }
+         }
+      }
+   }
 
    return S_OK;
 }
