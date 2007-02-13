@@ -228,7 +228,10 @@ int cEditorView::OnCreate(LPCREATESTRUCT lpCreateStruct)
    Verify(pEditorToolState->AddToolStateListener(static_cast<IEditorToolStateListener*>(this)) == S_OK);
 
    UseGlobal(Renderer);
-   if (pRenderer->CreateContext(m_hWnd) != S_OK)
+   cAutoIPtr<IRenderTarget> pRenderTarget;
+
+   if (pRenderer->CreateRenderTarget(m_hWnd, &pRenderTarget) != S_OK
+      || pRenderer->SetRenderTarget(pRenderTarget) != S_OK)
    {
       return -1;
    }
@@ -249,7 +252,7 @@ void cEditorView::OnDestroy()
    Verify(pEditorToolState->RemoveToolStateListener(static_cast<IEditorToolStateListener*>(this)) == S_OK);
 
    UseGlobal(Renderer);
-   pRenderer->DestroyContext();
+   pRenderer->SetRenderTarget(NULL);
 }
 
 ////////////////////////////////////////

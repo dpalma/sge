@@ -340,6 +340,9 @@
 				RelativePath="..\..\renderdx\renderfontd3dx.cpp">
 			</File>
 			<File
+				RelativePath="..\..\renderdx\rendertargetdx.cpp">
+			</File>
+			<File
 				RelativePath="..\..\renderdx\stdhdr.cpp">
 				<FileConfiguration
 					Name="Release|Win32">
@@ -387,6 +390,9 @@
 			</File>
 			<File
 				RelativePath="..\..\renderdx\renderfontd3dx.h">
+			</File>
+			<File
+				RelativePath="..\..\renderdx\rendertargetdx.h">
 			</File>
 			<File
 				RelativePath="..\..\renderdx\stdhdr.h">

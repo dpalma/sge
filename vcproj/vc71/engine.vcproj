@@ -4,54 +4,28 @@
 	Version="7.10"
 	Name="engine"
 	ProjectGUID="{BD5E5BCF-8648-48EA-8B35-04CFE1541E3A}"
-	RootNamespace="engine"
-	>
+	RootNamespace="engine">
 	<Platforms>
 		<Platform
-			Name="Win32"
-		/>
+			Name="Win32"/>
 	</Platforms>
-	<ToolFiles>
-	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="Opt|Win32"
 			OutputDirectory=".\..\..\Build.vc71\Opt"
 			IntermediateDirectory=".\..\..\Build.vc71\Opt\engine"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
-				MkTypLibCompatible="true"
-				SuppressStartupBanner="true"
-				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\Opt/engine.tlb"
-			/>
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\api"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC;HAVE_UNITTESTPP"
-				StringPooling="true"
+				StringPooling="TRUE"
 				RuntimeLibrary="3"
-				EnableFunctionLevelLinking="true"
+				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\Opt\engine/engine.pch"
@@ -59,85 +33,60 @@
 				ObjectFile=".\..\..\Build.vc71\Opt\engine/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\Opt\engine/"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"
-				CompileAs="0"
-			/>
+				CompileAs="0"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="opengl32.lib glu32.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib"
 				OutputFile=".\..\..\Build.vc71\Opt/engine.dll"
 				LinkIncremental="2"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories=""
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc71\Opt/engine.pdb"
-				GenerateMapFile="true"
+				GenerateMapFile="TRUE"
 				MapFileName="..\..\Build.vc71\Opt/engine.map"
-				ImportLibrary=".\..\..\Build.vc71\Opt/engine.lib"
-			/>
+				ImportLibrary=".\..\..\Build.vc71\Opt/engine.lib"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\..\..\Build.vc71\Opt/engine.tlb"/>
 			<Tool
-				Name="VCManifestTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"/>
 			<Tool
-				Name="VCAppVerifierTool"
-			/>
+				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
+				Name="VCXMLDataGeneratorTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="StaticDebug|Win32"
 			OutputDirectory=".\..\..\Build.vc71\StaticDebug"
 			IntermediateDirectory=".\..\..\Build.vc71\StaticDebug\engine"
 			ConfigurationType="4"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
@@ -152,72 +101,44 @@
 				ObjectFile=".\..\..\Build.vc71\StaticDebug\engine/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\StaticDebug\engine/"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="4"
-				CompileAs="0"
-			/>
+				CompileAs="0"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
 				OutputFile=".\..\..\Build.vc71\StaticDebug\engine.lib"
-				SuppressStartupBanner="true"
-			/>
+				SuppressStartupBanner="TRUE"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\..\..\Build.vc71\Debug"
 			IntermediateDirectory=".\..\..\Build.vc71\Debug\engine"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="_DEBUG"
-				MkTypLibCompatible="true"
-				SuppressStartupBanner="true"
-				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\Debug/engine.tlb"
-			/>
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
@@ -232,93 +153,68 @@
 				ObjectFile=".\..\..\Build.vc71\Debug\engine/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\Debug\engine/"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="4"
-				CompileAs="0"
-			/>
+				CompileAs="0"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="opengl32.lib glu32.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib"
 				OutputFile=".\..\..\Build.vc71\Debug/engine.dll"
 				LinkIncremental="2"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories=""
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc71\Debug/engine.pdb"
-				GenerateMapFile="true"
+				GenerateMapFile="TRUE"
 				MapFileName="..\..\Build.vc71\Debug/engine.map"
-				ImportLibrary=".\..\..\Build.vc71\Debug/engine.lib"
-			/>
+				ImportLibrary=".\..\..\Build.vc71\Debug/engine.lib"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="_DEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\..\..\Build.vc71\Debug/engine.tlb"/>
 			<Tool
-				Name="VCManifestTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1033"/>
 			<Tool
-				Name="VCAppVerifierTool"
-			/>
+				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
+				Name="VCXMLDataGeneratorTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="StaticRelease|Win32"
 			OutputDirectory=".\..\..\Build.vc71\StaticRelease"
 			IntermediateDirectory=".\..\..\Build.vc71\StaticRelease\engine"
 			ConfigurationType="4"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\api"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,ENGINE_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,GLEW_STATIC"
-				StringPooling="true"
+				StringPooling="TRUE"
 				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="true"
+				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\StaticRelease\engine/engine.pch"
@@ -326,79 +222,51 @@
 				ObjectFile=".\..\..\Build.vc71\StaticRelease\engine/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\StaticRelease\engine/"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
-				CompileAs="0"
-			/>
+				SuppressStartupBanner="TRUE"
+				CompileAs="0"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
 				OutputFile=".\..\..\Build.vc71\StaticRelease\engine.lib"
-				SuppressStartupBanner="true"
-			/>
+				SuppressStartupBanner="TRUE"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory=".\..\..\Build.vc71\Release"
 			IntermediateDirectory=".\..\..\Build.vc71\Release\engine"
 			ConfigurationType="2"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
-			ATLMinimizesCRunTimeLibraryUsage="false"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-				PreprocessorDefinitions="NDEBUG"
-				MkTypLibCompatible="true"
-				SuppressStartupBanner="true"
-				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\Release/engine.tlb"
-			/>
+			ATLMinimizesCRunTimeLibraryUsage="FALSE"
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\3rdparty\glew\include,..\..\api"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;ENGINE_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;GLEW_STATIC"
-				StringPooling="true"
+				StringPooling="TRUE"
 				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
+				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\Release\engine/engine.pch"
@@ -406,58 +274,50 @@
 				ObjectFile=".\..\..\Build.vc71\Release\engine/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\Release\engine/"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
-				CompileAs="0"
-			/>
+				SuppressStartupBanner="TRUE"
+				CompileAs="0"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1033"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="opengl32.lib glu32.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib"
 				OutputFile=".\..\..\Build.vc71\Release/engine.dll"
 				LinkIncremental="1"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories=""
 				ProgramDatabaseFile=".\..\..\Build.vc71\Release/engine.pdb"
-				GenerateMapFile="true"
+				GenerateMapFile="TRUE"
 				MapFileName="..\..\Build.vc71\Release/engine.map"
 				OptimizeReferences="2"
-				ImportLibrary=".\..\..\Build.vc71\Release/engine.lib"
-			/>
+				ImportLibrary=".\..\..\Build.vc71\Release/engine.lib"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="TRUE"
+				SuppressStartupBanner="TRUE"
+				TargetEnvironment="1"
+				TypeLibraryName=".\..\..\Build.vc71\Release/engine.tlb"/>
 			<Tool
-				Name="VCManifestTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"/>
 			<Tool
-				Name="VCAppVerifierTool"
-			/>
+				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
+				Name="VCXMLDataGeneratorTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
 	<References>
@@ -465,268 +325,208 @@
 	<Files>
 		<Filter
 			Name="Source Files"
-		   Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
-			>
+			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
-				RelativePath="..\..\engine\camera.cpp"
-				>
+				RelativePath="..\..\engine\camera.cpp">
 			</File>
 			<File
-				RelativePath="..\..\engine\cmds.cpp"
-				>
+				RelativePath="..\..\engine\cmds.cpp">
 			</File>
 			<File
-				RelativePath="..\..\engine\engine.cpp"
-				>
+				RelativePath="..\..\engine\engine.cpp">
 			</File>
 			<File
-				RelativePath="..\..\engine\entity.cpp"
-				>
+				RelativePath="..\..\engine\entity.cpp">
 			</File>
 			<File
-				RelativePath="..\..\engine\entitycmdmanager.cpp"
-				>
+				RelativePath="..\..\engine\entitycmdmanager.cpp">
 			</File>
 			<File
-				RelativePath="..\..\engine\entitycmds.cpp"
-				>
+				RelativePath="..\..\engine\entitycmds.cpp">
 			</File>
 			<File
-				RelativePath="..\..\engine\entitycmdui.cpp"
-				>
+				RelativePath="..\..\engine\entitycmdui.cpp">
 			</File>
 			<File
-				RelativePath="..\..\engine\entitycomponents.cpp"
-				>
+				RelativePath="..\..\engine\entitycomponents.cpp">
 			</File>
 			<File
-				RelativePath="..\..\engine\entitymanager.cpp"
-				>
+				RelativePath="..\..\engine\entitymanager.cpp">
 			</File>
 			<File
-				RelativePath="..\..\engine\geomipmap.cpp"
-				>
+				RelativePath="..\..\engine\geomipmap.cpp">
 			</File>
 			<File
-				RelativePath="..\..\engine\heightmap.cpp"
-				>
+				RelativePath="..\..\engine\heightmap.cpp">
 			</File>
 			<File
-				RelativePath="..\..\engine\model.cpp"
-				>
+				RelativePath="..\..\engine\model.cpp">
 			</File>
 			<File
-				RelativePath="..\..\engine\modelanim.cpp"
-				>
+				RelativePath="..\..\engine\modelanim.cpp">
 			</File>
 			<File
-				RelativePath="..\..\engine\modelms3d.cpp"
-				>
+				RelativePath="..\..\engine\modelms3d.cpp">
 			</File>
 			<File
-				RelativePath="..\..\engine\modelsgem.cpp"
-				>
+				RelativePath="..\..\engine\modelsgem.cpp">
 			</File>
 			<File
-				RelativePath="..\..\engine\modelskeleton.cpp"
-				>
+				RelativePath="..\..\engine\modelskeleton.cpp">
 			</File>
 			<File
-				RelativePath="..\..\engine\modeltypes.cpp"
-				>
+				RelativePath="..\..\engine\modeltypes.cpp">
 			</File>
 			<File
-				RelativePath="..\..\engine\ms3dread.cpp"
-				>
+				RelativePath="..\..\engine\modelutils.cpp">
 			</File>
 			<File
-				RelativePath="..\..\engine\saveloadmanager.cpp"
-				>
+				RelativePath="..\..\engine\ms3dread.cpp">
 			</File>
 			<File
-				RelativePath="..\..\engine\scenario.cpp"
-				>
+				RelativePath="..\..\engine\saveloadmanager.cpp">
 			</File>
 			<File
-				RelativePath="..\..\engine\stdhdr.cpp"
-				>
+				RelativePath="..\..\engine\scenario.cpp">
+			</File>
+			<File
+				RelativePath="..\..\engine\stdhdr.cpp">
 				<FileConfiguration
-					Name="Opt|Win32"
-					>
+					Name="Opt|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-					/>
+						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="StaticDebug|Win32"
-					>
+					Name="StaticDebug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-					/>
+						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Debug|Win32"
-					>
+					Name="Debug|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-					/>
+						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="StaticRelease|Win32"
-					>
+					Name="StaticRelease|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-					/>
+						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 				<FileConfiguration
-					Name="Release|Win32"
-					>
+					Name="Release|Win32">
 					<Tool
 						Name="VCCLCompilerTool"
-						UsePrecompiledHeader="1"
-					/>
+						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\..\engine\terrain.cpp"
-				>
+				RelativePath="..\..\engine\terrain.cpp">
 			</File>
 			<File
-				RelativePath="..\..\engine\terrainrender.cpp"
-				>
+				RelativePath="..\..\engine\terrainrender.cpp">
 			</File>
 			<File
-				RelativePath="..\..\engine\tixml.cpp"
-				>
+				RelativePath="..\..\engine\tixml.cpp">
 			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
-		   Filter="h;hpp;hxx;hm;inl"
-			>
+			Filter="h;hpp;hxx;hm;inl">
 			<File
-				RelativePath="..\..\engine\camera.h"
-				>
+				RelativePath="..\..\engine\camera.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\engine.h"
-				>
+				RelativePath="..\..\engine\engine.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\entity.h"
-				>
+				RelativePath="..\..\engine\entity.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\entitycmdmanager.h"
-				>
+				RelativePath="..\..\engine\entitycmdmanager.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\entitycmdui.h"
-				>
+				RelativePath="..\..\engine\entitycmdui.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\entitycomponents.h"
-				>
+				RelativePath="..\..\engine\entitycomponents.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\entitymanager.h"
-				>
+				RelativePath="..\..\engine\entitymanager.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\geomipmap.h"
-				>
+				RelativePath="..\..\engine\geomipmap.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\model.h"
-				>
+				RelativePath="..\..\engine\model.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\modelanim.h"
-				>
+				RelativePath="..\..\engine\modelanim.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\modelskeleton.h"
-				>
+				RelativePath="..\..\engine\modelskeleton.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\ms3d.h"
-				>
+				RelativePath="..\..\engine\modelutils.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\ms3dread.h"
-				>
+				RelativePath="..\..\engine\ms3d.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\renderer.h"
-				>
+				RelativePath="..\..\engine\ms3dread.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\saveloadmanager.h"
-				>
+				RelativePath="..\..\engine\renderer.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\scenario.h"
-				>
+				RelativePath="..\..\engine\saveloadmanager.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\stdhdr.h"
-				>
+				RelativePath="..\..\engine\scenario.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\terrain.h"
-				>
+				RelativePath="..\..\engine\stdhdr.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\terrainrender.h"
-				>
+				RelativePath="..\..\engine\terrain.h">
+			</File>
+			<File
+				RelativePath="..\..\engine\terrainrender.h">
 			</File>
 		</Filter>
 		<Filter
-			Name="API"
-			>
+			Name="API">
 			<File
-				RelativePath="..\..\api\engine\cameraapi.h"
-				>
+				RelativePath="..\..\api\engine\cameraapi.h">
 			</File>
 			<File
-				RelativePath="..\..\api\engine\engineapi.h"
-				>
+				RelativePath="..\..\api\engine\engineapi.h">
 			</File>
 			<File
-				RelativePath="..\..\api\engine\enginedll.h"
-				>
+				RelativePath="..\..\api\engine\enginedll.h">
 			</File>
 			<File
-				RelativePath="..\..\api\engine\engineguids.h"
-				>
+				RelativePath="..\..\api\engine\engineguids.h">
 			</File>
 			<File
-				RelativePath="..\..\api\engine\entityapi.h"
-				>
+				RelativePath="..\..\api\engine\entityapi.h">
 			</File>
 			<File
-				RelativePath="..\..\api\engine\modelapi.h"
-				>
+				RelativePath="..\..\api\engine\modelapi.h">
 			</File>
 			<File
-				RelativePath="..\..\api\engine\modeltypes.h"
-				>
+				RelativePath="..\..\api\engine\modeltypes.h">
 			</File>
 			<File
-				RelativePath="..\..\api\engine\saveloadapi.h"
-				>
+				RelativePath="..\..\api\engine\saveloadapi.h">
 			</File>
 			<File
-				RelativePath="..\..\api\engine\scenarioapi.h"
-				>
+				RelativePath="..\..\api\engine\scenarioapi.h">
 			</File>
 			<File
-				RelativePath="..\..\api\engine\terrainapi.h"
-				>
+				RelativePath="..\..\api\engine\terrainapi.h">
 			</File>
 		</Filter>
 	</Files>

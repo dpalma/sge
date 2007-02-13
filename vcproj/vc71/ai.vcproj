@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\tinyxml.lib"
+				AdditionalDependencies="$(OutDir)\tinyxml.lib $(OutDir)\UnitTest++.lib"
 				OutputFile=".\..\..\Build.vc71\Opt/ai.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -161,7 +161,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="$(OutDir)\tinyxml.lib"
+				AdditionalDependencies="$(OutDir)\tinyxml.lib $(OutDir)\UnitTest++.lib"
 				OutputFile=".\..\..\Build.vc71\Debug/ai.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -330,13 +330,22 @@
 				RelativePath="..\..\ai\aiagent.cpp">
 			</File>
 			<File
-				RelativePath="..\..\ai\aibehaviormoveto.cpp">
+				RelativePath="..\..\ai\aiagentbehaviorfolloworders.cpp">
 			</File>
 			<File
-				RelativePath="..\..\ai\aibehaviorstand.cpp">
+				RelativePath="..\..\ai\aiagentbehaviorwander.cpp">
 			</File>
 			<File
-				RelativePath="..\..\ai\aibehaviorwander.cpp">
+				RelativePath="..\..\ai\aiagentmessage.cpp">
+			</File>
+			<File
+				RelativePath="..\..\ai\aiagentmessagerouter.cpp">
+			</File>
+			<File
+				RelativePath="..\..\ai\aiagenttaskmoveto.cpp">
+			</File>
+			<File
+				RelativePath="..\..\ai\aiagenttaskstand.cpp">
 			</File>
 			<File
 				RelativePath="..\..\ai\stdhdr.cpp">
@@ -379,13 +388,22 @@
 				RelativePath="..\..\ai\aiagent.h">
 			</File>
 			<File
-				RelativePath="..\..\ai\aibehaviormoveto.h">
+				RelativePath="..\..\ai\aiagentbehaviorfolloworders.h">
 			</File>
 			<File
-				RelativePath="..\..\ai\aibehaviorstand.h">
+				RelativePath="..\..\ai\aiagentbehaviorwander.h">
 			</File>
 			<File
-				RelativePath="..\..\ai\aibehaviorwander.h">
+				RelativePath="..\..\ai\aiagentmessage.h">
+			</File>
+			<File
+				RelativePath="..\..\ai\aiagentmessagerouter.h">
+			</File>
+			<File
+				RelativePath="..\..\ai\aiagenttaskmoveto.h">
+			</File>
+			<File
+				RelativePath="..\..\ai\aiagenttaskstand.h">
 			</File>
 			<File
 				RelativePath="..\..\ai\stdhdr.h">

@@ -32,6 +32,7 @@
 #include "tech/threadcallapi.h"
 #include "tech/imageapi.h"
 #include "tech/schedulerapi.h"
+#include "tech/simapi.h"
 
 #include <algorithm>
 
@@ -161,6 +162,7 @@ static void RegisterGlobalObjects()
    SaveLoadManagerCreate();
    SchedulerCreate();
    ScriptInterpreterCreate();
+   SimCreate();
    RendererCreate();
    if (ConfigIsTrue("use_geomipmap_terrain"))
    {
