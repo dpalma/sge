@@ -326,6 +326,11 @@ tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement,
                                            const tGUIRect & rect,
                                            IRender2D * pRender2D)
 {
+   if (rect.GetWidth() == 0 || rect.GetHeight() == 0)
+   {
+      return S_FALSE;
+   }
+
    IGUIListBoxElement * pListBoxElement = (IGUIListBoxElement *)pElement;
 
    pRender2D->RenderBeveledRect(rect, GetBevel(), GUIStandardColors::DarkGray.GetPointer(), GUIStandardColors::Gray.GetPointer(), GUIStandardColors::White.GetPointer());
@@ -361,13 +366,16 @@ tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement,
       {
          tGUIRect itemRect(insetRect);
 
-         uint itemHeight = 0, iTopItem = 0;
-         if (pListBoxElement->GetItemHeight(&itemHeight) == S_OK)
+         uint itemHeight = 0;
+         if (pListBoxElement->GetItemHeight(&itemHeight) != S_OK)
          {
-            iTopItem = static_cast<uint>(scrollPos) / itemHeight;
-            uint scrollTopOffset = static_cast<uint>(scrollPos) % itemHeight;
-            itemRect.top -= scrollTopOffset;
+            itemHeight = ListBoxPreferredItemHeight(pFont);
+            pListBoxElement->SetItemHeight(itemHeight);
          }
+
+         uint iTopItem = static_cast<uint>(scrollPos) / itemHeight;
+         uint scrollTopOffset = static_cast<uint>(scrollPos) % itemHeight;
+         itemRect.top -= scrollTopOffset;
 
          itemRect.bottom = itemRect.top + itemHeight;
 
@@ -377,14 +385,6 @@ tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement,
             if (pszText == NULL)
             {
                continue;
-            }
-
-            if (itemHeight == 0)
-            {
-               itemRect = insetRect;
-               pFont->RenderText(pszText, -1, &itemRect, kRT_CalcRect, NULL);
-               itemHeight = itemRect.GetHeight();
-               pListBoxElement->SetItemHeight(itemHeight);
             }
 
             if (pListBoxElement->IsItemSelected(i))
@@ -420,13 +420,20 @@ tGUISize cGUIBeveledRenderer::ListBoxPreferredSize(IGUIElement * pElement,
       uint rowCount;
       if (pListBoxElement->GetRowCount(&rowCount) == S_OK)
       {
-         tRect rect(0,0,0,0);
-         pFont->RenderText("XYZxyz\0", -1, &rect, kRT_CalcRect, NULL);
-         return tGUISize(0, static_cast<tGUISizeType>(rowCount * rect.GetHeight()));
+         return tGUISize(0, static_cast<tGUISizeType>(rowCount * ListBoxPreferredItemHeight(pFont)));
       }
    }
 
    return tGUISize(0,0);
+}
+
+///////////////////////////////////////
+
+uint cGUIBeveledRenderer::ListBoxPreferredItemHeight(IRenderFont * pFont) const
+{
+   tRect rect(0,0,0,0);
+   pFont->RenderText("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\0", -1, &rect, kRT_CalcRect, NULL);
+   return rect.GetHeight();
 }
 
 ///////////////////////////////////////

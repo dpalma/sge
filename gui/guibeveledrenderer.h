@@ -48,6 +48,7 @@ private:
 
    tResult ListBoxRender(IGUIElement * pElement, IGUIStyle * pStyle, IRenderFont * pFont, const tGUIRect & rect, IRender2D * pRender2D);
    tGUISize ListBoxPreferredSize(IGUIElement * pElement, IRenderFont * pFont, const tGUISize & parentSize) const;
+   uint ListBoxPreferredItemHeight(IRenderFont * pFont) const;
 
    tResult ScrollBarRender(IGUIElement * pElement, IGUIStyle * pStyle, IRenderFont * pFont, const tGUIRect & rect, IRender2D * pRender2D);
    tGUISize ScrollBarPreferredSize(IGUIElement * pElement, IRenderFont * pFont, const tGUISize & parentSize) const;

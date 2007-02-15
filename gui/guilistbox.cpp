@@ -705,10 +705,6 @@ void cGUIListBoxElement::UpdateScrollInfo()
             if (GUIScrollBarElementCreate(kGUIScrollBarVertical, &m_pVScrollBar) == S_OK)
             {
                m_pVScrollBar->SetParent(this);
-               m_pVScrollBar->SetScrollPos(0);
-               m_pVScrollBar->SetRange(0, contentHeight);
-               m_pVScrollBar->SetLineSize(m_itemHeight);
-               m_pVScrollBar->SetPageSize(m_itemHeight * 3);
             }
             else
             {
@@ -716,6 +712,11 @@ void cGUIListBoxElement::UpdateScrollInfo()
                return;
             }
          }
+
+         m_pVScrollBar->SetScrollPos(0);
+         m_pVScrollBar->SetRange(0, contentHeight);
+         m_pVScrollBar->SetLineSize(m_itemHeight);
+         m_pVScrollBar->SetPageSize(m_itemHeight * 3);
       }
       else
       {
