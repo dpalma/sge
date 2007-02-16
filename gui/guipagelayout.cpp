@@ -427,19 +427,30 @@ tResult cGUIPageLayout::operator ()(IGUIElement * pElement, IGUIElementRenderer 
       }
    }
 
+   bool bIsContainer = false, bHasLayout = false;
+
    cAutoIPtr<IGUIContainerElement> pContainer;
    if (pElement->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK)
    {
+      bIsContainer = true;
+
       cAutoIPtr<IGUILayoutManager> pLayout;
       if (pContainer->GetLayout(&pLayout) == S_OK)
       {
+         bHasLayout = true;
+
          LocalMsg1("Element %s has a layout manager\n", GUIElementIdentify(pElement).c_str());
          m_layoutQueue.push(std::make_pair(static_cast<IGUIContainerElement*>(CTAddRef(pContainer)), static_cast<IGUIElementRenderer*>(CTAddRef(pRenderer))));
       }
-      else
+   }
+
+   if (!bHasLayout)
+   {
+      tGUIRect clientArea(0,0,0,0);
+      ComputeClientArea(pElement, pRenderer, &clientArea);
+
+      if (bIsContainer)
       {
-         tGUIRect clientArea(0,0,0,0);
-         ComputeClientArea(pElement, pRenderer, &clientArea);
          cGUIPageLayoutFlow * pFlow = new cGUIPageLayoutFlow(clientArea);
          if (pFlow != NULL)
          {
