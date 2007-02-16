@@ -154,6 +154,7 @@ tResult cGUIScrollBarElement::OnEvent(IGUIEvent * pEvent)
                break;
             }
          }
+         result = S_FALSE;
       }
       m_armedPart = kGUIScrollBarPartNone;
    }
