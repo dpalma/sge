@@ -5,6 +5,8 @@
 
 #include "entitycomponents.h"
 
+#include "engine/terrainapi.h"
+
 #include "tech/globalobj.h"
 #include "tech/multivar.h"
 #include "tech/statemachinetem.h"
@@ -30,7 +32,7 @@
 
 cEntityPositionComponent::cEntityPositionComponent()
  : m_position(0,0,0)
- , m_orientation(tVec3(0,1,0),0) // rotation of 0 about y-axis by default
+ , m_orientation(g_terrainVertical,0) // rotation of 0 about the vertical axis by default
  , m_updateWorldTransform(kUpdateAll)
  , m_worldTransform(tMatrix4::GetIdentity())
 {

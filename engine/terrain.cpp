@@ -34,6 +34,12 @@ const int kDefaultStepSize = 32;
 
 static const uint kMaxTerrainHeight = 30;
 
+/////////////////////////////////////////////////////////////////////////////
+
+ENGINE_API const tVec3 g_terrainBasisX(1,0,0);
+ENGINE_API const tVec3 g_terrainBasisY(0,0,1);
+ENGINE_API const tVec3 g_terrainVertical(0,1,0);
+
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -521,7 +527,7 @@ tResult cTerrainModel::Initialize(const cTerrainSettings & terrainSettings)
             static_cast<float>(x) / extentX,
             static_cast<float>(z) / extentZ) * terrainSettings.GetHeightMapScale();
 
-         m_vertices[index] = tVec3(x, height, z);
+         m_vertices[index] = (g_terrainBasisX * x) + (g_terrainVertical * height) + (g_terrainBasisY * z);
       }
    }
 
@@ -608,7 +614,7 @@ tResult cTerrainModel::GetVertexFromHitTest(const cRay & ray, HTERRAINVERTEX * p
    }
 
    tVec3 pointOnPlane;
-   if (ray.IntersectsPlane(tVec3(0,1,0), 0, &pointOnPlane))
+   if (ray.IntersectsPlane(g_terrainVertical, 0, &pointOnPlane))
    {
       LocalMsg3("Hit the terrain at approximately (%.1f, %.1f, %.1f)\n",
          pointOnPlane.x, pointOnPlane.y, pointOnPlane.z);
@@ -730,7 +736,7 @@ tResult cTerrainModel::GetQuadFromHitTest(const cRay & ray, HTERRAINQUAD * phQua
    }
 
    tVec3 pointOnPlane;
-   if (ray.IntersectsPlane(tVec3(0,1,0), 0, &pointOnPlane))
+   if (ray.IntersectsPlane(g_terrainVertical, 0, &pointOnPlane))
    {
       LocalMsg3("Hit the terrain at approximately (%.1f, %.1f, %.1f)\n",
          pointOnPlane.x, pointOnPlane.y, pointOnPlane.z);
@@ -903,7 +909,7 @@ tResult cTerrainModel::GetPointOnTerrain(float nx, float nz, tVec3 * pLocation) 
       if (GetQuadCorners(ix, iz, corners) == S_OK)
       {
          tVec3 hit;
-         cRay ray(tVec3(x, 99999, z), tVec3(0, -1, 0));
+         cRay ray(tVec3(x, 99999, z), g_terrainVertical * -1);
          if (ray.IntersectsTriangle(corners[2], corners[1], corners[0], &hit)
             || ray.IntersectsTriangle(corners[0], corners[2], corners[3], &hit))
          {

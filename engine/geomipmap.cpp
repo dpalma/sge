@@ -203,8 +203,8 @@ tResult cGMMTerrain::Initialize(const cTerrainSettings & terrainSettings)
          for (int ix = 0; ix < w; ++ix, x += terrainSettings.GetTileSize())
          {
             uint index = h * iz + ix;
-            m_vertices[index].normal = tVec3(0, 1, 0);
-            m_vertices[index].position = tVec3(x, 0, z);
+            m_vertices[index].normal = g_terrainVertical;
+            m_vertices[index].position = (g_terrainBasisX * x) + (g_terrainBasisY * z);
          }
       }
    }
@@ -317,7 +317,7 @@ tResult cGMMTerrain::GetVertexFromHitTest(const cRay & ray, HTERRAINVERTEX * phV
    }
 
    tVec3 pointOnPlane;
-   if (ray.IntersectsPlane(tVec3(0,1,0), 0, &pointOnPlane))
+   if (ray.IntersectsPlane(g_terrainVertical, 0, &pointOnPlane))
    {
       LocalMsg3("Hit the terrain at approximately (%.1f, %.1f, %.1f)\n",
          pointOnPlane.x, pointOnPlane.y, pointOnPlane.z);
@@ -425,7 +425,7 @@ tResult cGMMTerrain::GetQuadFromHitTest(const cRay & ray, HTERRAINQUAD * phQuad)
    }
 
    tVec3 pointOnPlane;
-   if (ray.IntersectsPlane(tVec3(0,1,0), 0, &pointOnPlane))
+   if (ray.IntersectsPlane(g_terrainVertical, 0, &pointOnPlane))
    {
       LocalMsg3("Hit the terrain at approximately (%.1f, %.1f, %.1f)\n",
          pointOnPlane.x, pointOnPlane.y, pointOnPlane.z);
@@ -546,7 +546,7 @@ tResult cGMMTerrain::GetPointOnTerrain(float nx, float nz, tVec3 * pLocation) co
       if (GetQuadCorners(ix, iz, corners) == S_OK)
       {
          tVec3 hit;
-         cRay ray(tVec3(x, 99999, z), tVec3(0, -1, 0));
+         cRay ray(tVec3(x, 99999, z), g_terrainVertical * -1);
          if (ray.IntersectsTriangle(corners[2], corners[1], corners[0], &hit)
             || ray.IntersectsTriangle(corners[0], corners[2], corners[3], &hit))
          {

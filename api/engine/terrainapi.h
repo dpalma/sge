@@ -30,6 +30,11 @@ F_DECLARE_HANDLE(HTERRAINVERTEX);
 
 class cRay;
 
+/////////////////////////////////////////////////////////////////////////////
+
+ENGINE_API extern const tVec3 g_terrainBasisX;
+ENGINE_API extern const tVec3 g_terrainBasisY;
+ENGINE_API extern const tVec3 g_terrainVertical;
 
 /////////////////////////////////////////////////////////////////////////////
 
