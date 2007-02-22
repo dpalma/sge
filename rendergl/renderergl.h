@@ -69,7 +69,8 @@ public:
    virtual tResult SetTexture(uint textureUnit, const void * texture);
    virtual tResult SetTexture(uint textureUnit, const tChar * pszTexture);
 
-   virtual tResult Render(ePrimitiveType primitive, const void * pIndices, uint nIndices);
+   virtual tResult Render(ePrimitiveType primitive, uint startIndex, uint nIndices);
+   virtual tResult RenderIndexed(ePrimitiveType primitive, const void * pIndices, uint nIndices);
 
    virtual tResult CreateFont(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont);
 

@@ -592,7 +592,7 @@ void cGMMTerrain::Render()
       pRenderer->SetVertexFormat(g_gmmTerrainVertex, _countof(g_gmmTerrainVertex));
       pRenderer->SubmitVertices(&m_vertices[0], m_vertices.size());
       pRenderer->SetIndexFormat(kIF_16Bit);
-      pRenderer->Render(kPT_Triangles, &m_indices[0], m_indices.size());
+      pRenderer->RenderIndexed(kPT_Triangles, &m_indices[0], m_indices.size());
    }
 
    //std::vector<sGMMTerrainVertex>::iterator iter = m_vertices.begin();

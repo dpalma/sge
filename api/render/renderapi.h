@@ -130,7 +130,8 @@ interface IRenderer : IUnknown
    virtual tResult SetTexture(uint textureUnit, const void * texture) = 0;
    virtual tResult SetTexture(uint textureUnit, const tChar * pszTexture) = 0;
 
-   virtual tResult Render(ePrimitiveType primitive, const void * pIndices, uint nIndices) = 0;
+   virtual tResult Render(ePrimitiveType primitive, uint startIndex, uint nIndices) = 0;
+   virtual tResult RenderIndexed(ePrimitiveType primitive, const void * pIndices, uint nIndices) = 0;
 
    virtual tResult CreateFont(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont) = 0;
 

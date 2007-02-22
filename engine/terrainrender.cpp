@@ -1303,7 +1303,7 @@ void cTerrainChunk::Render()
 
       glPolygonOffset(static_cast<GLfloat>(-iSplat), static_cast<GLfloat>(-iSplat));
 
-      pRenderer->Render((*iter)->GetPrimitive(), const_cast<uint*>((*iter)->GetIndexPtr()), (*iter)->GetIndexCount());
+      pRenderer->RenderIndexed((*iter)->GetPrimitive(), const_cast<uint*>((*iter)->GetIndexPtr()), (*iter)->GetIndexCount());
    }
 
    glPopClientAttrib();

@@ -5,6 +5,8 @@
 
 #include "render2d.h"
 
+#include "tech/globalobj.h"
+
 #include <GL/glew.h>
 
 #include "tech/dbgalloc.h" // must be last header
@@ -113,82 +115,89 @@ void cRender2DGL::RenderSolidRect(const tRect & rect, const float color[4])
 
 ////////////////////////////////////////
 
+struct s2DVertex
+{
+   float x, y, z;
+   float r, g, b, a;
+};
+
+static const sVertexElement g_2dVertexDecl[] =
+{
+   { kVEU_Position, kVET_Float3, 0, 0 },
+   { kVEU_Color,    kVET_Float4, 0, 3 * sizeof(float) },
+};
+
 void cRender2DGL::RenderBeveledRect(const tRect & rect, int bevel,
                                     const float topLeft[4],
                                     const float bottomRight[4],
                                     const float face[4])
 {
-   glPushAttrib(GL_ENABLE_BIT);
-   glDisable(GL_TEXTURE_2D);
-
    if (bevel == 0)
    {
       RenderSolidRect(rect, face);
    }
    else
    {
-      glBegin(GL_TRIANGLES);
+      float x0 = static_cast<float>(rect.left);
+      float x1 = static_cast<float>(rect.left + bevel);
+      float x2 = static_cast<float>(rect.right - bevel);
+      float x3 = static_cast<float>(rect.right);
 
-      int x0 = rect.left;
-      int x1 = rect.left + bevel;
-      int x2 = rect.right - bevel;
-      int x3 = rect.right;
+      float y0 = static_cast<float>(rect.top);
+      float y1 = static_cast<float>(rect.top + bevel);
+      float y2 = static_cast<float>(rect.bottom - bevel);
+      float y3 = static_cast<float>(rect.bottom);
 
-      int y0 = rect.top;
-      int y1 = rect.top + bevel;
-      int y2 = rect.bottom - bevel;
-      int y3 = rect.bottom;
+#define VERT(x,y,c) { x, y, 0, (c)[0], (c)[1], (c)[2], (c)[3] }
 
-      glColor4fv(topLeft);
+      s2DVertex verts[] =
+      {
+         VERT(x0, y0, topLeft),
+         VERT(x0, y3, topLeft),
+         VERT(x1, y2, topLeft),
 
-      glVertex2i(x0, y0);
-      glVertex2i(x0, y3);
-      glVertex2i(x1, y2);
+         VERT(x0, y0, topLeft),
+         VERT(x1, y2, topLeft),
+         VERT(x1, y1, topLeft),
 
-      glVertex2i(x0, y0);
-      glVertex2i(x1, y2);
-      glVertex2i(x1, y1);
+         VERT(x0, y0, topLeft),
+         VERT(x2, y1, topLeft),
+         VERT(x3, y0, topLeft),
 
-      glVertex2i(x0, y0);
-      glVertex2i(x2, y1);
-      glVertex2i(x3, y0);
+         VERT(x0, y0, topLeft),
+         VERT(x1, y1, topLeft),
+         VERT(x2, y1, topLeft),
 
-      glVertex2i(x0, y0);
-      glVertex2i(x1, y1);
-      glVertex2i(x2, y1);
+         VERT(x0, y3, bottomRight),
+         VERT(x3, y3, bottomRight),
+         VERT(x1, y2, bottomRight),
 
-      glColor4fv(bottomRight);
+         VERT(x1, y2, bottomRight),
+         VERT(x3, y3, bottomRight),
+         VERT(x2, y2, bottomRight),
 
-      glVertex2i(x0, y3);
-      glVertex2i(x3, y3);
-      glVertex2i(x1, y2);
+         VERT(x3, y0, bottomRight),
+         VERT(x2, y1, bottomRight),
+         VERT(x3, y3, bottomRight),
 
-      glVertex2i(x1, y2);
-      glVertex2i(x3, y3);
-      glVertex2i(x2, y2);
+         VERT(x2, y1, bottomRight),
+         VERT(x2, y2, bottomRight),
+         VERT(x3, y3, bottomRight),
 
-      glVertex2i(x3, y0);
-      glVertex2i(x2, y1);
-      glVertex2i(x3, y3);
+         VERT(x1, y1, face),
+         VERT(x2, y2, face),
+         VERT(x2, y1, face),
 
-      glVertex2i(x2, y1);
-      glVertex2i(x2, y2);
-      glVertex2i(x3, y3);
+         VERT(x2, y2, face),
+         VERT(x1, y1, face),
+         VERT(x1, y2, face),
+      };
 
-      glColor4fv(face);
-
-      glVertex2i(x1, y1);
-      glVertex2i(x2, y2);
-      glVertex2i(x2, y1);
-
-      glVertex2i(x2, y2);
-      glVertex2i(x1, y1);
-      glVertex2i(x1, y2);
-
-      glEnd();
+      UseGlobal(Renderer);
+      pRenderer->SetVertexFormat(g_2dVertexDecl, _countof(g_2dVertexDecl));
+      pRenderer->SubmitVertices(verts, _countof(verts));
+      pRenderer->Render(kPT_Triangles, 0, _countof(verts));
    }
-
-   glPopAttrib();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

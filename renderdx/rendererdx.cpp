@@ -680,7 +680,43 @@ tResult cRendererDX::SetTexture(uint textureUnit, const tChar * pszTexture)
 
 ////////////////////////////////////////
 
-tResult cRendererDX::Render(ePrimitiveType primitive, const void * pIndices, uint nIndices)
+tResult cRendererDX::Render(ePrimitiveType primitive, uint startIndex, uint nIndices)
+{
+   //switch (primitive)
+   //{
+   //   case kPT_Lines:
+   //   {
+   //      nIndices = nPrimitives * 2;
+   //      break;
+   //   }
+   //   case kPT_LineStrip:
+   //   {
+   //      nIndices = nPrimitives + 1;
+   //      break;
+   //   }
+   //   case kPT_Triangles:
+   //   {
+   //      nIndices = nPrimitives * 3;
+   //      break;
+   //   }
+   //   case kPT_TriangleStrip:
+   //   {
+   //      nIndices = nPrimitives + 2;
+   //      break;
+   //   }
+   //   case kPT_TriangleFan:
+   //   {
+   //      nIndices = nPrimitives + 2;
+   //      break;
+   //   }
+   //}
+
+   return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
+tResult cRendererDX::RenderIndexed(ePrimitiveType primitive, const void * pIndices, uint nIndices)
 {
    if (pIndices == NULL)
    {

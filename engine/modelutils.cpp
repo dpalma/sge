@@ -143,7 +143,7 @@ void cBasicModelRenderer::Render()
                   pRenderer->SetTexture(0, pM->szTexture);
                }
             }
-            pRenderer->Render(static_cast<ePrimitiveType>(pMesh->primitive),
+            pRenderer->RenderIndexed(static_cast<ePrimitiveType>(pMesh->primitive),
                pIndices + pMesh->indexStart, pMesh->nIndices);
          }
       }
@@ -324,7 +324,7 @@ void cAnimatedModelRenderer::Render()
                   pRenderer->SetTexture(0, pM->szTexture);
                }
             }
-            pRenderer->Render(static_cast<ePrimitiveType>(pMesh->primitive),
+            pRenderer->RenderIndexed(static_cast<ePrimitiveType>(pMesh->primitive),
                pIndices + pMesh->indexStart, pMesh->nIndices);
          }
       }

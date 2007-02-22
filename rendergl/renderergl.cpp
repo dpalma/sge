@@ -859,7 +859,25 @@ tResult cRendererGL::SetTexture(uint textureUnit, const tChar * pszTexture)
 
 ////////////////////////////////////////
 
-tResult cRendererGL::Render(ePrimitiveType primitive, const void * pIndices, uint nIndices)
+tResult cRendererGL::Render(ePrimitiveType primitive, uint startIndex, uint nIndices)
+{
+   if (nIndices == 0)
+   {
+      return E_INVALIDARG;
+   }
+
+   if (!m_bInScene)
+   {
+      return E_FAIL;
+   }
+
+   glDrawArrays(GetGlPrimitive(primitive), startIndex, nIndices);
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+tResult cRendererGL::RenderIndexed(ePrimitiveType primitive, const void * pIndices, uint nIndices)
 {
    if (pIndices == NULL)
    {
