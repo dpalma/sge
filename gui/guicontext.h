@@ -86,7 +86,7 @@ public:
 
    virtual tResult RequestLayout(IGUIElement * pRequester, uint options);
 
-   virtual tResult RenderGUI(IRender2D * pRender2D);
+   virtual tResult RenderGUI(uint width, uint height, IRender2D * pRender2D);
 
    virtual tResult ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pStyle);
    virtual tResult HideDebugInfo();

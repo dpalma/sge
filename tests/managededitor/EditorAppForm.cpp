@@ -163,7 +163,7 @@ namespace ManagedEditor
             {
                UseGlobal(GUIContext);
                if (!!pGUIContext)
-                  pGUIContext->RenderGUI(pRender2D);
+                  pGUIContext->RenderGUI(width, height, pRender2D);
 
                pRenderer->End2D();
             }

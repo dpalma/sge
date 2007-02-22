@@ -138,7 +138,7 @@ tResult cMainRenderTask::Execute(double time)
       if (pRenderer->Begin2D(width, height, &pRender2D) == S_OK)
       {
          UseGlobal(GUIContext);
-         pGUIContext->RenderGUI(pRender2D);
+         pGUIContext->RenderGUI(width, height, pRender2D);
 
          pRenderer->End2D();
       }

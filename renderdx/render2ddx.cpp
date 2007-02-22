@@ -53,24 +53,6 @@ cRender2DDX::~cRender2DDX()
 
 ////////////////////////////////////////
 
-tResult cRender2DDX::GetViewportSize(int * pWidth, int * pHeight) const
-{
-   if (pWidth == NULL || pHeight == NULL)
-   {
-      return E_POINTER;
-   }
-   D3DVIEWPORT9 viewport;
-   if (const_cast<IDirect3DDevice9 *>((const IDirect3DDevice9 *)m_pD3dDevice)->GetViewport(&viewport) == D3D_OK)
-   {
-      *pWidth = viewport.Width;
-      *pHeight = viewport.Height;
-      return S_OK;
-   }
-   return E_FAIL;
-}
-
-////////////////////////////////////////
-
 void cRender2DDX::PushScissorRect(const tRect & rect)
 {
    m_pD3dDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);

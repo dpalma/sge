@@ -285,7 +285,7 @@ interface IGUIContext : IGUIEventRouter
       return RequestLayout(pRequester, kGUILayoutDefault);
    }
 
-   virtual tResult RenderGUI(IRender2D * pRender2D) = 0;
+   virtual tResult RenderGUI(uint width, uint height, IRender2D * pRender2D) = 0;
 
    virtual tResult ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pStyle) = 0;
    virtual tResult HideDebugInfo() = 0;

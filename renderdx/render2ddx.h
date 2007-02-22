@@ -41,8 +41,6 @@ public:
    cRender2DDX(IDirect3DDevice9 * pD3dDevice);
    ~cRender2DDX();
 
-   virtual tResult GetViewportSize(int * pWidth, int * pHeight) const;
-
    virtual void PushScissorRect(const tRect & rect);
    virtual void PopScissorRect();
 

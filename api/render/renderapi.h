@@ -216,8 +216,6 @@ RENDER_API tResult RenderCameraCreate(IRenderCamera * * ppRenderCamera);
 
 interface IRender2D : IUnknown
 {
-   virtual tResult GetViewportSize(int * pWidth, int * pHeight) const = 0;
-
    virtual void PushScissorRect(const tRect & rect) = 0;
    virtual void PopScissorRect() = 0;
 

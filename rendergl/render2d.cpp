@@ -51,22 +51,6 @@ cRender2DGL::~cRender2DGL()
 
 ////////////////////////////////////////
 
-tResult cRender2DGL::GetViewportSize(int * pWidth, int * pHeight) const
-{
-   if (pWidth == NULL || pHeight == NULL)
-   {
-      return E_POINTER;
-   }
-
-   glGetIntegerv(GL_VIEWPORT, m_viewport);
-
-   *pWidth = m_viewport[2] - m_viewport[0];
-   *pHeight = m_viewport[3] - m_viewport[1];
-   return S_OK;
-}
-
-////////////////////////////////////////
-
 void cRender2DGL::PushScissorRect(const tRect & rect)
 {
    glPushAttrib(GL_SCISSOR_BIT);

@@ -645,7 +645,7 @@ tResult cGUIContext::RequestLayout(IGUIElement * pRequester, uint options)
 
 ///////////////////////////////////////
 
-tResult cGUIContext::RenderGUI(IRender2D * pRender2D)
+tResult cGUIContext::RenderGUI(uint width, uint height, IRender2D * pRender2D)
 {
    tGUIPageList renderPages;
 
@@ -666,9 +666,6 @@ tResult cGUIContext::RenderGUI(IRender2D * pRender2D)
    }
 
    {
-      int width = 0, height = 0;
-      pRender2D->GetViewportSize(&width, &height);
-
       tGUIPageList::iterator iter = renderPages.begin();
       for (; iter != renderPages.end(); iter++)
       {
