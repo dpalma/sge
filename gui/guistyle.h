@@ -21,7 +21,7 @@
 
 class cGUIStyle : public cComObject<IMPLEMENTS(IGUIStyle)>
 {
-   void operator =(const cGUIStyle &);
+   const cGUIStyle & operator =(const cGUIStyle &);
 
    cGUIStyle(IGUIStyle * pClassStyle, IDictionary * pDict = NULL);
    cGUIStyle(const cGUIStyle & other);
@@ -72,6 +72,8 @@ public:
    virtual tResult GetFontOutline(bool * pB);
    virtual tResult SetFontOutline(bool b);
 
+   virtual tResult GetFont(IRenderFont * * ppFont);
+
    virtual tResult GetPlacement(uint * pPlacement) const;
    virtual tResult SetPlacement(uint placement);
 
@@ -100,6 +102,8 @@ private:
    // Cache color attributes because IDictionary doesn't support color values
    typedef std::map<cStr, tGUIColor> tColorMap;
    tColorMap m_colorMap;
+
+   cAutoIPtr<IRenderFont> m_pCachedFont;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

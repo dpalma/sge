@@ -104,7 +104,7 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, const tGUIPoint & po
             cAutoIPtr<IGUIStyle> pStyle;
             if (pElement2->GetStyle(&pStyle) == S_OK)
             {
-               GUIStyleFontCreate(pStyle, &pFont);
+               pStyle->GetFont(&pFont);
             }
             if (!pFont)
             {
@@ -149,7 +149,7 @@ tResult cGUIBeveledRenderer::GetPreferredSize(IGUIElement * pElement, const tGUI
             cAutoIPtr<IGUIStyle> pStyle;
             if (pElement2->GetStyle(&pStyle) == S_OK)
             {
-               GUIStyleFontCreate(pStyle, &pFont);
+               pStyle->GetFont(&pFont);
             }
             if (!pFont)
             {

@@ -74,6 +74,8 @@ interface IGUIStyle : IUnknown
    virtual tResult GetFontOutline(bool * pB) = 0;
    virtual tResult SetFontOutline(bool b) = 0;
 
+   virtual tResult GetFont(IRenderFont * * ppFont) = 0;
+
    virtual tResult GetPlacement(uint * pPlacement) const = 0;
    virtual tResult SetPlacement(uint placement) = 0;
 
@@ -86,7 +88,6 @@ interface IGUIStyle : IUnknown
    virtual tResult Clone(IGUIStyle * * ppStyle) = 0;
 };
 
-GUI_API tResult GUIStyleFontCreate(IGUIStyle * pStyle, IRenderFont * * ppFont);
 
 ///////////////////////////////////////
 /// Attempt to parse a color value from the given string. Valid strings are

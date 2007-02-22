@@ -698,7 +698,7 @@ tResult cGUIContext::ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pSty
          pStyle->GetForegroundColor(&m_debugInfoTextColor);
 
          cAutoIPtr<IRenderFont> pNewDebugFont;
-         if (GUIStyleFontCreate(pStyle, &pNewDebugFont) == S_OK)
+         if (pStyle->GetFont(&pNewDebugFont) == S_OK)
          {
             SafeRelease(m_pDebugFont);
             m_pDebugFont = pNewDebugFont;

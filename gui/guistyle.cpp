@@ -27,6 +27,78 @@ static const uint kInvalidUint = ~0u;
 
 static const tChar kStyleAttribNameValueSep = _T(':');
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+static tResult GUIStyleFontDesc(IGUIStyle * pStyle, cStr * pFontName, int * pPointSize, uint * pFlags)
+{
+   if (pStyle == NULL || pFontName == NULL || pPointSize == NULL || pFlags == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (pStyle->GetFontName(pFontName) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   int size;
+   uint sizeType;
+   if (pStyle->GetFontSize(&size, &sizeType) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   if (sizeType == kGUIFontSizePoints)
+   {
+      *pPointSize = size;
+   }
+   else
+   {
+      // TODO: convert to points
+      return E_INVALIDARG;
+   }
+
+   uint flags = kRFF_None;
+
+   {
+      bool bBold = false;
+      if ((pStyle->GetFontBold(&bBold) == S_OK) && bBold)
+      {
+         flags |= kRFF_Bold;
+      }
+   }
+
+   {
+      bool bItalic = false;
+      if ((pStyle->GetFontItalic(&bItalic) == S_OK) && bItalic)
+      {
+         flags |= kRFF_Italic;
+      }
+   }
+
+   {
+      bool bShadow = false;
+      if ((pStyle->GetFontShadow(&bShadow) == S_OK) && bShadow)
+      {
+         flags |= kRFF_Shadow;
+      }
+   }
+
+   {
+      bool bOutline = false;
+      if ((pStyle->GetFontOutline(&bOutline) == S_OK) && bOutline)
+      {
+         flags |= kRFF_Outline;
+      }
+   }
+
+   *pFlags = flags;
+
+   return S_OK;
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIStyle
@@ -405,6 +477,7 @@ tResult cGUIStyle::SetFontName(const char * pszFontName)
       return E_POINTER;
    }
    m_fontName = pszFontName;
+   SafeRelease(m_pCachedFont);
    return m_fontName.length() > 0 ? S_OK : S_FALSE;
 }
 
@@ -446,6 +519,7 @@ tResult cGUIStyle::SetFontSize(int size, uint sizeType)
    }
    m_fontSize = size;
    m_fontSizeType = sizeType;
+   SafeRelease(m_pCachedFont);
    return S_OK;
 }
 
@@ -466,6 +540,7 @@ tResult cGUIStyle::GetFontBold(bool * pB)
 tResult cGUIStyle::SetFontBold(bool b)
 {
    m_bFontBold = b;
+   SafeRelease(m_pCachedFont);
    return S_OK;
 }
 
@@ -486,6 +561,7 @@ tResult cGUIStyle::GetFontItalic(bool * pB)
 tResult cGUIStyle::SetFontItalic(bool b)
 {
    m_bFontItalic = b;
+   SafeRelease(m_pCachedFont);
    return S_OK;
 }
 
@@ -506,6 +582,7 @@ tResult cGUIStyle::GetFontShadow(bool * pB)
 tResult cGUIStyle::SetFontShadow(bool b)
 {
    m_bFontShadow = b;
+   SafeRelease(m_pCachedFont);
    return S_OK;
 }
 
@@ -526,7 +603,58 @@ tResult cGUIStyle::GetFontOutline(bool * pB)
 tResult cGUIStyle::SetFontOutline(bool b)
 {
    m_bFontOutline = b;
+   SafeRelease(m_pCachedFont);
    return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cGUIStyle::GetFont(IRenderFont * * ppFont)
+{
+   if (ppFont == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (!!m_pCachedFont)
+   {
+      return m_pCachedFont.GetPointer(ppFont);
+   }
+
+   tGUIString fontFamily;
+   if (GetFontName(&fontFamily) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   cTokenizer<cStr> tok;
+   if (tok.Tokenize(fontFamily.c_str(), _T(",")) <= 0)
+   {
+      return E_FAIL;
+   }
+
+   cStr fontName;
+   int pointSize = 0;
+   uint flags = kRFF_None;
+   if (GUIStyleFontDesc(static_cast<IGUIStyle*>(this), &fontName, &pointSize, &flags) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   UseGlobal(Renderer);
+
+   Assert(!m_pCachedFont);
+
+   for (uint i = 0; i < tok.m_tokens.size(); i++)
+   {
+      fontName = tok.m_tokens[i];
+      if (pRenderer->CreateFont(fontName.c_str(), pointSize, flags, &m_pCachedFont) == S_OK)
+      {
+         return m_pCachedFont.GetPointer(ppFont);
+      }
+   }
+
+   return E_FAIL;
 }
 
 ///////////////////////////////////////
@@ -689,120 +817,6 @@ static eGUIVerticalAlignment GUIStyleParseVertAlignment(const char * psz)
    {
       return kGUIVertAlignTop;
    }
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-static tResult GUIStyleFontDesc(IGUIStyle * pStyle, cStr * pFontName, int * pPointSize, uint * pFlags)
-{
-   if (pStyle == NULL || pFontName == NULL || pPointSize == NULL || pFlags == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (pStyle->GetFontName(pFontName) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   int size;
-   uint sizeType;
-   if (pStyle->GetFontSize(&size, &sizeType) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   if (sizeType == kGUIFontSizePoints)
-   {
-      *pPointSize = size;
-   }
-   else
-   {
-      // TODO: convert to points
-      return E_INVALIDARG;
-   }
-
-   uint flags = kRFF_None;
-
-   {
-      bool bBold = false;
-      if ((pStyle->GetFontBold(&bBold) == S_OK) && bBold)
-      {
-         flags |= kRFF_Bold;
-      }
-   }
-
-   {
-      bool bItalic = false;
-      if ((pStyle->GetFontItalic(&bItalic) == S_OK) && bItalic)
-      {
-         flags |= kRFF_Italic;
-      }
-   }
-
-   {
-      bool bShadow = false;
-      if ((pStyle->GetFontShadow(&bShadow) == S_OK) && bShadow)
-      {
-         flags |= kRFF_Shadow;
-      }
-   }
-
-   {
-      bool bOutline = false;
-      if ((pStyle->GetFontOutline(&bOutline) == S_OK) && bOutline)
-      {
-         flags |= kRFF_Outline;
-      }
-   }
-
-   *pFlags = flags;
-
-   return S_OK;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-tResult GUIStyleFontCreate(IGUIStyle * pStyle, IRenderFont * * ppFont)
-{
-   if (pStyle == NULL || ppFont == NULL)
-   {
-      return E_POINTER;
-   }
-
-   tGUIString fontFamily;
-   if (pStyle->GetFontName(&fontFamily) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   cTokenizer<cStr> tok;
-   if (tok.Tokenize(fontFamily.c_str(), _T(",")) <= 0)
-   {
-      return E_FAIL;
-   }
-
-   cStr fontName;
-   int pointSize = 0;
-   uint flags = kRFF_None;
-   if (GUIStyleFontDesc(pStyle, &fontName, &pointSize, &flags) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   UseGlobal(Renderer);
-
-   for (uint i = 0; i < tok.m_tokens.size(); i++)
-   {
-      fontName = tok.m_tokens[i];
-      if (pRenderer->CreateFont(fontName.c_str(), pointSize, flags, ppFont) == S_OK)
-      {
-         return S_OK;
-      }
-   }
-
-   return E_FAIL;
 }
 
 
