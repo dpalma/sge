@@ -18,6 +18,118 @@
 #include "tech/dbgalloc.h" // must be last header
 
 
+////////////////////////////////////////////////////////////////////////////////
+
+struct sGUIVertex
+{
+   float x, y, z;
+   float r, g, b, a;
+};
+
+static const sVertexElement g_guiVertexDecl[] =
+{
+   { kVEU_Position, kVET_Float3, 0, 0 },
+   { kVEU_Color,    kVET_Float4, 0, 3 * sizeof(float) },
+};
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+void GUIRenderSolidRect(const tRecti & rect, const float color[4])
+{
+#define VERT(x,y) { static_cast<float>(x), static_cast<float>(y), 0, color[0], color[1], color[2], color[3] }
+   sGUIVertex verts[] =
+   {
+      VERT(rect.left, rect.top),
+      VERT(rect.left, rect.bottom),
+      VERT(rect.right, rect.bottom),
+      VERT(rect.right, rect.top),
+   };
+#undef VERT
+
+   UseGlobal(Renderer);
+   pRenderer->SetVertexFormat(g_guiVertexDecl, _countof(g_guiVertexDecl));
+   pRenderer->SubmitVertices(verts, _countof(verts));
+   pRenderer->Render(kPT_TriangleFan, 0, _countof(verts));
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+static void GUIRenderBeveledRect(const tRecti & rect, int bevel,
+                                 const float topLeft[4], const float bottomRight[4], const float face[4])
+{
+   if (bevel == 0)
+   {
+      GUIRenderSolidRect(rect, face);
+   }
+   else
+   {
+      float x0 = static_cast<float>(rect.left);
+      float x1 = static_cast<float>(rect.left + bevel);
+      float x2 = static_cast<float>(rect.right - bevel);
+      float x3 = static_cast<float>(rect.right);
+
+      float y0 = static_cast<float>(rect.top);
+      float y1 = static_cast<float>(rect.top + bevel);
+      float y2 = static_cast<float>(rect.bottom - bevel);
+      float y3 = static_cast<float>(rect.bottom);
+
+#define VERT(x,y,c) { x, y, 0, (c)[0], (c)[1], (c)[2], (c)[3] }
+
+      sGUIVertex verts[] =
+      {
+         VERT(x0, y0, topLeft),
+         VERT(x0, y3, topLeft),
+         VERT(x1, y2, topLeft),
+
+         VERT(x0, y0, topLeft),
+         VERT(x1, y2, topLeft),
+         VERT(x1, y1, topLeft),
+
+         VERT(x0, y0, topLeft),
+         VERT(x2, y1, topLeft),
+         VERT(x3, y0, topLeft),
+
+         VERT(x0, y0, topLeft),
+         VERT(x1, y1, topLeft),
+         VERT(x2, y1, topLeft),
+
+         VERT(x0, y3, bottomRight),
+         VERT(x3, y3, bottomRight),
+         VERT(x1, y2, bottomRight),
+
+         VERT(x1, y2, bottomRight),
+         VERT(x3, y3, bottomRight),
+         VERT(x2, y2, bottomRight),
+
+         VERT(x3, y0, bottomRight),
+         VERT(x2, y1, bottomRight),
+         VERT(x3, y3, bottomRight),
+
+         VERT(x2, y1, bottomRight),
+         VERT(x2, y2, bottomRight),
+         VERT(x3, y3, bottomRight),
+
+         VERT(x1, y1, face),
+         VERT(x2, y2, face),
+         VERT(x2, y1, face),
+
+         VERT(x2, y2, face),
+         VERT(x1, y1, face),
+         VERT(x1, y2, face),
+      };
+
+#undef VERT
+
+      UseGlobal(Renderer);
+      pRenderer->SetVertexFormat(g_guiVertexDecl, _countof(g_guiVertexDecl));
+      pRenderer->SubmitVertices(verts, _countof(verts));
+      pRenderer->Render(kPT_Triangles, 0, _countof(verts));
+   }
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIBeveledRenderer
@@ -70,9 +182,9 @@ const cGUIBeveledRenderer::sMethodTableEntry cGUIBeveledRenderer::gm_methodTable
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, const tGUIPoint & position, IRender2D * pRender2D)
+tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, const tGUIPoint & position)
 {
-   if (pRender2D == NULL || pElement == NULL)
+   if (pElement == NULL)
    {
       return E_POINTER;
    }
@@ -117,7 +229,7 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, const tGUIPoint & po
                FloatToInt(position.x), FloatToInt(position.y),
                FloatToInt(position.x + size.width), FloatToInt(position.y + size.height));
 
-            return (this->*(gm_methodTable[i].pfnRender))(pElement2, pStyle, pFont, rect, pRender2D);
+            return (this->*(gm_methodTable[i].pfnRender))(pElement2, pStyle, pFont, rect);
          }
          else
          {
@@ -190,8 +302,7 @@ tResult cGUIBeveledRenderer::AllocateBorderSpace(IGUIElement * pElement, tGUIRec
 tResult cGUIBeveledRenderer::ButtonRender(IGUIElement * pElement,
                                           IGUIStyle * pStyle,
                                           IRenderFont * pFont,
-                                          const tGUIRect & rect,
-                                          IRender2D * pRender2D)
+                                          const tGUIRect & rect)
 {
    bool bPressed = false;
 
@@ -199,12 +310,12 @@ tResult cGUIBeveledRenderer::ButtonRender(IGUIElement * pElement,
 
    if (pButtonElement->IsArmed() && pButtonElement->IsMouseOver())
    {
-      pRender2D->RenderBeveledRect(rect, GetBevel(), GetColor(kBC_Shadow).GetPointer(), GetColor(kBC_Highlight).GetPointer(), GetColor(kBC_Face).GetPointer());
+      GUIRenderBeveledRect(rect, GetBevel(), GetColor(kBC_Shadow).GetPointer(), GetColor(kBC_Highlight).GetPointer(), GetColor(kBC_Face).GetPointer());
       bPressed = true;
    }
    else
    {
-      pRender2D->RenderBeveledRect(rect, GetBevel(), GetColor(kBC_Highlight).GetPointer(), GetColor(kBC_Shadow).GetPointer(), GetColor(kBC_Face).GetPointer());
+      GUIRenderBeveledRect(rect, GetBevel(), GetColor(kBC_Highlight).GetPointer(), GetColor(kBC_Shadow).GetPointer(), GetColor(kBC_Face).GetPointer());
    }
 
    const tGUIChar * pszText = pButtonElement->GetText();
@@ -256,7 +367,7 @@ tGUISize cGUIBeveledRenderer::ButtonPreferredSize(IGUIElement * pElement,
    {
       if (pFont != NULL)
       {
-         tRect rect(0,0,0,0);
+         tRecti rect(0,0,0,0);
          pFont->RenderText(pszText, -1, &rect, kRT_CalcRect, NULL);
          return tGUISize(static_cast<tGUISizeType>(rect.GetWidth() + rect.GetHeight()), rect.GetHeight() * 1.5f);
       }
@@ -270,8 +381,7 @@ tGUISize cGUIBeveledRenderer::ButtonPreferredSize(IGUIElement * pElement,
 tResult cGUIBeveledRenderer::LabelRender(IGUIElement * pElement,
                                          IGUIStyle * pStyle,
                                          IRenderFont * pFont,
-                                         const tGUIRect & rect,
-                                         IRender2D * pRender2D)
+                                         const tGUIRect & rect)
 {
    IGUILabelElement * pLabelElement = (IGUILabelElement *)pElement;
 
@@ -309,7 +419,7 @@ tGUISize cGUIBeveledRenderer::LabelPreferredSize(IGUIElement * pElement,
    {
       if (pFont != NULL)
       {
-         tRect rect(0,0,0,0);
+         tRecti rect(0,0,0,0);
          pFont->RenderText(pszText, -1, &rect, kRT_CalcRect, NULL);
          return tGUISize(static_cast<tGUISizeType>(rect.GetWidth()), static_cast<tGUISizeType>(rect.GetHeight()));
       }
@@ -323,8 +433,7 @@ tGUISize cGUIBeveledRenderer::LabelPreferredSize(IGUIElement * pElement,
 tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement,
                                            IGUIStyle * pStyle,
                                            IRenderFont * pFont,
-                                           const tGUIRect & rect,
-                                           IRender2D * pRender2D)
+                                           const tGUIRect & rect)
 {
    if (rect.GetWidth() == 0 || rect.GetHeight() == 0)
    {
@@ -333,7 +442,7 @@ tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement,
 
    IGUIListBoxElement * pListBoxElement = (IGUIListBoxElement *)pElement;
 
-   pRender2D->RenderBeveledRect(rect, GetBevel(), GUIStandardColors::DarkGray.GetPointer(), GUIStandardColors::Gray.GetPointer(), GUIStandardColors::White.GetPointer());
+   GUIRenderBeveledRect(rect, GetBevel(), GUIStandardColors::DarkGray.GetPointer(), GUIStandardColors::Gray.GetPointer(), GUIStandardColors::White.GetPointer());
 
    tGUIRect insetRect(rect);
    insetRect.left += GetBevel() + kHorzInset;
@@ -341,7 +450,9 @@ tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement,
    insetRect.right -= GetBevel() + kHorzInset;
    insetRect.bottom -= kVertInset;
 
-   pRender2D->PushScissorRect(insetRect);
+   UseGlobal(Renderer);
+
+   pRenderer->PushScissorRect(insetRect);
 
    tGUIColor textColor(GUIStandardColors::Black);
    if (pStyle != NULL)
@@ -389,7 +500,7 @@ tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement,
 
             if (pListBoxElement->IsItemSelected(i))
             {
-               pRender2D->RenderSolidRect(itemRect, GUIStandardColors::Blue.GetPointer());
+               GUIRenderSolidRect(itemRect, GUIStandardColors::Blue.GetPointer());
                pFont->RenderText(pszText, -1, &itemRect, kRT_NoClip, GUIStandardColors::White.GetPointer());
             }
             else
@@ -402,7 +513,7 @@ tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement,
       }
    }
 
-   pRender2D->PopScissorRect();
+   pRenderer->PopScissorRect();
 
    return S_OK;
 }
@@ -431,7 +542,7 @@ tGUISize cGUIBeveledRenderer::ListBoxPreferredSize(IGUIElement * pElement,
 
 uint cGUIBeveledRenderer::ListBoxPreferredItemHeight(IRenderFont * pFont) const
 {
-   tRect rect(0,0,0,0);
+   tGUIRect rect(0,0,0,0);
    pFont->RenderText("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz\0", -1, &rect, kRT_CalcRect, NULL);
    return rect.GetHeight();
 }
@@ -441,8 +552,7 @@ uint cGUIBeveledRenderer::ListBoxPreferredItemHeight(IRenderFont * pFont) const
 tResult cGUIBeveledRenderer::ScrollBarRender(IGUIElement * pElement,
                                              IGUIStyle * pStyle,
                                              IRenderFont * pFont,
-                                             const tGUIRect & rect,
-                                             IRender2D * pRender2D)
+                                             const tGUIRect & rect)
 {
    IGUIScrollBarElement * pScrollBarElement = (IGUIScrollBarElement *)pElement;
 
@@ -481,26 +591,26 @@ tResult cGUIBeveledRenderer::ScrollBarRender(IGUIElement * pElement,
       track2Rect = tGUIRect(btn1Rect.left, thumbRect.bottom, btn1Rect.right, btn2Rect.top);
    }
 
-   pRender2D->RenderSolidRect(track1Rect, GetColor(kBC_Highlight).GetPointer());
-   pRender2D->RenderSolidRect(track2Rect, GetColor(kBC_Highlight).GetPointer());
-   pRender2D->RenderBeveledRect(thumbRect, GetBevel(), GetColor(kBC_Highlight).GetPointer(), GUIStandardColors::DarkGray.GetPointer(), GetColor(kBC_Face).GetPointer());
+   GUIRenderSolidRect(track1Rect, GetColor(kBC_Highlight).GetPointer());
+   GUIRenderSolidRect(track2Rect, GetColor(kBC_Highlight).GetPointer());
+   GUIRenderBeveledRect(thumbRect, GetBevel(), GetColor(kBC_Highlight).GetPointer(), GUIStandardColors::DarkGray.GetPointer(), GetColor(kBC_Face).GetPointer());
 
    if (armedPart == kGUIScrollBarPartButton1 && armedPart == mouseOverPart)
    {
-      pRender2D->RenderBeveledRect(btn1Rect, GetBevel(), GUIStandardColors::DarkGray.GetPointer(), GetColor(kBC_Highlight).GetPointer(), GetColor(kBC_Face).GetPointer());
+      GUIRenderBeveledRect(btn1Rect, GetBevel(), GUIStandardColors::DarkGray.GetPointer(), GetColor(kBC_Highlight).GetPointer(), GetColor(kBC_Face).GetPointer());
    }
    else
    {
-      pRender2D->RenderBeveledRect(btn1Rect, GetBevel(), GetColor(kBC_Highlight).GetPointer(), GUIStandardColors::DarkGray.GetPointer(), GetColor(kBC_Face).GetPointer());
+      GUIRenderBeveledRect(btn1Rect, GetBevel(), GetColor(kBC_Highlight).GetPointer(), GUIStandardColors::DarkGray.GetPointer(), GetColor(kBC_Face).GetPointer());
    }
 
    if (armedPart == kGUIScrollBarPartButton2 && armedPart == mouseOverPart)
    {
-      pRender2D->RenderBeveledRect(btn2Rect, GetBevel(), GetColor(kBC_Shadow).GetPointer(), GetColor(kBC_Highlight).GetPointer(), GetColor(kBC_Face).GetPointer());
+      GUIRenderBeveledRect(btn2Rect, GetBevel(), GetColor(kBC_Shadow).GetPointer(), GetColor(kBC_Highlight).GetPointer(), GetColor(kBC_Face).GetPointer());
    }
    else
    {
-      pRender2D->RenderBeveledRect(btn2Rect, GetBevel(), GetColor(kBC_Highlight).GetPointer(), GetColor(kBC_Shadow).GetPointer(), GetColor(kBC_Face).GetPointer());
+      GUIRenderBeveledRect(btn2Rect, GetBevel(), GetColor(kBC_Highlight).GetPointer(), GetColor(kBC_Shadow).GetPointer(), GetColor(kBC_Face).GetPointer());
    }
 
    return S_OK;
@@ -533,12 +643,11 @@ tGUISize cGUIBeveledRenderer::ScrollBarPreferredSize(IGUIElement * pElement,
 tResult cGUIBeveledRenderer::TextEditRender(IGUIElement * pElement,
                                             IGUIStyle * pStyle,
                                             IRenderFont * pFont,
-                                            const tGUIRect & rect,
-                                            IRender2D * pRender2D)
+                                            const tGUIRect & rect)
 {
    IGUITextEditElement * pTextEditElement = (IGUITextEditElement *)pElement;
 
-   pRender2D->RenderBeveledRect(rect, GetBevel(), GetColor(kBC_Shadow).GetPointer(), GetColor(kBC_Face).GetPointer(), GUIStandardColors::White.GetPointer());
+   GUIRenderBeveledRect(rect, GetBevel(), GetColor(kBC_Shadow).GetPointer(), GetColor(kBC_Face).GetPointer(), GUIStandardColors::White.GetPointer());
 
    tGUIRect insetRect(rect);
    insetRect.left += GetBevel() + kHorzInset;
@@ -546,7 +655,9 @@ tResult cGUIBeveledRenderer::TextEditRender(IGUIElement * pElement,
    insetRect.right -= GetBevel() + kHorzInset;
    insetRect.bottom -= kVertInset;
 
-   pRender2D->PushScissorRect(insetRect);
+   UseGlobal(Renderer);
+
+   pRenderer->PushScissorRect(insetRect);
 
    tGUIColor textColor(GUIStandardColors::Black);
 
@@ -566,7 +677,7 @@ tResult cGUIBeveledRenderer::TextEditRender(IGUIElement * pElement,
          pFont->RenderText(pszText, -1, &insetRect, kRT_NoClip, textColor.GetPointer());
 
          // Determine the width of the text up to the cursor
-         tRect leftOfCursor(0,0,0,0);
+         tRecti leftOfCursor(0,0,0,0);
          pFont->RenderText(pszText, selEnd, &leftOfCursor, kRT_NoClip | kRT_CalcRect, NULL);
 
          // Offset the left edge so that the cursor is always in view.
@@ -584,12 +695,12 @@ tResult cGUIBeveledRenderer::TextEditRender(IGUIElement * pElement,
                insetRect.left + leftOfCursor.GetWidth() + kCursorWidth,
                insetRect.bottom - 1);
 
-            pRender2D->RenderSolidRect(cursorRect, GUIStandardColors::Black.GetPointer());
+            GUIRenderSolidRect(cursorRect, GUIStandardColors::Black.GetPointer());
          }
       }
    }
 
-   pRender2D->PopScissorRect();
+   pRenderer->PopScissorRect();
 
    pTextEditElement->UpdateBlinkingCursor();
 
@@ -615,7 +726,7 @@ tGUISize cGUIBeveledRenderer::TextEditPreferredSize(IGUIElement * pElement,
       char * psz = reinterpret_cast<char *>(alloca(editSize * sizeof(char)));
       memset(psz, 'M', editSize * sizeof(char));
 
-      tRect rect(0,0,0,0);
+      tGUIRect rect(0,0,0,0);
       pFont->RenderText(psz, editSize, &rect, kRT_CalcRect | kRT_SingleLine, NULL);
 
       return tGUISize(static_cast<tGUISizeType>(rect.GetWidth() + (kHorzInset * 2)),
@@ -630,8 +741,7 @@ tGUISize cGUIBeveledRenderer::TextEditPreferredSize(IGUIElement * pElement,
 tResult cGUIBeveledRenderer::TitleBarRender(IGUIElement * pElement,
                                             IGUIStyle * pStyle,
                                             IRenderFont * pFont,
-                                            const tGUIRect & rect,
-                                            IRender2D * pRender2D)
+                                            const tGUIRect & rect)
 {
    IGUITitleBarElement * pTitleBarElement = (IGUITitleBarElement *)pElement;
 
@@ -644,7 +754,7 @@ tResult cGUIBeveledRenderer::TitleBarRender(IGUIElement * pElement,
       pStyle->GetAttribute("caption-text-color", &captionText);
    }
 
-   pRender2D->RenderSolidRect(rect, captionBk.GetPointer());
+   GUIRenderSolidRect(rect, captionBk.GetPointer());
 
    if (pFont != NULL)
    {
@@ -674,7 +784,7 @@ tGUISize cGUIBeveledRenderer::TitleBarPreferredSize(IGUIElement * pElement,
       {
          tGUISize size(0,0);
 
-         tRect titleSize(0,0,0,0);
+         tRecti titleSize(0,0,0,0);
          if (pFont->RenderText(title.c_str(), title.length(), &titleSize, kRT_CalcRect, NULL) == S_OK)
          {
             size.height = static_cast<tGUISizeType>(titleSize.GetHeight());
@@ -694,10 +804,9 @@ tGUISize cGUIBeveledRenderer::TitleBarPreferredSize(IGUIElement * pElement,
 tResult cGUIBeveledRenderer::ContainerRender(IGUIElement * pElement,
                                              IGUIStyle * pStyle,
                                              IRenderFont * pFont,
-                                             const tGUIRect & rect,
-                                             IRender2D * pRender2D)
+                                             const tGUIRect & rect)
 {
-   pRender2D->RenderBeveledRect(rect, GetBevel(), GetColor(kBC_Highlight).GetPointer(), GetColor(kBC_Shadow).GetPointer(), GetColor(kBC_Face).GetPointer());
+   GUIRenderBeveledRect(rect, GetBevel(), GetColor(kBC_Highlight).GetPointer(), GetColor(kBC_Shadow).GetPointer(), GetColor(kBC_Face).GetPointer());
    return S_OK;
 }
 

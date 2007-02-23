@@ -29,7 +29,6 @@ F_DECLARE_INTERFACE(IGUIFactory);
 F_DECLARE_INTERFACE(IGUIFactoryListener);
 F_DECLARE_INTERFACE(IGUIContext);
 
-F_DECLARE_INTERFACE(IRender2D);
 F_DECLARE_INTERFACE(IRenderFont);
 
 class TiXmlElement;
@@ -50,7 +49,7 @@ typedef tResult (* tGUIRendererFactoryFn)(void * pReserved,
 
 interface IGUIElementRenderer : IUnknown
 {
-   virtual tResult Render(IGUIElement * pElement, const tGUIPoint & position, IRender2D * pRender2D) = 0;
+   virtual tResult Render(IGUIElement * pElement, const tGUIPoint & position) = 0;
 
    virtual tResult GetPreferredSize(IGUIElement * pElement, const tGUISize & parentSize, tGUISize * pSize) = 0;
 
@@ -285,7 +284,7 @@ interface IGUIContext : IGUIEventRouter
       return RequestLayout(pRequester, kGUILayoutDefault);
    }
 
-   virtual tResult RenderGUI(uint width, uint height, IRender2D * pRender2D) = 0;
+   virtual tResult RenderGUI(uint width, uint height) = 0;
 
    virtual tResult ShowDebugInfo(const tGUIPoint & placement, IGUIStyle * pStyle) = 0;
    virtual tResult HideDebugInfo() = 0;

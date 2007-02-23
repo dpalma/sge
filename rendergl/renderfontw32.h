@@ -35,7 +35,7 @@ public:
 
    bool Create(const tChar * pszFontName, int pointSize, bool bBold, bool bItalic);
 
-   virtual tResult RenderText(const tChar * pszText, int textLength, tRect * pRect, uint flags, const float color[4]) const;
+   virtual tResult RenderText(const tChar * pszText, int textLength, tRecti * pRect, uint flags, const float color[4]) const;
 
    tResult SetDropShadowState(float offsetX, float offsetY, const float color[4]);
 

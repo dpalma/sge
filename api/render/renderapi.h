@@ -27,7 +27,6 @@ F_DECLARE_INTERFACE(IImage);
 F_DECLARE_INTERFACE(IRenderer);
 F_DECLARE_INTERFACE_GUID(IRenderTarget, "B962C170-8A3A-409e-8031-04CD3E7C44AD");
 F_DECLARE_INTERFACE_GUID(IRenderCamera, "5065B828-D331-478f-ABA2-8AB171418499");
-F_DECLARE_INTERFACE(IRender2D);
 F_DECLARE_INTERFACE(IRenderFont);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -135,7 +134,7 @@ interface IRenderer : IUnknown
 
    virtual tResult CreateFont(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont) = 0;
 
-   virtual tResult Begin2D(int width, int height, IRender2D * * ppRender2D) = 0;
+   virtual tResult Begin2D(int width, int height) = 0;
    virtual tResult End2D() = 0;
 
    virtual tResult PushMatrix(const float matrix[16]) = 0;
@@ -143,6 +142,9 @@ interface IRenderer : IUnknown
 
    virtual tResult GetCamera(IRenderCamera * * ppCamera) = 0;
    virtual tResult SetCamera(IRenderCamera * pCamera) = 0;
+
+   virtual void PushScissorRect(const tRecti & rect) = 0;
+   virtual void PopScissorRect() = 0;
 };
 
 RENDER_API tResult RendererCreate();
@@ -207,24 +209,6 @@ interface IRenderCamera : IUnknown
 };
 
 RENDER_API tResult RenderCameraCreate(IRenderCamera * * ppRenderCamera);
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// INTERFACE: IRender2D
-//
-
-interface IRender2D : IUnknown
-{
-   virtual void PushScissorRect(const tRect & rect) = 0;
-   virtual void PopScissorRect() = 0;
-
-   virtual void RenderSolidRect(const tRect & rect, const float color[4]) = 0;
-   virtual void RenderBeveledRect(const tRect & rect, int bevel,
-                                  const float topLeft[4],
-                                  const float bottomRight[4],
-                                  const float face[4]) = 0;
-};
 
 
 ///////////////////////////////////////////////////////////////////////////////

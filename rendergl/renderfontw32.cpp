@@ -307,7 +307,7 @@ bool cTextureRenderFontW32::Create(const tChar * pszFontName, int pointSize, boo
 
 ///////////////////////////////////////
 
-tResult cTextureRenderFontW32::RenderText(const tChar * pszText, int textLength, tRect * pRect,
+tResult cTextureRenderFontW32::RenderText(const tChar * pszText, int textLength, tRecti * pRect,
                                           uint flags, const float color[4]) const
 {
    if (pszText == NULL || pRect == NULL)

@@ -50,7 +50,7 @@ enum eRenderTextFlags
 
 interface IRenderFont : IUnknown
 {
-   virtual tResult RenderText(const tChar * pszText, int textLength, tRect * pRect,
+   virtual tResult RenderText(const tChar * pszText, int textLength, tRecti * pRect,
                               uint flags, const float color[4]) const = 0;
 };
 

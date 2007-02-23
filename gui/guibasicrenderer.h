@@ -22,18 +22,18 @@ public:
    cGUIBasicRenderer();
    ~cGUIBasicRenderer();
 
-   virtual tResult Render(IGUIElement * pElement, const tGUIPoint & position, IRender2D * pRender2D);
+   virtual tResult Render(IGUIElement * pElement, const tGUIPoint & position);
    virtual tResult GetPreferredSize(IGUIElement * pElement, const tGUISize & parentSize, tGUISize * pSize);
    virtual tResult AllocateBorderSpace(IGUIElement * pElement, tGUIRect * pRect);
 
 private:
-   tResult LabelRender(IGUIElement * pElement, IRender2D * pRender2D);
+   tResult LabelRender(IGUIElement * pElement);
    tGUISize LabelPreferredSize(IGUIElement * pElement) const;
 
-   tResult PanelRender(IGUIElement * pElement, IRender2D * pRender2D);
+   tResult PanelRender(IGUIElement * pElement);
    tGUISize PanelPreferredSize(IGUIElement * pElement) const;
 
-   typedef tResult (cGUIBasicRenderer::*tRenderMethod)(IGUIElement *, IRender2D *);
+   typedef tResult (cGUIBasicRenderer::*tRenderMethod)(IGUIElement *);
    typedef tGUISize (cGUIBasicRenderer::*tPreferredSizeMethod)(IGUIElement *) const;
 
    struct sMethodTableEntry

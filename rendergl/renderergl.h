@@ -74,7 +74,7 @@ public:
 
    virtual tResult CreateFont(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont);
 
-   virtual tResult Begin2D(int width, int height, IRender2D * * ppRender2D);
+   virtual tResult Begin2D(int width, int height);
    virtual tResult End2D();
 
    virtual tResult PushMatrix(const float matrix[16]);
@@ -82,6 +82,9 @@ public:
 
    virtual tResult GetCamera(IRenderCamera * * ppCamera);
    virtual tResult SetCamera(IRenderCamera * pCamera);
+
+   virtual void PushScissorRect(const tRecti & rect);
+   virtual void PopScissorRect();
 
 private:
 #ifdef HAVE_CG
@@ -112,9 +115,10 @@ private:
    typedef std::map<uint, IRenderFont *> tFontMap;
    tFontMap m_fontMap;
 
-   cAutoIPtr<IRender2D> m_pRender2D;
-
    cAutoIPtr<IRenderCamera> m_pCamera;
+
+   long m_scissorRectStackDepth; // for debugging only
+   mutable int m_viewport[4];
 };
 
 ////////////////////////////////////////////////////////////////////////////////

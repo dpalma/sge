@@ -222,7 +222,7 @@ tResult cRenderFontFreetype::Create(const tChar * pszFont, int fontPointSize, IR
 
 ////////////////////////////////////////
 
-tResult cRenderFontFreetype::RenderText(const tChar * pszText, int textLength, tRect * pRect,
+tResult cRenderFontFreetype::RenderText(const tChar * pszText, int textLength, tRecti * pRect,
                                         uint flags, const float color[4]) const
 {
    if (textLength < 0)

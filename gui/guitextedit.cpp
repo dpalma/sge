@@ -535,7 +535,7 @@ bool cGUITextEditElement::HitTest(const tGUIPoint & point, int * pIndex)
          float charPos = 0;
          for (uint i = 0; i < text.length(); ++i)
          {
-            tRect charRect(0,0,0,0);
+            tRecti charRect(0,0,0,0);
             pFont->RenderText(&(text.at(i)), 1, &charRect, kRT_CalcRect, NULL);
 
             if ((point.x > charPos) && (point.x <= charPos + charRect.GetWidth()))

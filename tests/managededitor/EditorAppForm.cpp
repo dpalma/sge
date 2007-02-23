@@ -158,12 +158,11 @@ namespace ManagedEditor
          int width, height;
          if (SysGetWindowSize(&width, &height) == S_OK)
          {
-            cAutoIPtr<IRender2D> pRender2D;
-            if (pRenderer->Begin2D(width, height, &pRender2D) == S_OK)
+            if (pRenderer->Begin2D(width, height) == S_OK)
             {
                UseGlobal(GUIContext);
                if (!!pGUIContext)
-                  pGUIContext->RenderGUI(width, height, pRender2D);
+                  pGUIContext->RenderGUI(width, height);
 
                pRenderer->End2D();
             }

@@ -19,6 +19,8 @@ template <typename T>
 class cRect
 {
 public:
+   typedef T value_type;
+
    cRect();
    cRect(T l, T t, T r, T b);
    cRect(const cRect & other);
@@ -66,12 +68,19 @@ public:
          : cVec2<U>(static_cast<U>(right), static_cast<U>(bottom));
    }
 
-   T left, top, right, bottom;
+   union
+   {
+      struct
+      {
+         value_type left, top, right, bottom;
+      };
+      value_type r[4];
+   };
 };
 
 ///////////////////////////////////////
 
-typedef cRect<int> tRect;
+typedef cRect<int> tRecti;
 typedef cRect<float> tRectf;
 
 ///////////////////////////////////////

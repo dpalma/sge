@@ -100,7 +100,7 @@ tResult cRenderFontFtgl::Create(const tChar * pszFont, int fontPointSize, IRende
 
 ////////////////////////////////////////
 
-tResult cRenderFontFtgl::RenderText(const tChar * pszText, int textLength, tRect * pRect, uint flags, const float color[4]) const
+tResult cRenderFontFtgl::RenderText(const tChar * pszText, int textLength, tRecti * pRect, uint flags, const float color[4]) const
 {
    if (pszText == NULL || pRect == NULL)
    {

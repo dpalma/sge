@@ -645,7 +645,7 @@ tResult cGUIContext::RequestLayout(IGUIElement * pRequester, uint options)
 
 ///////////////////////////////////////
 
-tResult cGUIContext::RenderGUI(uint width, uint height, IRender2D * pRender2D)
+tResult cGUIContext::RenderGUI(uint width, uint height)
 {
    tGUIPageList renderPages;
 
@@ -670,7 +670,7 @@ tResult cGUIContext::RenderGUI(uint width, uint height, IRender2D * pRender2D)
       for (; iter != renderPages.end(); iter++)
       {
          (*iter)->UpdateLayout(tGUIRect(0,0,width,height));
-         (*iter)->Render(pRender2D);
+         (*iter)->Render();
       }
    }
 

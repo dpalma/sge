@@ -35,8 +35,6 @@ extern const uint kVertexFVF;
 
 extern tResult RenderTargetDXCreate(IDirect3DDevice9 * pD3dDevice, IRenderTarget * * ppRenderTarget);
 
-extern tResult Render2DCreateDX(IDirect3DDevice9 * pD3dDevice, IRender2D * * ppRender2D);
-
 extern tResult RenderFontCreateD3DX(const tChar * pszFont, int fontPointSize, uint flags, IDirect3DDevice9 * pD3dDevice, IRenderFont * * ppFont);
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -418,11 +416,6 @@ tResult cRendererDX::CreateRenderTarget(HWND hWnd, IRenderTarget * * ppRenderTar
          m_cgProfileFragment = cgD3D9GetLatestPixelProfile();
       }
 #endif
-
-      if (Render2DCreateDX(m_pD3dDevice, &m_pRender2D) != S_OK)
-      {
-         return E_FAIL;
-      }
    }
 
    tResult result = RenderTargetDXCreate(m_pD3dDevice, ppRenderTarget);
@@ -773,13 +766,8 @@ tResult cRendererDX::CreateFont(const tChar * pszFont, int fontPointSize, uint f
 
 ////////////////////////////////////////
 
-tResult cRendererDX::Begin2D(int width, int height, IRender2D * * ppRender2D)
+tResult cRendererDX::Begin2D(int width, int height)
 {
-   if (ppRender2D == NULL)
-   {
-      return E_POINTER;
-   }
-
    if (!m_pStateBlock)
    {
       m_pD3dDevice->BeginStateBlock();
@@ -800,7 +788,7 @@ tResult cRendererDX::Begin2D(int width, int height, IRender2D * * ppRender2D)
          viewport.MinZ, viewport.MaxZ);
       m_pD3dDevice->SetTransform(D3DTS_PROJECTION, &ortho);
 
-      m_pD3dDevice->SetFVF(kVertexFVF);
+      //m_pD3dDevice->SetFVF(kVertexFVF);
 
       m_pD3dDevice->EndStateBlock(&m_pStateBlock);
    }
@@ -810,7 +798,7 @@ tResult cRendererDX::Begin2D(int width, int height, IRender2D * * ppRender2D)
       m_pStateBlock->Apply();
    }
 
-   return m_pRender2D.GetPointer(ppRender2D);
+   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -846,6 +834,41 @@ tResult cRendererDX::GetCamera(IRenderCamera * * ppCamera)
 tResult cRendererDX::SetCamera(IRenderCamera * pCamera)
 {
    return E_NOTIMPL;
+}
+
+////////////////////////////////////////
+
+void cRendererDX::PushScissorRect(const tRecti & rect)
+{
+   m_pD3dDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, TRUE);
+   RECT scissorRect;
+   scissorRect.left = rect.left;
+   scissorRect.top = rect.top;
+   scissorRect.right = rect.right;
+   scissorRect.bottom = rect.bottom;
+   m_pD3dDevice->SetScissorRect(&scissorRect);
+   m_scissorRectStack.push(rect);
+}
+
+////////////////////////////////////////
+
+void cRendererDX::PopScissorRect()
+{
+   Assert(m_scissorRectStack.size() > 0);
+   m_scissorRectStack.pop();
+   if (m_scissorRectStack.empty())
+   {
+      m_pD3dDevice->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
+   }
+   else
+   {
+      RECT scissorRect;
+      scissorRect.left = m_scissorRectStack.top().left;
+      scissorRect.top = m_scissorRectStack.top().top;
+      scissorRect.right = m_scissorRectStack.top().right;
+      scissorRect.bottom = m_scissorRectStack.top().bottom;
+      m_pD3dDevice->SetScissorRect(&scissorRect);
+   }
 }
 
 ////////////////////////////////////////

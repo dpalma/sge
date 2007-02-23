@@ -467,10 +467,6 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="..\..\renderdx\render2ddx.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\renderdx\renderdxcamera.cpp"
 				>
 			</File>
@@ -535,10 +531,6 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl"
 			>
-			<File
-				RelativePath="..\..\renderdx\render2ddx.h"
-				>
-			</File>
 			<File
 				RelativePath="..\..\renderdx\renderdxcamera.h"
 				>

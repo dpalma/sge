@@ -14,6 +14,12 @@
 
 #include "tech/dbgalloc.h" // must be last header
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+extern void GUIRenderSolidRect(const tRecti & rect, const float color[4]);
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIBasicRenderer
@@ -44,9 +50,9 @@ const cGUIBasicRenderer::sMethodTableEntry cGUIBasicRenderer::gm_methodTable[] =
 
 ///////////////////////////////////////
 
-tResult cGUIBasicRenderer::Render(IGUIElement * pElement, const tGUIPoint & position, IRender2D * pRender2D)
+tResult cGUIBasicRenderer::Render(IGUIElement * pElement, const tGUIPoint & position)
 {
-   if (pElement == NULL || pRender2D == NULL)
+   if (pElement == NULL)
    {
       return E_POINTER;
    }
@@ -58,7 +64,7 @@ tResult cGUIBasicRenderer::Render(IGUIElement * pElement, const tGUIPoint & posi
       {
          if (gm_methodTable[i].pfnRender != NULL)
          {
-            return (this->*(gm_methodTable[i].pfnRender))(pElement2, pRender2D);
+            return (this->*(gm_methodTable[i].pfnRender))(pElement2);
          }
          else
          {
@@ -108,7 +114,7 @@ tResult cGUIBasicRenderer::AllocateBorderSpace(IGUIElement * pElement, tGUIRect 
 
 ///////////////////////////////////////
 
-tResult cGUIBasicRenderer::LabelRender(IGUIElement * pElement, IRender2D * pRender2D)
+tResult cGUIBasicRenderer::LabelRender(IGUIElement * pElement)
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pElement);
    tGUISize size = pElement->GetSize();
@@ -152,7 +158,7 @@ tGUISize cGUIBasicRenderer::LabelPreferredSize(IGUIElement * pElement) const
       tGUIString text;
       if (((IGUILabelElement*)pElement)->GetText(&text) == S_OK)
       {
-         tRect rect(0,0,0,0);
+         tGUIRect rect(0,0,0,0);
          pFont->RenderText(text.c_str(), text.length(), &rect, kRT_CalcRect, NULL);
 
          return tGUISize(static_cast<tGUISizeType>(rect.GetWidth()), static_cast<tGUISizeType>(rect.GetHeight()));
@@ -164,7 +170,7 @@ tGUISize cGUIBasicRenderer::LabelPreferredSize(IGUIElement * pElement) const
 
 ///////////////////////////////////////
 
-tResult cGUIBasicRenderer::PanelRender(IGUIElement * pElement, IRender2D * pRender2D)
+tResult cGUIBasicRenderer::PanelRender(IGUIElement * pElement)
 {
    tGUIPoint pos = GUIElementAbsolutePosition(pElement);
    tGUISize size = pElement->GetSize();
@@ -176,7 +182,7 @@ tResult cGUIBasicRenderer::PanelRender(IGUIElement * pElement, IRender2D * pRend
       tGUIColor bkColor;
       if (pStyle->GetBackgroundColor(&bkColor) == S_OK)
       {
-         pRender2D->RenderSolidRect(rect, bkColor.GetPointer());
+         GUIRenderSolidRect(rect, bkColor.GetPointer());
       }
    }
 

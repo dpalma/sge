@@ -28,7 +28,7 @@ template <typename T> class cGUISize;
 typedef float tGUISizeType;
 typedef class cGUISize<tGUISizeType> tGUISize;
 
-typedef tRect tGUIRect;
+typedef tRecti tGUIRect;
 
 typedef cColor tGUIColor;
 

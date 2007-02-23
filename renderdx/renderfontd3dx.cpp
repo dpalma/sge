@@ -42,7 +42,7 @@ cRenderFontD3DX::~cRenderFontD3DX()
 
 ///////////////////////////////////////
 
-tResult cRenderFontD3DX::RenderText(const tChar * pszText, int textLength, tRect * pRect,
+tResult cRenderFontD3DX::RenderText(const tChar * pszText, int textLength, tRecti * pRect,
                                     uint flags, const float color[4]) const
 {
    if (!!m_pD3dxFont)

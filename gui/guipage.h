@@ -14,8 +14,6 @@
 #pragma once
 #endif
 
-F_DECLARE_INTERFACE(IRender2D);
-
 typedef std::list<IGUIElement *> tGUIElementList;
 
 class TiXmlDocument;
@@ -44,7 +42,7 @@ public:
    void RequestLayout(IGUIElement * pRequester, uint options);
 
    void UpdateLayout(const tGUIRect & rect);
-   void Render(IRender2D * pRender2D);
+   void Render();
 
    tResult GetHitElements(const tScreenPoint & point, tGUIElementList * pElements) const;
 

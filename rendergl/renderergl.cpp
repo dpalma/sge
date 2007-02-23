@@ -44,8 +44,6 @@ extern tResult RenderTargetX11Create(Display * display, Window window, IRenderTa
 extern tResult RenderFontCreateGL(const tChar * pszFont, int pointSize, uint flags, IRenderFont * * ppFont);
 extern tResult RenderFontCreateFTGL(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont);
 
-extern tResult Render2DCreateGL(IRender2D * * ppRender2D);
-
 extern tResult GlTextureCreate(IImage * pImage, uint * pTexId);
 extern tResult GlTextureCreateMipMapped(IImage * pImage, uint * pTexId);
 
@@ -428,6 +426,7 @@ cRendererGL::cRendererGL()
  , m_vertexSize(0)
  , m_indexFormat(kIF_16Bit)
  , m_glIndexFormat(0)
+ , m_scissorRectStackDepth(0)
 {
    SetIndexFormat(kIF_16Bit);
 }
@@ -443,11 +442,6 @@ cRendererGL::~cRendererGL()
 tResult cRendererGL::Init()
 {
    SysSetDestroyCallback(MainWindowDestroyCallback);
-
-   if (Render2DCreateGL(&m_pRender2D) != S_OK)
-   {
-      return E_FAIL;
-   }
 
    if (RenderCameraCreate(&m_pCamera) != S_OK)
    {
@@ -930,13 +924,8 @@ tResult cRendererGL::CreateFont(const tChar * pszFont, int fontPointSize, uint f
 
 ////////////////////////////////////////
 
-tResult cRendererGL::Begin2D(int width, int height, IRender2D * * ppRender2D)
+tResult cRendererGL::Begin2D(int width, int height)
 {
-   if (ppRender2D == NULL)
-   {
-      return E_POINTER;
-   }
-
    glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
 
    glDisable(GL_DEPTH_TEST);
@@ -950,7 +939,7 @@ tResult cRendererGL::Begin2D(int width, int height, IRender2D * * ppRender2D)
    glMatrixMode(GL_MODELVIEW);
    glLoadIdentity();
 
-   return m_pRender2D.GetPointer(ppRender2D);
+   return S_OK;
 }
 
 ////////////////////////////////////////
@@ -1001,6 +990,37 @@ tResult cRendererGL::SetCamera(IRenderCamera * pCamera)
    SafeRelease(m_pCamera);
    m_pCamera = CTAddRef(pCamera);
    return S_OK;
+}
+
+////////////////////////////////////////
+
+void cRendererGL::PushScissorRect(const tRecti & rect)
+{
+   glPushAttrib(GL_SCISSOR_BIT);
+
+   glGetIntegerv(GL_VIEWPORT, m_viewport);
+
+   glEnable(GL_SCISSOR_TEST);
+   glScissor(
+      rect.left,
+      // @HACK: the call to glOrtho made at the beginning of each UI render
+      // cycle typically makes the UPPER left corner (0,0).  glScissor seems 
+      // to assume that (0,0) is always the LOWER left corner.
+      m_viewport[3] - rect.bottom,
+      rect.GetWidth(),
+      rect.GetHeight());
+
+   m_scissorRectStackDepth++;
+}
+
+////////////////////////////////////////
+
+void cRendererGL::PopScissorRect()
+{
+   Assert(m_scissorRectStackDepth > 0);
+   m_scissorRectStackDepth--;
+
+   glPopAttrib();
 }
 
 ////////////////////////////////////////
