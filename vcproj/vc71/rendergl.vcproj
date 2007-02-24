@@ -336,9 +336,6 @@
 				RelativePath="..\..\rendergl\gltexture.cpp">
 			</File>
 			<File
-				RelativePath="..\..\rendergl\render2d.cpp">
-			</File>
-			<File
 				RelativePath="..\..\rendergl\renderergl.cpp">
 			</File>
 			<File
@@ -461,9 +458,6 @@
 			Filter="h;hpp;hxx;hm;inl">
 			<File
 				RelativePath="..\..\rendergl\freetypeutils.h">
-			</File>
-			<File
-				RelativePath="..\..\rendergl\render2d.h">
 			</File>
 			<File
 				RelativePath="..\..\rendergl\renderergl.h">

@@ -36,9 +36,9 @@ static const uint kMaxTerrainHeight = 30;
 
 /////////////////////////////////////////////////////////////////////////////
 
-ENGINE_API const tVec3 g_terrainBasisX(1,0,0);
-ENGINE_API const tVec3 g_terrainBasisY(0,0,1);
-ENGINE_API const tVec3 g_terrainVertical(0,1,0);
+const tVec3 g_terrainBasisX(1,0,0);
+const tVec3 g_terrainBasisY(0,0,1);
+const tVec3 g_terrainVertical(0,1,0);
 
 
 /////////////////////////////////////////////////////////////////////////////
