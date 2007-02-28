@@ -35,6 +35,44 @@ static const sVertexElement g_guiVertexDecl[] =
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void GUIRenderHighlightRect(const tRecti & rect, const float color[3])
+{
+   float horzCenter = static_cast<float>(rect.left + rect.right) / 2;
+   float vertCenter = static_cast<float>(rect.top + rect.bottom) / 2;
+
+   static const float kMaxAlpha = 0.6f;
+   static const float kMinAlpha = 0.0f;
+   static const float kZ = 0.0f;
+
+   float left = static_cast<float>(rect.left);
+   float top = static_cast<float>(rect.top);
+   float right = static_cast<float>(rect.right);
+   float bottom = static_cast<float>(rect.bottom);
+
+   sGUIVertex verts[] =
+   {
+      { horzCenter, vertCenter, kZ, color[0], color[1], color[2], kMaxAlpha },
+      { left, top, kZ, color[0], color[1], color[2], kMinAlpha },
+      { horzCenter, top, kZ, color[0], color[1], color[2], kMinAlpha },
+      { right, top, kZ, color[0], color[1], color[2], kMinAlpha },
+      { right, vertCenter, kZ, color[0], color[1], color[2], kMinAlpha },
+      { right, bottom, kZ, color[0], color[1], color[2], kMinAlpha },
+      { horzCenter, bottom, kZ, color[0], color[1], color[2], kMinAlpha },
+      { left, bottom, kZ, color[0], color[1], color[2], kMinAlpha },
+      { left, vertCenter, kZ, color[0], color[1], color[2], kMinAlpha },
+      { left, top, kZ, color[0], color[1], color[2], kMinAlpha },
+   };
+
+   UseGlobal(Renderer);
+   pRenderer->SetRenderState(kRS_AlphaBlendEnable, true);
+   pRenderer->SetVertexFormat(g_guiVertexDecl, _countof(g_guiVertexDecl));
+   pRenderer->SubmitVertices(verts, _countof(verts));
+   pRenderer->Render(kPT_TriangleFan, 0, _countof(verts));
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
 void GUIRenderSolidRect(const tRecti & rect, const float color[4])
 {
 #define VERT(x,y) { static_cast<float>(x), static_cast<float>(y), 0, color[0], color[1], color[2], color[3] }
@@ -319,36 +357,38 @@ tResult cGUIBeveledRenderer::ButtonRender(IGUIElement * pElement,
    }
 
    const tGUIChar * pszText = pButtonElement->GetText();
-   if (pszText != NULL)
+   if (pszText != NULL && pFont != NULL)
    {
-      if (pFont != NULL)
+      uint renderTextFlags = kRT_Center | kRT_VCenter | kRT_SingleLine;
+
+      if (pStyle != NULL)
       {
-         uint renderTextFlags = kRT_Center | kRT_VCenter | kRT_SingleLine;
-
-         cAutoIPtr<IGUIStyle> pStyle;
-         if (pElement->GetStyle(&pStyle) == S_OK)
+         int dropShadow = 0;
+         if (pStyle->GetAttribute(kAttribDropShadow, &dropShadow) == S_OK
+            && dropShadow != 0)
          {
-            int dropShadow = 0;
-            if (pStyle->GetAttribute(kAttribDropShadow, &dropShadow) == S_OK
-               && dropShadow != 0)
-            {
-               renderTextFlags |= kRT_DropShadow;
-            }
+            renderTextFlags |= kRT_DropShadow;
          }
-
-         tGUIRect textRect(rect);
-
-         if (bPressed)
-         {
-            textRect.left += GetBevel();
-            textRect.top += GetBevel();
-         }
-
-         pFont->RenderText(pszText, -1, &textRect, renderTextFlags,
-            pElement->IsEnabled() ? GUIStandardColors::White.GetPointer() : GetColor(kBC_Shadow).GetPointer());
-
-         return S_OK;
       }
+
+      tGUIRect textRect(rect);
+
+      if (pButtonElement->IsArmed() || pButtonElement->IsMouseOver())
+      {
+         static const float highlightColor[] = { 1.0f, 1.0f, 1.0f };
+         GUIRenderHighlightRect(rect, highlightColor);
+      }
+
+      if (bPressed)
+      {
+         textRect.left += GetBevel();
+         textRect.top += GetBevel();
+      }
+
+      pFont->RenderText(pszText, -1, &textRect, renderTextFlags,
+         pElement->IsEnabled() ? GUIStandardColors::White.GetPointer() : GetColor(kBC_Shadow).GetPointer());
+
+      return S_OK;
    }
 
    return E_FAIL;
