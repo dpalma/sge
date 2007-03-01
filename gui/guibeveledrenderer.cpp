@@ -73,6 +73,60 @@ void GUIRenderHighlightRect(const tRecti & rect, const float color[3])
 
 ////////////////////////////////////////////////////////////////////////////////
 
+void GUIRenderHighlightEllipse(const tRecti & rect, const float color[3])
+{
+   float horzCenter = static_cast<float>(rect.left + rect.right) / 2;
+   float vertCenter = static_cast<float>(rect.top + rect.bottom) / 2;
+
+   static const float kMaxAlpha = 0.6f;
+   static const float kMinAlpha = 0.0f;
+   static const float kZ = 0.0f;
+   static const int kEllipsePoints = 24;
+   static const float kStep = (2 * kPi) / (kEllipsePoints - 1);
+
+   sGUIVertex verts[kEllipsePoints + 2];
+
+   verts[0].x = horzCenter;
+   verts[0].y = vertCenter;
+   verts[0].z = kZ;
+   verts[0].r = color[0];
+   verts[0].g = color[1];
+   verts[0].b = color[2];
+   verts[0].a = kMaxAlpha;
+
+   float xr = static_cast<float>(rect.GetWidth());
+   float yr = static_cast<float>(rect.GetHeight());
+
+   float t = 0;
+   for (int i = 1; i <= kEllipsePoints; ++i, t += kStep)
+   {
+      verts[i].x = xr * cos(t) + horzCenter;
+      verts[i].y = yr * sin(t) + vertCenter;
+      verts[i].z = kZ;
+      verts[i].r = color[0];
+      verts[i].g = color[1];
+      verts[i].b = color[2];
+      verts[i].a = kMinAlpha;
+   }
+
+   verts[kEllipsePoints + 1].x = verts[1].x;
+   verts[kEllipsePoints + 1].y = verts[1].y;
+   verts[kEllipsePoints + 1].z = verts[1].z;
+   verts[kEllipsePoints + 1].r = verts[1].r;
+   verts[kEllipsePoints + 1].g = verts[1].g;
+   verts[kEllipsePoints + 1].b = verts[1].b;
+   verts[kEllipsePoints + 1].a = verts[1].a;
+
+   UseGlobal(Renderer);
+   pRenderer->SetRenderState(kRS_AlphaBlendEnable, true);
+   pRenderer->SetVertexFormat(g_guiVertexDecl, _countof(g_guiVertexDecl));
+   pRenderer->SubmitVertices(verts, _countof(verts));
+   pRenderer->Render(kPT_TriangleFan, 0, _countof(verts));
+}
+
+
+////////////////////////////////////////////////////////////////////////////////
+
 void GUIRenderSolidRect(const tRecti & rect, const float color[4])
 {
 #define VERT(x,y) { static_cast<float>(x), static_cast<float>(y), 0, color[0], color[1], color[2], color[3] }
@@ -376,7 +430,7 @@ tResult cGUIBeveledRenderer::ButtonRender(IGUIElement * pElement,
       if (pButtonElement->IsArmed() || pButtonElement->IsMouseOver())
       {
          static const float highlightColor[] = { 1.0f, 1.0f, 1.0f };
-         GUIRenderHighlightRect(rect, highlightColor);
+         GUIRenderHighlightEllipse(rect, highlightColor);
       }
 
       if (bPressed)
