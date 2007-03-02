@@ -155,29 +155,8 @@ bool cGUIEventRouter<T, INTRFC>::DoEvent(IGUIEvent * pEvent)
 {
    Assert(pEvent != NULL);
 
-   typename cConnectionPoint<INTRFC, IGUIEventListener>::tSinksIterator iter = tBaseClass::BeginSinks();
-   typename cConnectionPoint<INTRFC, IGUIEventListener>::tSinksIterator end = tBaseClass::EndSinks();
-   for (; iter != end; iter++)
-   {
-      if ((*iter)->OnEvent(pEvent) != S_OK)
-      {
-         return true;
-      }
-   }
-
-   cAutoIPtr<IGUIElement> pDispatchTo;
-   if (pEvent->GetSourceElement(&pDispatchTo) == S_OK)
-   {
-      if (!!pDispatchTo)
-      {
-         if (pDispatchTo->OnEvent(pEvent) != S_OK)
-         {
-            return true;
-         }
-      }
-   }
-
-   return false;
+   pEvent->SetCancelBubble(true);
+   return BubbleEvent(pEvent);
 }
 
 ///////////////////////////////////////
@@ -280,9 +259,6 @@ bool cGUIEventRouter<T, INTRFC>::HandleInputEvent(const sInputEvent * pInputEven
       DoDragDrop(pInputEvent, eventCode, pMouseOver, pDrag, bCtrlKeyDown, bAltKeyDown, bShiftKeyDown, &bEatInputEvent);
    }
 
-   cAutoIPtr<IGUIElement> pFocus;
-   GetFocus(&pFocus);
-
    if (KeyIsMouse(pInputEvent->key) && !!pMouseOver)
    {
       if (pMouseOver->IsEnabled())
@@ -319,6 +295,9 @@ bool cGUIEventRouter<T, INTRFC>::HandleInputEvent(const sInputEvent * pInputEven
    }
    else
    {
+      cAutoIPtr<IGUIElement> pFocus;
+      GetFocus(&pFocus);
+
       if (!!pFocus)
       {
          cAutoIPtr<IGUIEvent> pEvent;
