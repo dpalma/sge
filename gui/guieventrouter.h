@@ -71,6 +71,7 @@ protected:
       IGUIElement * pMouseOver, IGUIElement * pDrag,
       bool bCtrlKeyDown, bool bAltKeyDown, bool bShiftKeyDown,
       bool * pbEatInputEvent);
+
    void DoMouseEnterExit(const sInputEvent * pInputEvent, IGUIElement * pMouseOver,
       IGUIElement * pRestrictTo, bool bCtrlKeyDown, bool bAltKeyDown, bool bShiftKeyDown);
 

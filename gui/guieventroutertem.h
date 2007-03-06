@@ -9,11 +9,13 @@
 /// This file is intended to be included only by cpp files, not other headers.
 
 #include "gui/guiapi.h"
+
 #include "guielementtools.h"
+#include "guievent.h"
 
 #include "platform/inputapi.h"
 
-#include "tech/techtime.h"
+#include "tech/globalobj.h"
 
 #include <algorithm>
 
@@ -185,7 +187,7 @@ bool cGUIEventRouter<T, INTRFC>::BubbleEvent(IGUIElement * pStartElement, IGUIEv
 
    typename cConnectionPoint<INTRFC, IGUIEventListener>::tSinksIterator iter = tBaseClass::BeginSinks();
    typename cConnectionPoint<INTRFC, IGUIEventListener>::tSinksIterator end = tBaseClass::EndSinks();
-   for (; iter != end; iter++)
+   for (; iter != end; ++iter)
    {
       if ((*iter)->OnEvent(pEvent) != S_OK)
       {
@@ -219,101 +221,6 @@ bool cGUIEventRouter<T, INTRFC>::BubbleEvent(IGUIElement * pStartElement, IGUIEv
 
    return false;
 }
-
-///////////////////////////////////////
-
-template <typename T, typename INTRFC>
-bool cGUIEventRouter<T, INTRFC>::HandleInputEvent(const sInputEvent * pInputEvent)
-{
-   DebugMsgIfEx5(GUIEventRouter, pInputEvent->key != kMouseMove,
-      "InputEvent: key %d, down %d, point(%d, %d), time %f\n",
-      pInputEvent->key, static_cast<int>(pInputEvent->down),
-      pInputEvent->point.x, pInputEvent->point.y,
-      pInputEvent->time);
-
-   UseGlobal(Input);
-   bool bCtrlKeyDown = pInput->KeyIsDown(kCtrl);
-   bool bAltKeyDown = pInput->KeyIsDown(kAlt);
-   bool bShiftKeyDown = pInput->KeyIsDown(kLShift) || pInput->KeyIsDown(kRShift);
-
-   tGUIEventCode eventCode = GUIEventCode(pInputEvent->key, pInputEvent->down);
-   if (eventCode == kGUIEventNone)
-   {
-      WarnMsg("Invalid event code\n");
-      return false;
-   }
-
-   T * pT = static_cast<T*>(this);
-
-   cAutoIPtr<IGUIElement> pMouseOver;
-   if (pT->GetHitElement(pInputEvent->point, &pMouseOver) != S_OK)
-   {
-      Assert(!pMouseOver);
-   }
-
-   bool bEatInputEvent = false;
-
-   cAutoIPtr<IGUIElement> pDrag;
-   if (GetDrag(&pDrag) == S_OK)
-   {
-      DoDragDrop(pInputEvent, eventCode, pMouseOver, pDrag, bCtrlKeyDown, bAltKeyDown, bShiftKeyDown, &bEatInputEvent);
-   }
-
-   if (KeyIsMouse(pInputEvent->key) && !!pMouseOver)
-   {
-      if (pMouseOver->IsEnabled())
-      {
-         if (eventCode == kGUIEventMouseDown)
-         {
-            SetFocus(pMouseOver);
-
-            cAutoIPtr<IGUIEvent> pDragStartEvent;
-            if (GUIEventCreate(kGUIEventDragStart, pInputEvent->point, 
-               pInputEvent->key, pMouseOver, true,
-               bCtrlKeyDown, bAltKeyDown, bShiftKeyDown,
-               &pDragStartEvent) == S_OK)
-            {
-               BubbleEvent(pDragStartEvent);
-               SetDrag(pMouseOver);
-               return true;
-            }
-         }
-         else if (eventCode == kGUIEventMouseMove)
-         {
-            DoMouseEnterExit(pInputEvent, pMouseOver, NULL, bCtrlKeyDown, bAltKeyDown, bShiftKeyDown);
-         }
-
-         cAutoIPtr<IGUIEvent> pEvent;
-         if (GUIEventCreate(eventCode, pInputEvent->point, 
-            pInputEvent->key, pMouseOver, true,
-            bCtrlKeyDown, bAltKeyDown, bShiftKeyDown,
-            &pEvent) == S_OK)
-         {
-            return BubbleEvent(pEvent);
-         }
-      }
-   }
-   else
-   {
-      cAutoIPtr<IGUIElement> pFocus;
-      GetFocus(&pFocus);
-
-      if (!!pFocus)
-      {
-         cAutoIPtr<IGUIEvent> pEvent;
-         if (GUIEventCreate(eventCode, pInputEvent->point, 
-            pInputEvent->key, pFocus, true,
-            bCtrlKeyDown, bAltKeyDown, bShiftKeyDown,
-            &pEvent) == S_OK)
-         {
-            BubbleEvent(pEvent);
-         }
-      }
-   }
-
-   return bEatInputEvent;
-}
-
 ///////////////////////////////////////
 
 template <typename T, typename INTRFC>
@@ -491,6 +398,101 @@ void cGUIEventRouter<T, INTRFC>::DoMouseEnterExit(const sInputEvent * pInputEven
       }
    }
 }
+
+///////////////////////////////////////
+
+template <typename T, typename INTRFC>
+bool cGUIEventRouter<T, INTRFC>::HandleInputEvent(const sInputEvent * pInputEvent)
+{
+//   DebugMsgIfEx5(GUIEventRouter, pInputEvent->key != kMouseMove,
+   DebugMsgIfEx5(GUIEventRouter, true,
+      "InputEvent: key %d, down %d, point(%d, %d), time %f\n",
+      pInputEvent->key, static_cast<int>(pInputEvent->down),
+      pInputEvent->point.x, pInputEvent->point.y,
+      pInputEvent->time);
+
+   UseGlobal(Input);
+   bool bCtrlKeyDown = pInput->KeyIsDown(kCtrl);
+   bool bAltKeyDown = pInput->KeyIsDown(kAlt);
+   bool bShiftKeyDown = pInput->KeyIsDown(kLShift) || pInput->KeyIsDown(kRShift);
+
+   tGUIEventCode eventCode = GUIEventCode(pInputEvent->key, pInputEvent->down);
+   if (eventCode == kGUIEventNone)
+   {
+      WarnMsg("Invalid event code\n");
+      return false;
+   }
+
+   T * pT = static_cast<T*>(this);
+
+   cAutoIPtr<IGUIElement> pMouseOver;
+   if (pT->GetHitElement(pInputEvent->point, &pMouseOver) != S_OK)
+   {
+      Assert(!pMouseOver);
+   }
+
+   bool bEatInputEvent = false;
+
+   cAutoIPtr<IGUIElement> pDrag;
+   if (GetDrag(&pDrag) == S_OK)
+   {
+      DoDragDrop(pInputEvent, eventCode, pMouseOver, pDrag, bCtrlKeyDown, bAltKeyDown, bShiftKeyDown, &bEatInputEvent);
+   }
+
+   if (KeyIsMouse(pInputEvent->key))
+   {
+      if (!!pMouseOver && pMouseOver->IsEnabled())
+      {
+         if (eventCode == kGUIEventMouseDown)
+         {
+            SetFocus(pMouseOver);
+
+            cAutoIPtr<IGUIEvent> pDragStartEvent;
+            if (GUIEventCreate(kGUIEventDragStart, pInputEvent->point, 
+               pInputEvent->key, pMouseOver, true,
+               bCtrlKeyDown, bAltKeyDown, bShiftKeyDown,
+               &pDragStartEvent) == S_OK)
+            {
+               BubbleEvent(pDragStartEvent);
+               SetDrag(pMouseOver);
+               return true;
+            }
+         }
+         else if (eventCode == kGUIEventMouseMove)
+         {
+            DoMouseEnterExit(pInputEvent, pMouseOver, NULL, bCtrlKeyDown, bAltKeyDown, bShiftKeyDown);
+         }
+
+         cAutoIPtr<IGUIEvent> pEvent;
+         if (GUIEventCreate(eventCode, pInputEvent->point, 
+            pInputEvent->key, pMouseOver, true,
+            bCtrlKeyDown, bAltKeyDown, bShiftKeyDown,
+            &pEvent) == S_OK)
+         {
+            return BubbleEvent(pEvent);
+         }
+      }
+   }
+   else
+   {
+      cAutoIPtr<IGUIElement> pFocus;
+      if (GetFocus(&pFocus) == S_OK)
+      {
+         Assert(!!pFocus);
+         cAutoIPtr<IGUIEvent> pEvent;
+         if (GUIEventCreate(eventCode, pInputEvent->point, 
+            pInputEvent->key, pFocus, true,
+            bCtrlKeyDown, bAltKeyDown, bShiftKeyDown,
+            &pEvent) == S_OK)
+         {
+            bEatInputEvent = BubbleEvent(pEvent);
+         }
+      }
+   }
+
+   return bEatInputEvent;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
