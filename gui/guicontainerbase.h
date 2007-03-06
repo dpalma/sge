@@ -51,15 +51,15 @@ public:
 
 protected:
    template <typename F>
-   void ForEachElement(F f)
+   F ForEachElement(F f)
    {
-      std::for_each(m_children.begin(), m_children.end(), f);
+      return std::for_each(m_children.begin(), m_children.end(), f);
    }
 
    template <typename F>
-   void ForEachElement(F f) const
+   F ForEachElement(F f) const
    {
-      std::for_each(m_children.begin(), m_children.end(), f);
+      return std::for_each(m_children.begin(), m_children.end(), f);
    }
 
 private:

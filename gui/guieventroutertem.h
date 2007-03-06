@@ -441,6 +441,12 @@ bool cGUIEventRouter<T, INTRFC>::HandleInputEvent(const sInputEvent * pInputEven
 
    if (KeyIsMouse(pInputEvent->key))
    {
+      if (eventCode == kGUIEventMouseMove)
+      {
+         DoMouseEnterExit(pInputEvent, pMouseOver, NULL, bCtrlKeyDown, bAltKeyDown, bShiftKeyDown);
+         return true;
+      }
+
       if (!!pMouseOver && pMouseOver->IsEnabled())
       {
          if (eventCode == kGUIEventMouseDown)
@@ -457,10 +463,6 @@ bool cGUIEventRouter<T, INTRFC>::HandleInputEvent(const sInputEvent * pInputEven
                SetDrag(pMouseOver);
                return true;
             }
-         }
-         else if (eventCode == kGUIEventMouseMove)
-         {
-            DoMouseEnterExit(pInputEvent, pMouseOver, NULL, bCtrlKeyDown, bAltKeyDown, bShiftKeyDown);
          }
 
          cAutoIPtr<IGUIEvent> pEvent;

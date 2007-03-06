@@ -22,6 +22,22 @@ LOG_DEFINE_CHANNEL(GUIEventRouter);
 
 
 ///////////////////////////////////////////////////////////////////////////////
+
+static eGUIEventCode GUIEventCode(IGUIEvent * pEvent)
+{
+   eGUIEventCode eventCode = kGUIEventNone;
+   if ((pEvent != NULL) && (pEvent->GetEventCode(&eventCode) == S_OK))
+   {
+      return eventCode;
+   }
+   else
+   {
+      return kGUIEventNone;
+   }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUITestElement
 //
@@ -40,13 +56,31 @@ public:
 class cGUIEventCollector : public cComObject<IMPLEMENTS(IGUIEventListener)>
 {
 public:
+   cGUIEventCollector();
+   ~cGUIEventCollector();
    virtual tResult OnEvent(IGUIEvent * pEvent);
-   std::list<IGUIEvent *>::const_iterator GetFirstEvent() const { return m_events.begin(); }
-   std::list<IGUIEvent *>::const_iterator GetLastEvent() const { return m_events.end(); }
+   uint GetEventCount() const { return m_events.size(); }
+   IGUIEvent * AccessEvent(uint index) { return (index < m_events.size()) ? m_events[index] : NULL; }
+   std::vector<IGUIEvent *>::const_iterator GetFirstEvent() const { return m_events.begin(); }
+   std::vector<IGUIEvent *>::const_iterator GetLastEvent() const { return m_events.end(); }
 private:
-   typedef std::list<IGUIEvent *> tGUIEventList;
-   tGUIEventList m_events;
+   typedef std::vector<IGUIEvent *> tGUIEventVector;
+   tGUIEventVector m_events;
 };
+
+////////////////////////////////////////
+
+cGUIEventCollector::cGUIEventCollector()
+{
+}
+
+////////////////////////////////////////
+
+cGUIEventCollector::~cGUIEventCollector()
+{
+   std::for_each(m_events.begin(), m_events.end(), CTInterfaceMethod(&IGUIEvent::Release));
+   m_events.clear();
+}
 
 ////////////////////////////////////////
 
@@ -136,7 +170,7 @@ tResult cGUIEventRouterFixture::GetHitElement(const tScreenPoint & point, IGUIEl
    sHitTest ht;
    ht.m_point = point;
    ht.m_pHit = NULL;
-   ForEachElement(ht);
+   ht = ForEachElement(ht);
    if (ht.m_pHit == NULL)
    {
       return S_FALSE;
@@ -156,7 +190,7 @@ tResult cGUIEventRouterFixture::CreateTestElement(const tChar * pszId, const tGU
    }
    if (pszId != NULL)
    {
-      pElement->SetId("test");
+      pElement->SetId(pszId);
    }
    pElement->SetPosition(position);
    pElement->SetSize(size);
@@ -164,37 +198,20 @@ tResult cGUIEventRouterFixture::CreateTestElement(const tChar * pszId, const tGU
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Move the mouse inside then back outside of an element and check
+// that a mouse enter and leave event were dispatched.
 
 TEST_FIXTURE(cGUIEventRouterFixture, MouseEnterLeave)
 {
-   //   0 1 2 3
-   // 0 +-+-+-+
-   // 1 + + + +
-   // 2 + + + +
-   // 3 +-+-+-+
+   // Element at position (1,1); size 1x1 pixels
+   CHECK_EQUAL(S_OK, CreateTestElement(_T("mouseEnterLeaveElement"), tGUIPoint(1,1), tGUISize(1,1)));
 
    static const sInputEvent inputEvents[] =
    {
-      { kMouseMove, false, cVec2<int>(0, 0), .01 },
-      { kMouseMove, false, cVec2<int>(1, 1), .02 },
-      { kMouseMove, false, cVec2<int>(0, 0), .03 },
+      { kMouseMove, false, cVec2<int>(0, 0), .01 }, // outside
+      { kMouseMove, false, cVec2<int>(1, 1), .02 }, // inside
+      { kMouseMove, false, cVec2<int>(0, 0), .03 }, // outside
    };
-
-   //static const sInputEvent inputEvents[] =
-   //{
-   //   { kMouseMove, false, cVec2<int>(566, 438), 17.919989 },
-   //   { kMouseMove, false, cVec2<int>(564, 438), 17.933317 },
-   //   { kMouseMove, false, cVec2<int>(564, 437), 17.959960 },
-   //   { kMouseLeft, true, cVec2<int>(564, 437), 18.906329 },
-   //   { kMouseLeft, false, cVec2<int>(564, 437), 19.053013 },
-   //   { kMouseMove, false, cVec2<int>(562, 437), 19.892691 },
-   //   { kMouseMove, false, cVec2<int>(560, 437), 19.933303 },
-   //   { kMouseMove, false, cVec2<int>(555, 438), 20.332540 },
-   //   { kMouseMove, false, cVec2<int>(553, 439), 20.372519 },
-   //   { kMouseMove, false, cVec2<int>(551, 439), 20.399194 },
-   //};
-
-   CHECK_EQUAL(S_OK, CreateTestElement(_T("test"), tGUIPoint(1,1), tGUISize(1,1)));
 
    cStackGUIEventCollector eventCollector;
    CHECK_EQUAL(S_OK, AddEventListener(static_cast<IGUIEventListener*>(&eventCollector)));
@@ -203,6 +220,10 @@ TEST_FIXTURE(cGUIEventRouterFixture, MouseEnterLeave)
    {
       HandleInputEvent(&inputEvents[i]);
    }
+
+   CHECK_EQUAL(2, eventCollector.GetEventCount());
+   CHECK_EQUAL(kGUIEventMouseEnter, GUIEventCode(eventCollector.AccessEvent(0)));
+   CHECK_EQUAL(kGUIEventMouseLeave, GUIEventCode(eventCollector.AccessEvent(1)));
 
    CHECK_EQUAL(S_OK, RemoveEventListener(static_cast<IGUIEventListener*>(&eventCollector)));
 }
