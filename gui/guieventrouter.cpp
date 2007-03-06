@@ -206,15 +206,15 @@ TEST_FIXTURE(cGUIEventRouterFixture, MouseEnterLeave)
    // Element at position (1,1); size 1x1 pixels
    CHECK_EQUAL(S_OK, CreateTestElement(_T("mouseEnterLeaveElement"), tGUIPoint(1,1), tGUISize(1,1)));
 
-   static const sInputEvent inputEvents[] =
-   {
-      { kMouseMove, false, cVec2<int>(0, 0), .01 }, // outside
-      { kMouseMove, false, cVec2<int>(1, 1), .02 }, // inside
-      { kMouseMove, false, cVec2<int>(0, 0), .03 }, // outside
-   };
-
    cStackGUIEventCollector eventCollector;
    CHECK_EQUAL(S_OK, AddEventListener(static_cast<IGUIEventListener*>(&eventCollector)));
+
+   static const sInputEvent inputEvents[] =
+   {
+      { kMouseMove, false, cVec2<int>(0,0), .01 }, // outside
+      { kMouseMove, false, cVec2<int>(1,1), .02 }, // inside
+      { kMouseMove, false, cVec2<int>(0,0), .03 }, // outside
+   };
 
    for (int i = 0; i < _countof(inputEvents); ++i)
    {
@@ -224,6 +224,32 @@ TEST_FIXTURE(cGUIEventRouterFixture, MouseEnterLeave)
    CHECK_EQUAL(2, eventCollector.GetEventCount());
    CHECK_EQUAL(kGUIEventMouseEnter, GUIEventCode(eventCollector.AccessEvent(0)));
    CHECK_EQUAL(kGUIEventMouseLeave, GUIEventCode(eventCollector.AccessEvent(1)));
+
+   CHECK_EQUAL(S_OK, RemoveEventListener(static_cast<IGUIEventListener*>(&eventCollector)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Press and release the left mouse button inside an element and check
+// that mouse up, down, and click events occur.
+
+TEST_FIXTURE(cGUIEventRouterFixture, SimplestPossibleClick)
+{
+   // Element at position (1,1); size 1x1 pixels
+   CHECK_EQUAL(S_OK, CreateTestElement(_T("clickElement"), tGUIPoint(1,1), tGUISize(1,1)));
+
+   cStackGUIEventCollector eventCollector;
+   CHECK_EQUAL(S_OK, AddEventListener(static_cast<IGUIEventListener*>(&eventCollector)));
+
+   static const sInputEvent mouseDownEvent = { kMouseLeft, true,  cVec2<int>(1,1), .01 };
+   static const sInputEvent mouseUpEvent   = { kMouseLeft, false, cVec2<int>(1,1), .02 };
+
+   HandleInputEvent(&mouseDownEvent);
+   HandleInputEvent(&mouseUpEvent);
+
+   CHECK_EQUAL(3, eventCollector.GetEventCount());
+   CHECK_EQUAL(kGUIEventMouseDown, GUIEventCode(eventCollector.AccessEvent(0)));
+   CHECK_EQUAL(kGUIEventMouseUp, GUIEventCode(eventCollector.AccessEvent(1)));
+   CHECK_EQUAL(kGUIEventClick, GUIEventCode(eventCollector.AccessEvent(2)));
 
    CHECK_EQUAL(S_OK, RemoveEventListener(static_cast<IGUIEventListener*>(&eventCollector)));
 }
