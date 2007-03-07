@@ -67,8 +67,7 @@ protected:
    bool BubbleEvent(IGUIEvent * pEvent);
    bool BubbleEvent(IGUIElement * pStartElement, IGUIEvent * pEvent);
 
-   void DoMouseEnterExit(const sInputEvent * pInputEvent, IGUIElement * pMouseOver,
-      IGUIElement * pRestrictTo, bool bCtrlKeyDown, bool bAltKeyDown, bool bShiftKeyDown);
+   void DoMouseEnterExit(const sInputEvent * pInputEvent, IGUIElement * pMouseOver, IGUIElement * pRestrictTo);
 
    bool HandleInputEvent(const sInputEvent * pInputEvent);
 

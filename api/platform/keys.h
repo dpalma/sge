@@ -61,6 +61,16 @@ enum eKeyCode
    kMouseMove        = (kBASE + 36),
 };
 
+enum eModifierKey
+{
+   kMK_None    = 0,
+   kMK_Alt     = (1 << 0),
+   kMK_Ctrl    = (1 << 1),
+   kMK_LShift  = (1 << 2),
+   kMK_RShift  = (1 << 3),
+   kMK_Shift   = (kMK_LShift | kMK_RShift),
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // does the given key code actually represent a mouse action?
 

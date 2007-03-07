@@ -35,6 +35,12 @@ g_guiEventNameTable[] =
    { kGUIEventKeyUp, "keyup" },
    { kGUIEventKeyDown, "keydown" },
    { kGUIEventClick, "click" },
+   { kGUIEventHover, "hover" },
+   { kGUIEventDragStart, "dragstart" },
+   { kGUIEventDragEnd, "dragend" },
+   { kGUIEventDragMove, "dragmove" },
+   { kGUIEventDragOver, "dragover" },
+   { kGUIEventDrop, "drop" },
 };
 
 static bool g_guiEventNameTableSorted = false;
@@ -137,33 +143,27 @@ tGUIEventCode GUIEventCode(long key, bool down)
 cGUIEvent::cGUIEvent()
  : m_eventCode(kGUIEventNone)
  , m_keyCode(-1)
+ , m_modifierKeys(kMK_None)
  , m_bCancellable(false)
  , m_bCancelBubble(false)
- , m_bCtrlKeyDown(false)
- , m_bAltKeyDown(false)
- , m_bShiftKeyDown(false)
 {
 }
 
 ///////////////////////////////////////
 
-cGUIEvent::cGUIEvent(tGUIEventCode eventCode, 
-                     const tScreenPoint & mousePos, 
-                     long keyCode, 
+cGUIEvent::cGUIEvent(tGUIEventCode eventCode,
+                     const tScreenPoint & mousePos,
+                     long keyCode,
+                     int modifierKeys,
                      IGUIElement * pSource,
-                     bool bCancellable,
-                     bool bCtrlKeyDown,
-                     bool bAltKeyDown,
-                     bool bShiftKeyDown)
+                     bool bCancellable)
  : m_eventCode(eventCode)
  , m_mousePos(mousePos)
  , m_keyCode(keyCode)
+ , m_modifierKeys(modifierKeys)
  , m_pSource(CTAddRef(pSource))
  , m_bCancellable(bCancellable)
  , m_bCancelBubble(false)
- , m_bCtrlKeyDown(bCtrlKeyDown)
- , m_bAltKeyDown(bAltKeyDown)
- , m_bShiftKeyDown(bShiftKeyDown)
 {
 }
 
@@ -172,19 +172,16 @@ cGUIEvent::cGUIEvent(tGUIEventCode eventCode,
 tResult GUIEventCreate(tGUIEventCode eventCode,
                        tScreenPoint mousePos,
                        long keyCode,
+                       int modifierKeys,
                        IGUIElement * pSource,
                        bool bCancellable,
-                       bool bCtrlKeyDown,
-                       bool bAltKeyDown,
-                       bool bShiftKeyDown,
                        IGUIEvent * * ppEvent)
 {
    if (ppEvent == NULL)
    {
       return E_POINTER;
    }
-   cGUIEvent * pGUIEvent = new cGUIEvent(eventCode, mousePos, keyCode,
-      pSource, bCancellable, bCtrlKeyDown, bAltKeyDown, bShiftKeyDown);
+   cGUIEvent * pGUIEvent = new cGUIEvent(eventCode, mousePos, keyCode, modifierKeys, pSource, bCancellable);
    if (pGUIEvent == NULL)
    {
       return E_OUTOFMEMORY;
@@ -198,7 +195,9 @@ tResult GUIEventCreate(tGUIEventCode eventCode,
 tResult cGUIEvent::GetEventCode(tGUIEventCode * pEventCode)
 {
    if (pEventCode == NULL)
+   {
       return E_POINTER;
+   }
    *pEventCode = m_eventCode;
    return S_OK;
 }
@@ -264,21 +263,21 @@ tResult cGUIEvent::SetCancelBubble(bool bCancel)
 
 bool cGUIEvent::IsCtrlKeyDown() const
 {
-   return m_bCtrlKeyDown;
+   return (m_modifierKeys & kMK_Ctrl) != 0;
 }
 
 ///////////////////////////////////////
 
 bool cGUIEvent::IsAltKeyDown() const
 {
-   return m_bAltKeyDown;
+   return (m_modifierKeys & kMK_Alt) != 0;
 }
 
 ///////////////////////////////////////
 
 bool cGUIEvent::IsShiftKeyDown() const
 {
-   return m_bShiftKeyDown;
+   return (m_modifierKeys & kMK_Shift) != 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -124,11 +124,9 @@ interface IGUIEvent : IUnknown
 GUI_API tResult GUIEventCreate(tGUIEventCode eventCode,
                                tScreenPoint mousePos,
                                long keyCode,
+                               int modifierKeys,
                                IGUIElement * pSource,
                                bool bCancellable,
-                               bool bCtrlKeyDown,
-                               bool bAltKeyDown,
-                               bool bShiftKeyDown,
                                IGUIEvent * * ppEvent);
 
 

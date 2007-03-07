@@ -67,6 +67,7 @@ PLATFORM_API tResult InputCreate();
 struct sInputEvent
 {
    long key;
+   int modifierKeys;
    bool down;
    cVec2<int> point;
    double time;

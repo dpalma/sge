@@ -261,7 +261,7 @@ tResult cInput::SetModalListenerPriority(int priority)
 
 bool cInput::DispatchInputEvent(int x, int y, long key, bool down, double time)
 {
-   DebugMsgEx5(InputEvents, "%3d %s (%3d, %3d) %f\n", key, down ? "down" : " up ", x, y, time);
+   DebugMsgIfEx5(InputEvents, key != kMouseMove, "%3d %s (%3d, %3d) %f\n", key, down ? "down" : " up ", x, y, time);
 
    Assert((key >= 0) && (key < kMaxKeys));
 
@@ -274,8 +274,27 @@ bool cInput::DispatchInputEvent(int x, int y, long key, bool down, double time)
       m_keyRepeats[key] = 0;
    }
 
+   int modifierKeys = kMK_None;
+   if (m_keyRepeats[kAlt] > 0)
+   {
+      modifierKeys |= kMK_Alt;
+   }
+   if (m_keyRepeats[kCtrl] > 0)
+   {
+      modifierKeys |= kMK_Ctrl;
+   }
+   if (m_keyRepeats[kLShift] > 0)
+   {
+      modifierKeys |= kMK_LShift;
+   }
+   if (m_keyRepeats[kRShift] > 0)
+   {
+      modifierKeys |= kMK_RShift;
+   }
+
    sInputEvent event;
    event.key = key;
+   event.modifierKeys = modifierKeys;
    event.down = down;
    event.point = cVec2<int>(x, y);
    event.time = time;

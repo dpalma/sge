@@ -211,9 +211,9 @@ TEST_FIXTURE(cGUIEventRouterFixture, MouseEnterLeave)
 
    static const sInputEvent inputEvents[] =
    {
-      { kMouseMove, false, cVec2<int>(0,0), .01 }, // outside
-      { kMouseMove, false, cVec2<int>(1,1), .02 }, // inside
-      { kMouseMove, false, cVec2<int>(0,0), .03 }, // outside
+      { kMouseMove, kMK_None, false, cVec2<int>(0,0), .01 }, // outside
+      { kMouseMove, kMK_None, false, cVec2<int>(1,1), .02 }, // inside
+      { kMouseMove, kMK_None, false, cVec2<int>(0,0), .03 }, // outside
    };
 
    for (int i = 0; i < _countof(inputEvents); ++i)
@@ -240,8 +240,8 @@ TEST_FIXTURE(cGUIEventRouterFixture, SimplestPossibleClick)
    cStackGUIEventCollector eventCollector;
    CHECK_EQUAL(S_OK, AddEventListener(static_cast<IGUIEventListener*>(&eventCollector)));
 
-   static const sInputEvent mouseDownEvent = { kMouseLeft, true,  cVec2<int>(1,1), .01 };
-   static const sInputEvent mouseUpEvent   = { kMouseLeft, false, cVec2<int>(1,1), .02 };
+   static const sInputEvent mouseDownEvent = { kMouseLeft, kMK_None, true,  cVec2<int>(1,1), .01 };
+   static const sInputEvent mouseUpEvent   = { kMouseLeft, kMK_None, false, cVec2<int>(1,1), .02 };
 
    HandleInputEvent(&mouseDownEvent);
    HandleInputEvent(&mouseUpEvent);
@@ -267,11 +267,11 @@ TEST_FIXTURE(cGUIEventRouterFixture, CancelClick)
 
    static const sInputEvent inputEvents[] =
    {
-      { kMouseMove, false, cVec2<int>(0,0), .01 }, // outside
-      { kMouseMove, false, cVec2<int>(1,1), .02 }, // inside
-      { kMouseLeft, true,  cVec2<int>(1,1), .03 }, // inside, mouse down
-      { kMouseMove, false, cVec2<int>(0,0), .04 }, // outside, mouse still down
-      { kMouseLeft, false, cVec2<int>(0,0), .05 }, // outside, mouse up
+      { kMouseMove, kMK_None, false, cVec2<int>(0,0), .01 }, // outside
+      { kMouseMove, kMK_None, false, cVec2<int>(1,1), .02 }, // inside
+      { kMouseLeft, kMK_None, true,  cVec2<int>(1,1), .03 }, // inside, mouse down
+      { kMouseMove, kMK_None, false, cVec2<int>(0,0), .04 }, // outside, mouse still down
+      { kMouseLeft, kMK_None, false, cVec2<int>(0,0), .05 }, // outside, mouse up
    };
 
    for (int i = 0; i < _countof(inputEvents); ++i)
