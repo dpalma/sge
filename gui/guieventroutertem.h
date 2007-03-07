@@ -316,16 +316,16 @@ bool cGUIEventRouter<T, INTRFC>::HandleInputEvent(const sInputEvent * pInputEven
 
    T * pT = static_cast<T*>(this);
 
-   cAutoIPtr<IGUIElement> pMouseOver;
-   if (pT->GetHitElement(pInputEvent->point, &pMouseOver) != S_OK)
-   {
-      Assert(!pMouseOver);
-   }
-
    bool bEatInputEvent = false;
 
    if (KeyIsMouse(pInputEvent->key))
    {
+      cAutoIPtr<IGUIElement> pMouseOver;
+      if (pT->GetHitElement(pInputEvent->point, &pMouseOver) != S_OK)
+      {
+         Assert(!pMouseOver);
+      }
+
       if (eventCode == kGUIEventMouseMove)
       {
          DoMouseEnterExit(pInputEvent, pMouseOver, NULL, bCtrlKeyDown, bAltKeyDown, bShiftKeyDown);

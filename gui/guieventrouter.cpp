@@ -255,5 +255,39 @@ TEST_FIXTURE(cGUIEventRouterFixture, SimplestPossibleClick)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Click an element then move outside before releasing; Check that no click event occurs
+
+TEST_FIXTURE(cGUIEventRouterFixture, CancelClick)
+{
+   // Element at position (1,1); size 1x1 pixels
+   CHECK_EQUAL(S_OK, CreateTestElement(_T("cancelClickElement"), tGUIPoint(1,1), tGUISize(1,1)));
+
+   cStackGUIEventCollector eventCollector;
+   CHECK_EQUAL(S_OK, AddEventListener(static_cast<IGUIEventListener*>(&eventCollector)));
+
+   static const sInputEvent inputEvents[] =
+   {
+      { kMouseMove, false, cVec2<int>(0,0), .01 }, // outside
+      { kMouseMove, false, cVec2<int>(1,1), .02 }, // inside
+      { kMouseLeft, true,  cVec2<int>(1,1), .03 }, // inside, mouse down
+      { kMouseMove, false, cVec2<int>(0,0), .04 }, // outside, mouse still down
+      { kMouseLeft, false, cVec2<int>(0,0), .05 }, // outside, mouse up
+   };
+
+   for (int i = 0; i < _countof(inputEvents); ++i)
+   {
+      HandleInputEvent(&inputEvents[i]);
+   }
+
+   CHECK_EQUAL(3, eventCollector.GetEventCount());
+   CHECK_EQUAL(kGUIEventMouseEnter, GUIEventCode(eventCollector.AccessEvent(0)));
+   CHECK_EQUAL(kGUIEventMouseDown, GUIEventCode(eventCollector.AccessEvent(1)));
+   CHECK_EQUAL(kGUIEventMouseLeave, GUIEventCode(eventCollector.AccessEvent(2)));
+   // TODO: should a mouse-up occur even when no element is hit?
+
+   CHECK_EQUAL(S_OK, RemoveEventListener(static_cast<IGUIEventListener*>(&eventCollector)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
 
 #endif // HAVE_UNITTESTPP
