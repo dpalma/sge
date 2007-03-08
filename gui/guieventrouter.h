@@ -6,8 +6,6 @@
 
 #include "gui/guiapi.h"
 
-#include "tech/connptimpl.h"
-
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -30,20 +28,15 @@ struct sInputEvent;
 /// @class cGUIEventRouter
 /// @brief Template base class that implements the IGUIEventRouter methods.
 
-template <typename T, typename INTRFC>
-class cGUIEventRouter : public cConnectionPoint<INTRFC, IGUIEventListener>
+template <typename T, typename INTRFC, typename ITERLISTENERS>
+class cGUIEventRouter : public INTRFC
 {
-   typedef cConnectionPoint<INTRFC, IGUIEventListener> tBaseClass;
-
 public:
    cGUIEventRouter();
    ~cGUIEventRouter();
 
    ////////////////////////////////////
    // IGUIEventRouter methods
-
-   virtual tResult AddEventListener(IGUIEventListener * pListener);
-   virtual tResult RemoveEventListener(IGUIEventListener * pListener);
 
    virtual tResult GetFocus(IGUIElement * * ppElement);
    virtual tResult SetFocus(IGUIElement * pElement);
@@ -63,38 +56,41 @@ protected:
 
    void ElementRemoved(IGUIElement * pElement);
 
-   bool DoEvent(IGUIEvent * pEvent);
-   bool BubbleEvent(IGUIEvent * pEvent);
-   bool BubbleEvent(IGUIElement * pStartElement, IGUIEvent * pEvent);
-
-   void DoMouseEnterExit(const sInputEvent * pInputEvent, IGUIElement * pMouseOver, IGUIElement * pRestrictTo);
-
    bool HandleInputEvent(const sInputEvent * pInputEvent);
 
 private:
-   cAutoIPtr<IGUIElement> m_pFocus, m_pMouseOver, m_pDrag;
+   bool DoEvent(IGUIEvent * pEvent);
+   bool BubbleEvent(IGUIEvent * pEvent);
+   bool BubbleEvent(IGUIElement * pStartElement, IGUIEvent * pEvent);
+   bool BubbleEvent(tGUIEventCode eventCode, tScreenPoint mousePos, long keyCode,
+      int modifierKeys, IGUIElement * pSource, bool bCancellable);
+
+   void DoMouseEnterExit(const sInputEvent * pInputEvent, IGUIElement * pMouseOver, IGUIElement * pRestrictTo);
+
+   cAutoIPtr<IGUIElement> m_pFocus;
+   cAutoIPtr<IGUIElement> m_pMouseOver, m_pDrag;
 };
 
 ///////////////////////////////////////
 
-template <typename T, typename INTRFC>
-inline IGUIElement * cGUIEventRouter<T, INTRFC>::AccessFocus()
+template <typename T, typename INTRFC, typename ITERLISTENERS>
+inline IGUIElement * cGUIEventRouter<T, INTRFC, ITERLISTENERS>::AccessFocus()
 {
    return m_pFocus;
 }
 
 ///////////////////////////////////////
 
-template <typename T, typename INTRFC>
-inline IGUIElement * cGUIEventRouter<T, INTRFC>::AccessMouseOver()
+template <typename T, typename INTRFC, typename ITERLISTENERS>
+inline IGUIElement * cGUIEventRouter<T, INTRFC, ITERLISTENERS>::AccessMouseOver()
 {
    return m_pMouseOver;
 }
 
 ///////////////////////////////////////
 
-template <typename T, typename INTRFC>
-inline IGUIElement * cGUIEventRouter<T, INTRFC>::AccessDrag()
+template <typename T, typename INTRFC, typename ITERLISTENERS>
+inline IGUIElement * cGUIEventRouter<T, INTRFC, ITERLISTENERS>::AccessDrag()
 {
    return m_pDrag;
 }

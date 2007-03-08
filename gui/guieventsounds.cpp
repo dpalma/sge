@@ -150,7 +150,6 @@ g_guiEventNames[] =
    //{ kGUIEventNone, "None" },
    { kGUIEventFocus,             "Focus" },
    { kGUIEventBlur,              "Blur" },
-   { kGUIEventDestroy,           "Destroy" },
    { kGUIEventMouseMove,         "MouseMove" },
    { kGUIEventMouseEnter,        "MouseEnter" },
    { kGUIEventMouseLeave,        "MouseLeave" },

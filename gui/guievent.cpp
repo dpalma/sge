@@ -24,7 +24,6 @@ g_guiEventNameTable[] =
    { kGUIEventNone, "noevent" },
    { kGUIEventFocus, "focus" },
    { kGUIEventBlur, "blur" },
-   { kGUIEventDestroy, "destroy" },
    { kGUIEventMouseMove, "mousemove" },
    { kGUIEventMouseEnter, "mouseenter" },
    { kGUIEventMouseLeave, "mouseleave" },

@@ -248,6 +248,9 @@ tResult cGUIContext::Init()
 
 tResult cGUIContext::Term()
 {
+   std::for_each(m_eventListeners.begin(), m_eventListeners.end(), CTInterfaceMethod(&IGUIEventListener::Release));
+   m_eventListeners.clear();
+
    UseGlobal(Input);
    pInput->RemoveInputListener(&m_inputListener);
 
@@ -450,6 +453,20 @@ tResult cGUIContext::InvokeAddOverlay(int argc, const tScriptVar * argv,
    }
 
    return E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::AddEventListener(IGUIEventListener * pListener)
+{
+   return add_interface(m_eventListeners, pListener) ? S_OK : E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::RemoveEventListener(IGUIEventListener * pListener)
+{
+   return remove_interface(m_eventListeners, pListener) ? S_OK : E_FAIL;
 }
 
 ///////////////////////////////////////
@@ -929,7 +946,7 @@ bool cGUIContext::HandleInputEvent(const sInputEvent * pEvent)
       m_lastMousePos = pEvent->point;
    }
 
-   return cGUIEventRouter<cGUIContext, IGUIContext>::HandleInputEvent(pEvent);
+   return tEventRouterBase::HandleInputEvent(pEvent);
 }
 #endif
 

@@ -81,7 +81,6 @@ enum eGUIEventCode
    kGUIEventNone,
    kGUIEventFocus,
    kGUIEventBlur,
-   kGUIEventDestroy,
    kGUIEventMouseMove,
    kGUIEventMouseEnter,
    kGUIEventMouseLeave,

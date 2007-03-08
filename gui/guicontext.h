@@ -24,15 +24,19 @@
 
 class cGUIPage;
 
+typedef std::list<IGUIEventListener *> tGUIEventListenerList;
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIContext
 //
 
-class cGUIContext : public cComObject3<cGUIEventRouter<cGUIContext, IGUIContext>, &IID_IGUIContext,
+class cGUIContext : public cComObject3<cGUIEventRouter<cGUIContext, IGUIContext, tGUIEventListenerList::iterator>, &IID_IGUIContext,
                                        IMPLEMENTS(IGlobalObject),
                                        IMPLEMENTS(IScriptable)>
 {
+   typedef cGUIEventRouter<cGUIContext, IGUIContext, tGUIEventListenerList::iterator> tEventRouterBase;
+
    enum eGUIPagePlane
    {
       kPages, kDialogs, kOverlays
@@ -69,6 +73,10 @@ public:
    tResult InvokeAddOverlay(int argc, const tScriptVar * argv,
                             int nMaxResults, tScriptVar * pResults);
 
+   // IGUIEventRouter methods
+   virtual tResult AddEventListener(IGUIEventListener * pListener);
+   virtual tResult RemoveEventListener(IGUIEventListener * pListener);
+
    // IGUIContext methods
    virtual tResult ShowModalDialog(const tGUIChar * pszDialog);
 
@@ -94,6 +102,9 @@ public:
    virtual tResult GetDefaultFont(IRenderFont * * ppFont);
 
    tResult GetHitElement(const tScreenPoint & point, IGUIElement * * ppElement) const;
+
+   tGUIEventListenerList::iterator BeginEventListeners() { return m_eventListeners.begin(); }
+   tGUIEventListenerList::iterator EndEventListeners() { return m_eventListeners.end(); }
 
    cGUIPage * GetCurrentPage();
    const cGUIPage * GetCurrentPage() const;
@@ -136,6 +147,8 @@ private:
    tGUIPageList m_pagePlanes[3];
 
    cAutoIPtr<IRenderFont> m_pDefaultFont;
+
+   tGUIEventListenerList m_eventListeners;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
