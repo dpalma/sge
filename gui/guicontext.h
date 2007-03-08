@@ -31,11 +31,10 @@ typedef std::list<IGUIEventListener *> tGUIEventListenerList;
 // CLASS: cGUIContext
 //
 
-class cGUIContext : public cComObject3<cGUIEventRouter<cGUIContext, IGUIContext, tGUIEventListenerList::iterator>, &IID_IGUIContext,
-                                       IMPLEMENTS(IGlobalObject),
-                                       IMPLEMENTS(IScriptable)>
+class cGUIContext : public cComObject3<IMPLEMENTS(IGUIContext), IMPLEMENTS(IGlobalObject), IMPLEMENTS(IScriptable)>,
+                    public cGUIEventRouter<cGUIContext, tGUIEventListenerList::iterator>
 {
-   typedef cGUIEventRouter<cGUIContext, IGUIContext, tGUIEventListenerList::iterator> tEventRouterBase;
+   typedef cGUIEventRouter<cGUIContext, tGUIEventListenerList::iterator> tGUIEventRouterBase;
 
    enum eGUIPagePlane
    {
@@ -73,10 +72,6 @@ public:
    tResult InvokeAddOverlay(int argc, const tScriptVar * argv,
                             int nMaxResults, tScriptVar * pResults);
 
-   // IGUIEventRouter methods
-   virtual tResult AddEventListener(IGUIEventListener * pListener);
-   virtual tResult RemoveEventListener(IGUIEventListener * pListener);
-
    // IGUIContext methods
    virtual tResult ShowModalDialog(const tGUIChar * pszDialog);
 
@@ -100,6 +95,9 @@ public:
    virtual tResult HideDebugInfo();
 
    virtual tResult GetDefaultFont(IRenderFont * * ppFont);
+
+   virtual tResult AddEventListener(IGUIEventListener * pListener);
+   virtual tResult RemoveEventListener(IGUIEventListener * pListener);
 
    tResult GetHitElement(const tScreenPoint & point, IGUIElement * * ppElement) const;
 

@@ -144,10 +144,8 @@ protected:
 // CLASS: cGUIEventRouterFixture
 //
 
-class cGUIEventRouterFixture : public cComObject<cGUIEventRouter<cGUIEventRouterFixture,
-                                                                 cGUIContainerBase<IGUIContainerElement>,
-                                                                 tGUIEventListenerList::iterator>,
-                                                 &IID_IGUIContainerElement>
+class cGUIEventRouterFixture : public cComObject<cGUIContainerBase<IGUIContainerElement>, &IID_IGUIContainerElement>,
+                               public cGUIEventRouter<cGUIEventRouterFixture, tGUIEventListenerList::iterator>
 {
    // Prevent heap-based objects
 #ifdef DBGALLOC_MAPPED
@@ -160,6 +158,8 @@ class cGUIEventRouterFixture : public cComObject<cGUIEventRouter<cGUIEventRouter
    static void operator delete(void *) {}
 
 public:
+   typedef cGUIEventRouter<cGUIEventRouterFixture, tGUIEventListenerList::iterator> tGUIEventRouterBase;
+
    cGUIEventRouterFixture();
    ~cGUIEventRouterFixture();
 
@@ -444,7 +444,7 @@ TEST_FIXTURE(cGUIEventRouterFixture, KeyEventFocus)
    cAutoIPtr<IGUIElement> pTestElement;
    CHECK_EQUAL(S_OK, CreateTestElement(_T("focusElement"), tGUIPoint(1,1), tGUISize(1,1), &pTestElement));
 
-   SetFocus(pTestElement);
+   tGUIEventRouterBase::SetFocus(pTestElement);
 
    static const sInputEvent inputEvents[] =
    {

@@ -457,20 +457,6 @@ tResult cGUIContext::InvokeAddOverlay(int argc, const tScriptVar * argv,
 
 ///////////////////////////////////////
 
-tResult cGUIContext::AddEventListener(IGUIEventListener * pListener)
-{
-   return add_interface(m_eventListeners, pListener) ? S_OK : E_FAIL;
-}
-
-///////////////////////////////////////
-
-tResult cGUIContext::RemoveEventListener(IGUIEventListener * pListener)
-{
-   return remove_interface(m_eventListeners, pListener) ? S_OK : E_FAIL;
-}
-
-///////////////////////////////////////
-
 class cBoolSetter
 {
 public:
@@ -542,7 +528,7 @@ tResult cGUIContext::PushPage(eGUIPagePlane plane, cGUIPage * pPage)
       return E_POINTER;
    }
    m_pagePlanes[plane].push_back(pPage);
-   SetFocus(NULL);
+   tGUIEventRouterBase::SetFocus(NULL);
    SetMouseOver(NULL);
    SetDrag(NULL);
    pPage->Activate();
@@ -563,7 +549,7 @@ tResult cGUIContext::PopPage(eGUIPagePlane plane)
    pLastPage->Deactivate();
    delete pLastPage, pLastPage = NULL;
 
-   SetFocus(NULL);
+   tGUIEventRouterBase::SetFocus(NULL);
    SetMouseOver(NULL);
    SetDrag(NULL);
 
@@ -780,6 +766,20 @@ tResult cGUIContext::GetDefaultFont(IRenderFont * * ppFont)
 
 ///////////////////////////////////////
 
+tResult cGUIContext::AddEventListener(IGUIEventListener * pListener)
+{
+   return add_interface(m_eventListeners, pListener) ? S_OK : E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cGUIContext::RemoveEventListener(IGUIEventListener * pListener)
+{
+   return remove_interface(m_eventListeners, pListener) ? S_OK : E_FAIL;
+}
+
+///////////////////////////////////////
+
 tResult cGUIContext::GetHitElement(const tScreenPoint & point, IGUIElement * * ppElement) const
 {
    if (ppElement == NULL)
@@ -946,7 +946,7 @@ bool cGUIContext::HandleInputEvent(const sInputEvent * pEvent)
       m_lastMousePos = pEvent->point;
    }
 
-   return tEventRouterBase::HandleInputEvent(pEvent);
+   return tGUIEventRouterBase::HandleInputEvent(pEvent);
 }
 #endif
 

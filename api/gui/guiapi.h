@@ -23,7 +23,6 @@ F_DECLARE_INTERFACE(IGUIElementRenderer);
 F_DECLARE_INTERFACE(IGUIElementEnum);
 F_DECLARE_INTERFACE(IGUIEvent);
 F_DECLARE_INTERFACE(IGUIEventSounds);
-F_DECLARE_INTERFACE(IGUIEventRouter);
 F_DECLARE_INTERFACE(IGUIEventListener);
 F_DECLARE_INTERFACE(IGUIFactory);
 F_DECLARE_INTERFACE(IGUIFactoryListener);
@@ -149,21 +148,6 @@ GUI_API tResult GUIEventSoundsCreate(const tGUIChar * pszScriptName = NULL);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// INTERFACE: IGUIEventRouter
-//
-
-interface IGUIEventRouter : IUnknown
-{
-   virtual tResult AddEventListener(IGUIEventListener * pListener) = 0;
-   virtual tResult RemoveEventListener(IGUIEventListener * pListener) = 0;
-
-   virtual tResult GetFocus(IGUIElement * * ppElement) = 0;
-   virtual tResult SetFocus(IGUIElement * pElement) = 0;
-};
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
 // INTERFACE: IGUIEventListener
 //
 
@@ -255,7 +239,7 @@ enum eGUILayoutOptions
    kGUILayoutNoSize        = (1 << 1),
 };
 
-interface IGUIContext : IGUIEventRouter
+interface IGUIContext : IUnknown
 {
    /// @brief Show a modal dialog box
    /// @param pszDialog specifies an XML fragment or file name
@@ -287,6 +271,9 @@ interface IGUIContext : IGUIEventRouter
    virtual tResult HideDebugInfo() = 0;
 
    virtual tResult GetDefaultFont(IRenderFont * * ppFont) = 0;
+
+   virtual tResult AddEventListener(IGUIEventListener * pListener) = 0;
+   virtual tResult RemoveEventListener(IGUIEventListener * pListener) = 0;
 };
 
 ///////////////////////////////////////

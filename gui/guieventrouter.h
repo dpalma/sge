@@ -22,28 +22,20 @@ struct sInputEvent;
 // excludes the connection to the real input system, etc. will be used by unit 
 // tests.
 //
-// The template parameter INTRFC is a derivative of IGUIEventRouter
-// (e.g., IGUIContext, which inherits from IGUIEventRouter)
-//
 /// @class cGUIEventRouter
 /// @brief Template base class that implements the IGUIEventRouter methods.
 
-template <typename T, typename INTRFC, typename ITERLISTENERS>
-class cGUIEventRouter : public INTRFC
+template <typename T, typename ITERLISTENERS>
+class cGUIEventRouter
 {
 public:
    cGUIEventRouter();
    ~cGUIEventRouter();
 
-   ////////////////////////////////////
-   // IGUIEventRouter methods
-
-   virtual tResult GetFocus(IGUIElement * * ppElement);
-   virtual tResult SetFocus(IGUIElement * pElement);
+   tResult GetFocus(IGUIElement * * ppElement);
+   tResult SetFocus(IGUIElement * pElement);
 
 protected:
-   ////////////////////////////////////
-
    tResult GetMouseOver(IGUIElement * * ppElement);
    tResult SetMouseOver(IGUIElement * pElement);
 
@@ -73,24 +65,24 @@ private:
 
 ///////////////////////////////////////
 
-template <typename T, typename INTRFC, typename ITERLISTENERS>
-inline IGUIElement * cGUIEventRouter<T, INTRFC, ITERLISTENERS>::AccessFocus()
+template <typename T, typename ITERLISTENERS>
+inline IGUIElement * cGUIEventRouter<T, ITERLISTENERS>::AccessFocus()
 {
    return m_pFocus;
 }
 
 ///////////////////////////////////////
 
-template <typename T, typename INTRFC, typename ITERLISTENERS>
-inline IGUIElement * cGUIEventRouter<T, INTRFC, ITERLISTENERS>::AccessMouseOver()
+template <typename T, typename ITERLISTENERS>
+inline IGUIElement * cGUIEventRouter<T, ITERLISTENERS>::AccessMouseOver()
 {
    return m_pMouseOver;
 }
 
 ///////////////////////////////////////
 
-template <typename T, typename INTRFC, typename ITERLISTENERS>
-inline IGUIElement * cGUIEventRouter<T, INTRFC, ITERLISTENERS>::AccessDrag()
+template <typename T, typename ITERLISTENERS>
+inline IGUIElement * cGUIEventRouter<T, ITERLISTENERS>::AccessDrag()
 {
    return m_pDrag;
 }
