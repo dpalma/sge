@@ -25,12 +25,6 @@ public:
    virtual tResult GetId(tGUIString * pId) const;
    virtual void SetId(const tChar * pszId);
 
-   virtual bool HasFocus() const;
-   virtual void SetFocus(bool bFocus);
-
-   virtual bool IsMouseOver() const;
-   virtual void SetMouseOver(bool bMouseOver);
-
    virtual bool IsVisible() const;
    virtual void SetVisible(bool bVisible);
 
@@ -65,10 +59,8 @@ private:
    enum eGUIElementInternalFlags
    {
       kFlags_None             = 0,
-      kFlags_Focus            = 1 << 0,
-      kFlags_MouseOver        = 1 << 1,
-      kFlags_Visible          = 1 << 2,
-      kFlags_Disabled         = 1 << 3,
+      kFlags_Visible          = 1 << 1,
+      kFlags_Disabled         = 1 << 2,
    };
 
    tGUIString m_id;

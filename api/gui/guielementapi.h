@@ -55,23 +55,6 @@ interface IGUIElement : IUnknown
    virtual tResult GetId(tGUIString * pId) const = 0;
    virtual void SetId(const tGUIChar * pszId) = 0;
 
-   /// @return A boolean value representing whether the element presently has input focus
-   virtual bool HasFocus() const = 0;
-   /// @brief Called by the GUI system to tell the element that it has input 
-   /// focus and can render an indicator of that if desired
-   /// @internal
-   /// @remarks Calling this function will not actually obtain input focus.
-   virtual void SetFocus(bool bFocus) = 0;
-
-   /// @return A boolean value representing whether the mouse is presently over the element
-   /// @remarks This method is intended for use by rendering code to display a highlight
-   /// effect when the mouse is over the element.
-   virtual bool IsMouseOver() const = 0;
-   /// @brief Called by the GUI system to tell the element that the mouse is 
-   /// presently over it
-   /// @internal
-   virtual void SetMouseOver(bool bMouseOver) = 0;
-
    virtual bool IsVisible() const = 0;
    virtual void SetVisible(bool bVisible) = 0;
 
@@ -189,9 +172,6 @@ GUI_API tResult GUITitleBarCreate(IGUITitleBarElement * * ppTitleBarElement);
 
 interface IGUIButtonElement : IGUIElement
 {
-   virtual bool IsArmed() const = 0;
-   virtual void SetArmed(bool bArmed) = 0;
-
    virtual const tGUIChar * GetText() const = 0;
    virtual tResult GetText(tGUIString * pText) const = 0;
    virtual tResult SetText(const tGUIChar * pszText) = 0;

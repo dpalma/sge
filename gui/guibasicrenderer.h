@@ -22,7 +22,7 @@ public:
    cGUIBasicRenderer();
    ~cGUIBasicRenderer();
 
-   virtual tResult Render(IGUIElement * pElement, const tGUIPoint & position);
+   virtual tResult Render(IGUIElement * pElement, const tGUIPoint & position, uint state);
    virtual tResult GetPreferredSize(IGUIElement * pElement, const tGUISize & parentSize, tGUISize * pSize);
    virtual tResult AllocateBorderSpace(IGUIElement * pElement, tGUIRect * pRect);
 

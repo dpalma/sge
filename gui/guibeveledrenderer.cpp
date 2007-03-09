@@ -274,7 +274,7 @@ const cGUIBeveledRenderer::sMethodTableEntry cGUIBeveledRenderer::gm_methodTable
 
 ///////////////////////////////////////
 
-tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, const tGUIPoint & position)
+tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, const tGUIPoint & position, uint state)
 {
    if (pElement == NULL)
    {
@@ -321,7 +321,7 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, const tGUIPoint & po
                FloatToInt(position.x), FloatToInt(position.y),
                FloatToInt(position.x + size.width), FloatToInt(position.y + size.height));
 
-            return (this->*(gm_methodTable[i].pfnRender))(pElement2, pStyle, pFont, rect);
+            return (this->*(gm_methodTable[i].pfnRender))(pElement2, pStyle, pFont, rect, state);
          }
          else
          {
@@ -394,13 +394,16 @@ tResult cGUIBeveledRenderer::AllocateBorderSpace(IGUIElement * pElement, tGUIRec
 tResult cGUIBeveledRenderer::ButtonRender(IGUIElement * pElement,
                                           IGUIStyle * pStyle,
                                           IRenderFont * pFont,
-                                          const tGUIRect & rect)
+                                          const tGUIRect & rect,
+                                          uint state)
 {
    bool bPressed = false;
 
    IGUIButtonElement * pButtonElement = (IGUIButtonElement *)pElement;
 
-   if (pButtonElement->IsArmed() && pButtonElement->IsMouseOver())
+   static const uint kPressedState = kGUIElementRenderStateMouseOver | kGUIElementRenderStateArmed;
+
+   if ((state & kPressedState) == kPressedState)
    {
       GUIRenderBeveledRect(rect, GetBevel(), GetColor(kBC_Shadow).GetPointer(), GetColor(kBC_Highlight).GetPointer(), GetColor(kBC_Face).GetPointer());
       bPressed = true;
@@ -427,7 +430,7 @@ tResult cGUIBeveledRenderer::ButtonRender(IGUIElement * pElement,
 
       tGUIRect textRect(rect);
 
-      if (pButtonElement->IsArmed() || pButtonElement->IsMouseOver())
+      if ((state & kPressedState) != 0)
       {
          static const float highlightColor[] = { 1.0f, 1.0f, 1.0f };
          GUIRenderHighlightEllipse(rect, highlightColor);
@@ -475,7 +478,8 @@ tGUISize cGUIBeveledRenderer::ButtonPreferredSize(IGUIElement * pElement,
 tResult cGUIBeveledRenderer::LabelRender(IGUIElement * pElement,
                                          IGUIStyle * pStyle,
                                          IRenderFont * pFont,
-                                         const tGUIRect & rect)
+                                         const tGUIRect & rect,
+                                         uint state)
 {
    IGUILabelElement * pLabelElement = (IGUILabelElement *)pElement;
 
@@ -527,7 +531,8 @@ tGUISize cGUIBeveledRenderer::LabelPreferredSize(IGUIElement * pElement,
 tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement,
                                            IGUIStyle * pStyle,
                                            IRenderFont * pFont,
-                                           const tGUIRect & rect)
+                                           const tGUIRect & rect,
+                                           uint state)
 {
    if (rect.GetWidth() == 0 || rect.GetHeight() == 0)
    {
@@ -646,7 +651,8 @@ uint cGUIBeveledRenderer::ListBoxPreferredItemHeight(IRenderFont * pFont) const
 tResult cGUIBeveledRenderer::ScrollBarRender(IGUIElement * pElement,
                                              IGUIStyle * pStyle,
                                              IRenderFont * pFont,
-                                             const tGUIRect & rect)
+                                             const tGUIRect & rect,
+                                             uint state)
 {
    IGUIScrollBarElement * pScrollBarElement = (IGUIScrollBarElement *)pElement;
 
@@ -737,7 +743,8 @@ tGUISize cGUIBeveledRenderer::ScrollBarPreferredSize(IGUIElement * pElement,
 tResult cGUIBeveledRenderer::TextEditRender(IGUIElement * pElement,
                                             IGUIStyle * pStyle,
                                             IRenderFont * pFont,
-                                            const tGUIRect & rect)
+                                            const tGUIRect & rect,
+                                            uint state)
 {
    IGUITextEditElement * pTextEditElement = (IGUITextEditElement *)pElement;
 
@@ -781,7 +788,8 @@ tResult cGUIBeveledRenderer::TextEditRender(IGUIElement * pElement,
          }
 
          // Render the cursor if this widget has focus and its blink cycle is on
-         if (pTextEditElement->HasFocus() && pTextEditElement->ShowBlinkingCursor())
+         if (((state & kGUIElementRenderStateFocus) == kGUIElementRenderStateFocus)
+            && pTextEditElement->ShowBlinkingCursor())
          {
             tGUIRect cursorRect(
                insetRect.left + leftOfCursor.GetWidth(),
@@ -835,7 +843,8 @@ tGUISize cGUIBeveledRenderer::TextEditPreferredSize(IGUIElement * pElement,
 tResult cGUIBeveledRenderer::TitleBarRender(IGUIElement * pElement,
                                             IGUIStyle * pStyle,
                                             IRenderFont * pFont,
-                                            const tGUIRect & rect)
+                                            const tGUIRect & rect,
+                                            uint state)
 {
    IGUITitleBarElement * pTitleBarElement = (IGUITitleBarElement *)pElement;
 
@@ -898,7 +907,8 @@ tGUISize cGUIBeveledRenderer::TitleBarPreferredSize(IGUIElement * pElement,
 tResult cGUIBeveledRenderer::ContainerRender(IGUIElement * pElement,
                                              IGUIStyle * pStyle,
                                              IRenderFont * pFont,
-                                             const tGUIRect & rect)
+                                             const tGUIRect & rect,
+                                             uint state)
 {
    GUIRenderBeveledRect(rect, GetBevel(), GetColor(kBC_Highlight).GetPointer(), GetColor(kBC_Shadow).GetPointer(), GetColor(kBC_Face).GetPointer());
    return S_OK;

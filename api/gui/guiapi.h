@@ -46,9 +46,17 @@ GUI_API void GUILayoutRegisterBuiltInTypes();
 typedef tResult (* tGUIRendererFactoryFn)(void * pReserved,
                                           IGUIElementRenderer * * ppRenderer);
 
+enum eGUIElementRenderState
+{
+   kGUIElementRenderStateDefault    = 0,
+   kGUIElementRenderStateMouseOver  = (1<<0),
+   kGUIElementRenderStateArmed      = (1<<1),
+   kGUIElementRenderStateFocus      = (1<<2),
+};
+
 interface IGUIElementRenderer : IUnknown
 {
-   virtual tResult Render(IGUIElement * pElement, const tGUIPoint & position) = 0;
+   virtual tResult Render(IGUIElement * pElement, const tGUIPoint & position, uint state) = 0;
 
    virtual tResult GetPreferredSize(IGUIElement * pElement, const tGUISize & parentSize, tGUISize * pSize) = 0;
 

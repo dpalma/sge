@@ -23,9 +23,6 @@ public:
 
    virtual tResult OnEvent(IGUIEvent * pEvent);
 
-   virtual bool IsArmed() const;
-   virtual void SetArmed(bool bArmed);
-
    virtual const tGUIChar * GetText() const;
    virtual tResult GetText(tGUIString * pText) const;
    virtual tResult SetText(const char * pszText);
@@ -34,7 +31,6 @@ public:
    virtual tResult SetOnClick(const char * pszOnClick);
 
 private:
-   bool m_bArmed;
    tGUIString m_text;
    tGUIString m_onClick;
 };

@@ -79,52 +79,6 @@ void cGUIElementBase<INTRFC>::SetId(const tGUIChar * pszId)
 ///////////////////////////////////////
 
 template <typename INTRFC>
-bool cGUIElementBase<INTRFC>::HasFocus() const
-{
-   return ((m_flags & kFlags_Focus) != 0);
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
-void cGUIElementBase<INTRFC>::SetFocus(bool bFocus)
-{
-   if (bFocus)
-   {
-      m_flags |= kFlags_Focus;
-   }
-   else
-   {
-      m_flags &= ~kFlags_Focus;
-   }
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
-bool cGUIElementBase<INTRFC>::IsMouseOver() const
-{
-   return ((m_flags & kFlags_MouseOver) != 0);
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
-void cGUIElementBase<INTRFC>::SetMouseOver(bool bMouseOver)
-{
-   if (bMouseOver)
-   {
-      m_flags |= kFlags_MouseOver;
-   }
-   else
-   {
-      m_flags &= ~kFlags_MouseOver;
-   }
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
 bool cGUIElementBase<INTRFC>::IsVisible() const
 {
    return ((m_flags & kFlags_Visible) != 0);

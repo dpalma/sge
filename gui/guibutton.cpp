@@ -33,7 +33,6 @@ LOG_DEFINE_CHANNEL(GUIButtonEvents);
 ///////////////////////////////////////
 
 cGUIButtonElement::cGUIButtonElement()
- : m_bArmed(false)
 {
 }
 
@@ -54,32 +53,8 @@ tResult cGUIButtonElement::OnEvent(IGUIEvent * pEvent)
    tGUIEventCode eventCode;
    Verify(pEvent->GetEventCode(&eventCode) == S_OK);
 
-   LocalMsgIf(eventCode == kGUIEventMouseEnter, "Mouse enter button\n");
-   LocalMsgIf(eventCode == kGUIEventMouseLeave, "Mouse leave button\n");
-
-   if (eventCode == kGUIEventDragStart)
+   if (eventCode == kGUIEventClick)
    {
-      SetArmed(true);
-      Verify(pEvent->SetCancelBubble(true) == S_OK);
-      LocalMsg("Button drag start\n");
-   }
-   else if (eventCode == kGUIEventDragEnd)
-   {
-      SetArmed(false);
-      Verify(pEvent->SetCancelBubble(true) == S_OK);
-      LocalMsg("Button drag end\n");
-   }
-   else if (eventCode == kGUIEventDragMove)
-   {
-      Verify(pEvent->SetCancelBubble(true) == S_OK);
-      // prevent the drag-over event since drag is being used to implement 
-      // the "arming" of the button
-      result = S_FALSE;
-      LocalMsg("Button drag move\n");
-   }
-   else if (eventCode == kGUIEventClick)
-   {
-      SetArmed(false);
       LocalMsg("Button click\n");
       tGUIString onClick;
       if (GetOnClick(&onClick) == S_OK)
@@ -91,20 +66,6 @@ tResult cGUIButtonElement::OnEvent(IGUIEvent * pEvent)
    }
 
    return result;
-}
-
-///////////////////////////////////////
-
-bool cGUIButtonElement::IsArmed() const
-{
-   return m_bArmed;
-}
-
-///////////////////////////////////////
-
-void cGUIButtonElement::SetArmed(bool bArmed)
-{
-   m_bArmed = bArmed;
 }
 
 ///////////////////////////////////////

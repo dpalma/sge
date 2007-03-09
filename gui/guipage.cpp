@@ -523,7 +523,24 @@ protected:
 
 tResult cGUIPage::RenderElement(IGUIElement * pElement, IGUIElementRenderer * pRenderer, const tGUIPoint & position)
 {
-   if (FAILED(pRenderer->Render(pElement, position)))
+   uint state = kGUIElementRenderStateDefault;
+
+   if (CTIsSameObject(AccessDrag(), pElement))
+   {
+      state |= kGUIElementRenderStateArmed;
+   }
+
+   if (CTIsSameObject(AccessFocus(), pElement))
+   {
+      state |= kGUIElementRenderStateFocus;
+   }
+
+   if (CTIsSameObject(AccessMouseOver(), pElement))
+   {
+      state |= kGUIElementRenderStateMouseOver;
+   }
+
+   if (FAILED(pRenderer->Render(pElement, position, state)))
    {
       ErrorMsg1("A GUI element of type \"%s\" failed to render\n", GUIElementType(pElement).c_str());
    }

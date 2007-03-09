@@ -139,7 +139,6 @@ bool cGUIEventRouter<T>::HandleInputEvent(const sInputEvent * pInputEvent)
 template <typename T>
 tResult cGUIEventRouter<T>::GetFocus(IGUIElement * * ppElement)
 {
-   Assert(!m_pFocus || m_pFocus->HasFocus());
    return m_pFocus.GetPointer(ppElement);
 }
 
@@ -148,16 +147,8 @@ tResult cGUIEventRouter<T>::GetFocus(IGUIElement * * ppElement)
 template <typename T>
 tResult cGUIEventRouter<T>::SetFocus(IGUIElement * pElement)
 {
-   if (!!m_pFocus)
-   {
-      m_pFocus->SetFocus(false);
-   }
    SafeRelease(m_pFocus);
    m_pFocus = CTAddRef(pElement);
-   if (pElement != NULL)
-   {
-      pElement->SetFocus(true);
-   }
    return S_OK;
 }
 
@@ -331,7 +322,6 @@ void cGUIEventRouter<T>::DoMouseEnterExit(const sInputEvent * pInputEvent,
          if (!bMouseOverSame)
          {
             SetMouseOver(NULL);
-            pOldMouseOver->SetMouseOver(false);
 
             cAutoIPtr<IGUIEvent> pMouseLeaveEvent;
             if (GUIEventCreate(kGUIEventMouseLeave, pInputEvent->point, pInputEvent->key, pInputEvent->modifierKeys,
@@ -346,7 +336,6 @@ void cGUIEventRouter<T>::DoMouseEnterExit(const sInputEvent * pInputEvent,
          && ((pRestrictTo == NULL) || (CTIsSameObject(pMouseOver, pRestrictTo))))
       {
          SetMouseOver(pMouseOver);
-         pMouseOver->SetMouseOver(true);
 
          cAutoIPtr<IGUIEvent> pMouseEnterEvent;
          if (GUIEventCreate(kGUIEventMouseEnter, pInputEvent->point, pInputEvent->key, pInputEvent->modifierKeys,
@@ -366,7 +355,6 @@ void cGUIEventRouter<T>::DoMouseEnterExit(const sInputEvent * pInputEvent,
          tGUIPoint relPoint(pInputEvent->point.x - absPos.x, pInputEvent->point.y - absPos.y); // TODO: ADDED_tScreenPoint
 
          SetMouseOver(NULL);
-         pOldMouseOver->SetMouseOver(false);
 
          cAutoIPtr<IGUIEvent> pMouseLeaveEvent;
          if (GUIEventCreate(kGUIEventMouseLeave, pInputEvent->point, pInputEvent->key, pInputEvent->modifierKeys,

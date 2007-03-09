@@ -50,7 +50,7 @@ const cGUIBasicRenderer::sMethodTableEntry cGUIBasicRenderer::gm_methodTable[] =
 
 ///////////////////////////////////////
 
-tResult cGUIBasicRenderer::Render(IGUIElement * pElement, const tGUIPoint & position)
+tResult cGUIBasicRenderer::Render(IGUIElement * pElement, const tGUIPoint & position, uint state)
 {
    if (pElement == NULL)
    {
