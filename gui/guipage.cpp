@@ -6,6 +6,7 @@
 #include "guipage.h"
 #include "guielementenum.h"
 #include "guielementtools.h"
+#include "guieventroutertem.h"
 #include "guipagelayout.h"
 #include "guistrings.h"
 #include "gui/guistyleapi.h"
@@ -180,7 +181,7 @@ void GUIElementRenderLoop(ITERATOR begin, ITERATOR end, FUNCTOR f, DATA d)
 {
    tRenderLoopStack s;
 
-   for (ITERATOR iter = begin; iter != end; iter++)
+   for (ITERATOR iter = begin; iter != end; ++iter)
    {
       cAutoIPtr<IGUIElement> pElement(CTAddRef(*iter));
       if (pElement->IsVisible())
@@ -306,7 +307,8 @@ private:
 
 ///////////////////////////////////////
 
-cGUIPage::cGUIPage(const tGUIElementList * pElements)
+cGUIPage::cGUIPage(const tGUIElementList * pElements, cGUINotifyListeners * pNotifyListeners)
+ : m_pNotifyListeners(pNotifyListeners)
 {
    if (pElements != NULL)
    {
@@ -348,7 +350,7 @@ static void GUIPageCreateElementsCallback(IGUIElement * pElement, IGUIElement * 
 
 ///////////////////////////////////////
 
-tResult cGUIPage::Create(const TiXmlDocument * pXmlDoc, cGUIPage * * ppPage)
+tResult cGUIPage::Create(const TiXmlDocument * pXmlDoc, cGUINotifyListeners * pNotifyListeners, cGUIPage * * ppPage)
 {
    if (pXmlDoc == NULL || ppPage == NULL)
    {
@@ -374,7 +376,7 @@ tResult cGUIPage::Create(const TiXmlDocument * pXmlDoc, cGUIPage * * ppPage)
       return E_OUTOFMEMORY;
    }
 
-   cGUIPage * pPage = new cGUIPage(NULL);
+   cGUIPage * pPage = new cGUIPage(NULL, pNotifyListeners);
    if (pPage == NULL)
    {
       return E_OUTOFMEMORY;
@@ -452,8 +454,8 @@ static tResult GUIGetElement(const tGUIElementList & elements, const tChar * psz
    {
       return E_POINTER;
    }
-   tGUIElementList::const_iterator iter = elements.begin();
-   for (; iter != elements.end(); iter++)
+   tGUIElementList::const_iterator iter = elements.begin(), end = elements.end();
+   for (; iter != end; ++iter)
    {
       if (GetElementHelper(*iter, cIdMatch(pszId), ppElement) == S_OK)
       {
@@ -497,13 +499,30 @@ void cGUIPage::UpdateLayout(const tGUIRect & rect)
 
 ///////////////////////////////////////
 
-static tResult DoRender(IGUIElement * pElement, IGUIElementRenderer * pRenderer, const tGUIPoint & position, void * pReserved)
+template <typename T, typename RETURN, typename ARG1, typename ARG2, typename ARG3>
+class cMemberFunctor
 {
-   //{
-   //   tGUIPoint ap(GUIElementAbsolutePosition(pElement, NULL));
-   //   Assert(AlmostEqual(ap.x, position.x));
-   //   Assert(AlmostEqual(ap.y, position.y));
-   //}
+protected:
+   typedef RETURN (T::*tMethod)(ARG1, ARG2, ARG3);
+
+public:
+   cMemberFunctor(T * pT, tMethod pMethod)
+      : m_pT(pT), m_pMethod(pMethod) {}
+
+   RETURN operator ()(ARG1 arg1, ARG2 arg2, ARG3 arg3, void *)
+   {
+      Assert(m_pT != NULL);
+      Assert(m_pMethod != NULL);
+      return (m_pT->*m_pMethod)(arg1, arg2, arg3);
+   }
+
+protected:
+   T * m_pT;
+   tMethod m_pMethod;
+};
+
+tResult cGUIPage::RenderElement(IGUIElement * pElement, IGUIElementRenderer * pRenderer, const tGUIPoint & position)
+{
    if (FAILED(pRenderer->Render(pElement, position)))
    {
       ErrorMsg1("A GUI element of type \"%s\" failed to render\n", GUIElementType(pElement).c_str());
@@ -513,7 +532,44 @@ static tResult DoRender(IGUIElement * pElement, IGUIElementRenderer * pRenderer,
 
 void cGUIPage::Render()
 {
-   GUIElementRenderLoop(m_elements.rbegin(), m_elements.rend(), DoRender, static_cast<void*>(NULL));
+   GUIElementRenderLoop(m_elements.rbegin(), m_elements.rend(),
+      cMemberFunctor<cGUIPage, tResult, IGUIElement *, IGUIElementRenderer *, const tGUIPoint &>(this, &cGUIPage::RenderElement),
+      static_cast<void*>(NULL));
+}
+
+///////////////////////////////////////
+
+bool cGUIPage::NotifyListeners(IGUIEvent * pEvent)
+{
+   if (m_pNotifyListeners != NULL)
+   {
+      return m_pNotifyListeners->NotifyListeners(pEvent);
+   }
+   else
+   {
+      return false;
+   }
+}
+
+///////////////////////////////////////
+
+tResult cGUIPage::GetHitElement(const tScreenPoint & point, IGUIElement * * ppElement) const
+{
+   if (ppElement == NULL)
+   {
+      return E_POINTER;
+   }
+
+   std::list<IGUIElement*> hitElements;
+   if (GetHitElements(point, &hitElements) == S_OK)
+   {
+      Assert(!hitElements.empty());
+      *ppElement = CTAddRef(hitElements.front());
+      std::for_each(hitElements.begin(), hitElements.end(), CTInterfaceMethod(&IGUIElement::Release));
+      return S_OK;
+   }
+
+   return S_FALSE;
 }
 
 ///////////////////////////////////////

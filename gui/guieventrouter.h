@@ -12,6 +12,11 @@
 
 struct sInputEvent;
 
+class cGUINotifyListeners
+{
+public:
+   virtual bool NotifyListeners(IGUIEvent *) = 0;
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -25,12 +30,14 @@ struct sInputEvent;
 /// @class cGUIEventRouter
 /// @brief Template base class that implements the IGUIEventRouter methods.
 
-template <typename T, typename ITERLISTENERS>
+template <typename T>
 class cGUIEventRouter
 {
 public:
    cGUIEventRouter();
    ~cGUIEventRouter();
+
+   bool HandleInputEvent(const sInputEvent * pInputEvent);
 
    tResult GetFocus(IGUIElement * * ppElement);
    tResult SetFocus(IGUIElement * pElement);
@@ -48,8 +55,6 @@ protected:
 
    void ElementRemoved(IGUIElement * pElement);
 
-   bool HandleInputEvent(const sInputEvent * pInputEvent);
-
 private:
    bool DoEvent(IGUIEvent * pEvent);
    bool BubbleEvent(IGUIEvent * pEvent);
@@ -65,24 +70,24 @@ private:
 
 ///////////////////////////////////////
 
-template <typename T, typename ITERLISTENERS>
-inline IGUIElement * cGUIEventRouter<T, ITERLISTENERS>::AccessFocus()
+template <typename T>
+inline IGUIElement * cGUIEventRouter<T>::AccessFocus()
 {
    return m_pFocus;
 }
 
 ///////////////////////////////////////
 
-template <typename T, typename ITERLISTENERS>
-inline IGUIElement * cGUIEventRouter<T, ITERLISTENERS>::AccessMouseOver()
+template <typename T>
+inline IGUIElement * cGUIEventRouter<T>::AccessMouseOver()
 {
    return m_pMouseOver;
 }
 
 ///////////////////////////////////////
 
-template <typename T, typename ITERLISTENERS>
-inline IGUIElement * cGUIEventRouter<T, ITERLISTENERS>::AccessDrag()
+template <typename T>
+inline IGUIElement * cGUIEventRouter<T>::AccessDrag()
 {
    return m_pDrag;
 }

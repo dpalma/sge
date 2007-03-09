@@ -145,7 +145,7 @@ protected:
 //
 
 class cGUIEventRouterFixture : public cComObject<cGUIContainerBase<IGUIContainerElement>, &IID_IGUIContainerElement>,
-                               public cGUIEventRouter<cGUIEventRouterFixture, tGUIEventListenerList::iterator>
+                               public cGUIEventRouter<cGUIEventRouterFixture>
 {
    // Prevent heap-based objects
 #ifdef DBGALLOC_MAPPED
@@ -158,7 +158,7 @@ class cGUIEventRouterFixture : public cComObject<cGUIContainerBase<IGUIContainer
    static void operator delete(void *) {}
 
 public:
-   typedef cGUIEventRouter<cGUIEventRouterFixture, tGUIEventListenerList::iterator> tGUIEventRouterBase;
+   typedef cGUIEventRouter<cGUIEventRouterFixture> tGUIEventRouterBase;
 
    cGUIEventRouterFixture();
    ~cGUIEventRouterFixture();
@@ -166,6 +166,7 @@ public:
    virtual void DeleteThis() {}
 
    tResult GetHitElement(const tScreenPoint & point, IGUIElement * * ppElement) const;
+   bool NotifyListeners(IGUIEvent * pEvent);
 
    // IGUIEventRouter methods
    virtual tResult AddEventListener(IGUIEventListener * pListener);
@@ -196,9 +197,6 @@ public:
       tScreenPoint m_point;
       IGUIElement * m_pHit;
    };
-
-   tGUIEventListenerList::iterator BeginEventListeners() { return m_eventListeners.begin(); }
-   tGUIEventListenerList::iterator EndEventListeners() { return m_eventListeners.end(); }
 
    cStackGUIEventCollector m_eventCollector;
 
@@ -237,6 +235,22 @@ tResult cGUIEventRouterFixture::GetHitElement(const tScreenPoint & point, IGUIEl
    }
    *ppElement = CTAddRef(ht.m_pHit);
    return S_OK;
+}
+
+///////////////////////////////////////
+
+bool cGUIEventRouterFixture::NotifyListeners(IGUIEvent * pEvent)
+{
+   tGUIEventListenerList::iterator iter = m_eventListeners.begin();
+   tGUIEventListenerList::iterator end = m_eventListeners.end();
+   for (; iter != end; ++iter)
+   {
+      if ((*iter)->OnEvent(pEvent) != S_OK)
+      {
+         return true;
+      }
+   }
+   return false;
 }
 
 ///////////////////////////////////////

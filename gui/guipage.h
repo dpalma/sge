@@ -4,7 +4,7 @@
 #ifndef INCLUDED_GUIPAGE_H
 #define INCLUDED_GUIPAGE_H
 
-#include "guielementbase.h"
+#include "guieventrouter.h"
 
 #include "tech/connptimpl.h"
 
@@ -23,14 +23,14 @@ class TiXmlDocument;
 // CLASS: cGUIPage
 //
 
-class cGUIPage
+class cGUIPage : public cGUIEventRouter<cGUIPage>
 {
-   cGUIPage(const tGUIElementList * pElements);
+   cGUIPage(const tGUIElementList * pElements, cGUINotifyListeners * pNotifyListeners);
 
 public:
    ~cGUIPage();
 
-   static tResult Create(const TiXmlDocument * pXmlDoc, cGUIPage * * ppPage);
+   static tResult Create(const TiXmlDocument * pXmlDoc, cGUINotifyListeners * pNotifyListeners, cGUIPage * * ppPage);
 
    void Activate();
    void Deactivate();
@@ -42,8 +42,14 @@ public:
    void RequestLayout(IGUIElement * pRequester, uint options);
 
    void UpdateLayout(const tGUIRect & rect);
+
+   tResult RenderElement(IGUIElement * pElement, IGUIElementRenderer * pRenderer, const tGUIPoint & position);
+
    void Render();
 
+   bool NotifyListeners(IGUIEvent * pEvent);
+
+   tResult GetHitElement(const tScreenPoint & point, IGUIElement * * ppElement) const;
    tResult GetHitElements(const tScreenPoint & point, tGUIElementList * pElements) const;
 
 private:
@@ -59,6 +65,8 @@ private:
 
    typedef std::list<std::pair<IGUIElement*, uint> > tLayoutRequests;
    tLayoutRequests m_layoutRequests;
+
+   cGUINotifyListeners * m_pNotifyListeners;
 };
 
 

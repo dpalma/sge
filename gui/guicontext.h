@@ -31,11 +31,9 @@ typedef std::list<IGUIEventListener *> tGUIEventListenerList;
 // CLASS: cGUIContext
 //
 
-class cGUIContext : public cComObject3<IMPLEMENTS(IGUIContext), IMPLEMENTS(IGlobalObject), IMPLEMENTS(IScriptable)>,
-                    public cGUIEventRouter<cGUIContext, tGUIEventListenerList::iterator>
+class cGUIContext : public cComObject3<IMPLEMENTS(IGUIContext), IMPLEMENTS(IGlobalObject), IMPLEMENTS(IScriptable)>
+                  , public cGUINotifyListeners
 {
-   typedef cGUIEventRouter<cGUIContext, tGUIEventListenerList::iterator> tGUIEventRouterBase;
-
    enum eGUIPagePlane
    {
       kPages, kDialogs, kOverlays
@@ -99,10 +97,7 @@ public:
    virtual tResult AddEventListener(IGUIEventListener * pListener);
    virtual tResult RemoveEventListener(IGUIEventListener * pListener);
 
-   tResult GetHitElement(const tScreenPoint & point, IGUIElement * * ppElement) const;
-
-   tGUIEventListenerList::iterator BeginEventListeners() { return m_eventListeners.begin(); }
-   tGUIEventListenerList::iterator EndEventListeners() { return m_eventListeners.end(); }
+   bool NotifyListeners(IGUIEvent * pEvent);
 
    cGUIPage * GetCurrentPage();
    const cGUIPage * GetCurrentPage() const;
@@ -111,12 +106,9 @@ private:
 #ifdef GUI_DEBUG
    tResult GetDebugFont(IRenderFont * * ppFont);
    void RenderDebugInfo();
-
-   // Over-riding the cGUIEventRouter method even though it isn't virtual.
-   // OK because it is only called through a cGUIContext* pointer in 
-   // cInputListener::OnInputEvent
-   bool HandleInputEvent(const sInputEvent * pEvent);
 #endif
+
+   bool HandleInputEvent(const sInputEvent * pEvent);
 
    class cInputListener : public cComObject<IMPLEMENTS(IInputListener)>
    {

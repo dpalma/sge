@@ -30,109 +30,22 @@ LOG_EXTERN_CHANNEL(GUIEventRouter); // defined in guieventrouter.cpp
 
 ///////////////////////////////////////
 
-template <typename T, typename ITERLISTENERS>
-cGUIEventRouter<T, ITERLISTENERS>::cGUIEventRouter()
+template <typename T>
+cGUIEventRouter<T>::cGUIEventRouter()
 {
 }
 
 ///////////////////////////////////////
 
-template <typename T, typename ITERLISTENERS>
-cGUIEventRouter<T, ITERLISTENERS>::~cGUIEventRouter()
+template <typename T>
+cGUIEventRouter<T>::~cGUIEventRouter()
 {
 }
 
 ///////////////////////////////////////
 
-template <typename T, typename ITERLISTENERS>
-tResult cGUIEventRouter<T, ITERLISTENERS>::GetFocus(IGUIElement * * ppElement)
-{
-   Assert(!m_pFocus || m_pFocus->HasFocus());
-   return m_pFocus.GetPointer(ppElement);
-}
-
-///////////////////////////////////////
-
-template <typename T, typename ITERLISTENERS>
-tResult cGUIEventRouter<T, ITERLISTENERS>::SetFocus(IGUIElement * pElement)
-{
-   if (!!m_pFocus)
-   {
-      m_pFocus->SetFocus(false);
-   }
-   SafeRelease(m_pFocus);
-   m_pFocus = CTAddRef(pElement);
-   if (pElement != NULL)
-   {
-      pElement->SetFocus(true);
-   }
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-template <typename T, typename ITERLISTENERS>
-tResult cGUIEventRouter<T, ITERLISTENERS>::GetMouseOver(IGUIElement * * ppElement)
-{
-   return m_pMouseOver.GetPointer(ppElement);
-}
-
-///////////////////////////////////////
-
-template <typename T, typename ITERLISTENERS>
-tResult cGUIEventRouter<T, ITERLISTENERS>::SetMouseOver(IGUIElement * pElement)
-{
-   SafeRelease(m_pMouseOver);
-   m_pMouseOver = CTAddRef(pElement);
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-template <typename T, typename ITERLISTENERS>
-tResult cGUIEventRouter<T, ITERLISTENERS>::GetDrag(IGUIElement * * ppElement)
-{
-   return m_pDrag.GetPointer(ppElement);
-}
-
-///////////////////////////////////////
-
-template <typename T, typename ITERLISTENERS>
-tResult cGUIEventRouter<T, ITERLISTENERS>::SetDrag(IGUIElement * pElement)
-{
-   SafeRelease(m_pDrag);
-   m_pDrag = CTAddRef(pElement);
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-template <typename T, typename ITERLISTENERS>
-void cGUIEventRouter<T, ITERLISTENERS>::ElementRemoved(IGUIElement * pElement)
-{
-   if (pElement != NULL)
-   {
-      // If the focus, moused-over, or drag elements are descendants of 
-      // the element being removed, release the pointers.
-      if (!!m_pFocus && IsDescendant(pElement, m_pFocus))
-      {
-         SafeRelease(m_pFocus);
-      }
-      if (!!m_pMouseOver && IsDescendant(pElement, m_pMouseOver))
-      {
-         SafeRelease(m_pMouseOver);
-      }
-      if (!!m_pDrag && IsDescendant(pElement, m_pDrag))
-      {
-         SafeRelease(m_pDrag);
-      }
-   }
-}
-
-///////////////////////////////////////
-
-template <typename T, typename ITERLISTENERS>
-bool cGUIEventRouter<T, ITERLISTENERS>::HandleInputEvent(const sInputEvent * pInputEvent)
+template <typename T>
+bool cGUIEventRouter<T>::HandleInputEvent(const sInputEvent * pInputEvent)
 {
    DebugMsgIfEx5(GUIEventRouter, pInputEvent->key != kMouseMove,
       "InputEvent: key %d, down %d, point(%d, %d), time %f\n",
@@ -222,10 +135,97 @@ bool cGUIEventRouter<T, ITERLISTENERS>::HandleInputEvent(const sInputEvent * pIn
 }
 
 ///////////////////////////////////////
+
+template <typename T>
+tResult cGUIEventRouter<T>::GetFocus(IGUIElement * * ppElement)
+{
+   Assert(!m_pFocus || m_pFocus->HasFocus());
+   return m_pFocus.GetPointer(ppElement);
+}
+
+///////////////////////////////////////
+
+template <typename T>
+tResult cGUIEventRouter<T>::SetFocus(IGUIElement * pElement)
+{
+   if (!!m_pFocus)
+   {
+      m_pFocus->SetFocus(false);
+   }
+   SafeRelease(m_pFocus);
+   m_pFocus = CTAddRef(pElement);
+   if (pElement != NULL)
+   {
+      pElement->SetFocus(true);
+   }
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+template <typename T>
+tResult cGUIEventRouter<T>::GetMouseOver(IGUIElement * * ppElement)
+{
+   return m_pMouseOver.GetPointer(ppElement);
+}
+
+///////////////////////////////////////
+
+template <typename T>
+tResult cGUIEventRouter<T>::SetMouseOver(IGUIElement * pElement)
+{
+   SafeRelease(m_pMouseOver);
+   m_pMouseOver = CTAddRef(pElement);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+template <typename T>
+tResult cGUIEventRouter<T>::GetDrag(IGUIElement * * ppElement)
+{
+   return m_pDrag.GetPointer(ppElement);
+}
+
+///////////////////////////////////////
+
+template <typename T>
+tResult cGUIEventRouter<T>::SetDrag(IGUIElement * pElement)
+{
+   SafeRelease(m_pDrag);
+   m_pDrag = CTAddRef(pElement);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+template <typename T>
+void cGUIEventRouter<T>::ElementRemoved(IGUIElement * pElement)
+{
+   if (pElement != NULL)
+   {
+      // If the focus, moused-over, or drag elements are descendants of 
+      // the element being removed, release the pointers.
+      if (!!m_pFocus && IsDescendant(pElement, m_pFocus))
+      {
+         SafeRelease(m_pFocus);
+      }
+      if (!!m_pMouseOver && IsDescendant(pElement, m_pMouseOver))
+      {
+         SafeRelease(m_pMouseOver);
+      }
+      if (!!m_pDrag && IsDescendant(pElement, m_pDrag))
+      {
+         SafeRelease(m_pDrag);
+      }
+   }
+}
+
+///////////////////////////////////////
 // Similar to BubbleEvent but doesn't walk up the parent chain
 
-template <typename T, typename ITERLISTENERS>
-bool cGUIEventRouter<T, ITERLISTENERS>::DoEvent(IGUIEvent * pEvent)
+template <typename T>
+bool cGUIEventRouter<T>::DoEvent(IGUIEvent * pEvent)
 {
    Assert(pEvent != NULL);
 
@@ -235,8 +235,8 @@ bool cGUIEventRouter<T, ITERLISTENERS>::DoEvent(IGUIEvent * pEvent)
 
 ///////////////////////////////////////
 
-template <typename T, typename ITERLISTENERS>
-bool cGUIEventRouter<T, ITERLISTENERS>::BubbleEvent(IGUIEvent * pEvent)
+template <typename T>
+bool cGUIEventRouter<T>::BubbleEvent(IGUIEvent * pEvent)
 {
    Assert(pEvent != NULL);
 
@@ -251,22 +251,17 @@ bool cGUIEventRouter<T, ITERLISTENERS>::BubbleEvent(IGUIEvent * pEvent)
 
 ///////////////////////////////////////
 
-template <typename T, typename ITERLISTENERS>
-bool cGUIEventRouter<T, ITERLISTENERS>::BubbleEvent(IGUIElement * pStartElement, IGUIEvent * pEvent)
+template <typename T>
+bool cGUIEventRouter<T>::BubbleEvent(IGUIElement * pStartElement, IGUIEvent * pEvent)
 {
    Assert(pStartElement != NULL);
    Assert(pEvent != NULL);
 
    T * pT = static_cast<T*>(this);
 
-   ITERLISTENERS iter = pT->BeginEventListeners();
-   ITERLISTENERS end = pT->EndEventListeners();
-   for (; iter != end; ++iter)
+   if (pT->NotifyListeners(pEvent))
    {
-      if ((*iter)->OnEvent(pEvent) != S_OK)
-      {
-         return true;
-      }
+      return true;
    }
 
    cAutoIPtr<IGUIElement> pDispatchTo(CTAddRef(pStartElement));
@@ -298,13 +293,13 @@ bool cGUIEventRouter<T, ITERLISTENERS>::BubbleEvent(IGUIElement * pStartElement,
 
 ///////////////////////////////////////
 
-template <typename T, typename ITERLISTENERS>
-bool cGUIEventRouter<T, ITERLISTENERS>::BubbleEvent(tGUIEventCode eventCode,
-                                                            tScreenPoint mousePos,
-                                                            long keyCode,
-                                                            int modifierKeys,
-                                                            IGUIElement * pSource,
-                                                            bool bCancellable)
+template <typename T>
+bool cGUIEventRouter<T>::BubbleEvent(tGUIEventCode eventCode,
+                                     tScreenPoint mousePos,
+                                     long keyCode,
+                                     int modifierKeys,
+                                     IGUIElement * pSource,
+                                     bool bCancellable)
 {
    cAutoIPtr<IGUIEvent> pEvent;
    if (GUIEventCreate(eventCode, mousePos,  keyCode, modifierKeys, pSource, bCancellable, &pEvent) == S_OK)
@@ -319,10 +314,10 @@ bool cGUIEventRouter<T, ITERLISTENERS>::BubbleEvent(tGUIEventCode eventCode,
 
 ///////////////////////////////////////
 
-template <typename T, typename ITERLISTENERS>
-void cGUIEventRouter<T, ITERLISTENERS>::DoMouseEnterExit(const sInputEvent * pInputEvent,
-                                                                 IGUIElement * pMouseOver,
-                                                                 IGUIElement * pRestrictTo)
+template <typename T>
+void cGUIEventRouter<T>::DoMouseEnterExit(const sInputEvent * pInputEvent,
+                                          IGUIElement * pMouseOver,
+                                          IGUIElement * pRestrictTo)
 {
    if (pMouseOver != NULL)
    {

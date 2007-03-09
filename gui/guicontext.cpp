@@ -157,7 +157,7 @@ tResult cGUIModalLoopEventListener::OnEvent(IGUIEvent * pEvent)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static tResult LoadPage(const tChar * pszPage, cGUIPage * * ppPage)
+static tResult LoadPage(const tChar * pszPage, cGUINotifyListeners * pNotifyListeners, cGUIPage * * ppPage)
 {
    if (pszPage == NULL || ppPage == NULL)
    {
@@ -187,7 +187,7 @@ static tResult LoadPage(const tChar * pszPage, cGUIPage * * ppPage)
       }
    }
 
-   return cGUIPage::Create(pTiXmlDoc, ppPage);
+   return cGUIPage::Create(pTiXmlDoc, pNotifyListeners, ppPage);
 }
 
 
@@ -490,7 +490,7 @@ tResult cGUIContext::ShowModalDialog(const tChar * pszDialog)
    tResult result = E_FAIL;
 
    cGUIPage * pPage = NULL;
-   if (LoadPage(pszDialog, &pPage) == S_OK)
+   if (LoadPage(pszDialog, static_cast<cGUINotifyListeners*>(this), &pPage) == S_OK)
    {
       if (!pPage->IsModalDialogPage())
       {
@@ -528,9 +528,6 @@ tResult cGUIContext::PushPage(eGUIPagePlane plane, cGUIPage * pPage)
       return E_POINTER;
    }
    m_pagePlanes[plane].push_back(pPage);
-   tGUIEventRouterBase::SetFocus(NULL);
-   SetMouseOver(NULL);
-   SetDrag(NULL);
    pPage->Activate();
    return S_OK;
 }
@@ -549,10 +546,6 @@ tResult cGUIContext::PopPage(eGUIPagePlane plane)
    pLastPage->Deactivate();
    delete pLastPage, pLastPage = NULL;
 
-   tGUIEventRouterBase::SetFocus(NULL);
-   SetMouseOver(NULL);
-   SetDrag(NULL);
-
    if (!m_pagePlanes[plane].empty())
    {
       cGUIPage * pNewPage = m_pagePlanes[plane].back();
@@ -570,7 +563,7 @@ tResult cGUIContext::PopPage(eGUIPagePlane plane)
 tResult cGUIContext::PushPage(const tChar * pszPage)
 {
    cGUIPage * pPage = NULL;
-   if (LoadPage(pszPage, &pPage) == S_OK)
+   if (LoadPage(pszPage, static_cast<cGUINotifyListeners*>(this), &pPage) == S_OK)
    {
       return PushPage(kPages, pPage);
    }
@@ -589,7 +582,7 @@ tResult cGUIContext::PopPage()
 tResult cGUIContext::AddOverlayPage(const tGUIChar * pszPage)
 {
    cGUIPage * pPage = NULL;
-   if (LoadPage(pszPage, &pPage) == S_OK)
+   if (LoadPage(pszPage, static_cast<cGUINotifyListeners*>(this), &pPage) == S_OK)
    {
       return PushPage(kOverlays, pPage);
    }
@@ -780,27 +773,18 @@ tResult cGUIContext::RemoveEventListener(IGUIEventListener * pListener)
 
 ///////////////////////////////////////
 
-tResult cGUIContext::GetHitElement(const tScreenPoint & point, IGUIElement * * ppElement) const
+bool cGUIContext::NotifyListeners(IGUIEvent * pEvent)
 {
-   if (ppElement == NULL)
+   tGUIEventListenerList::iterator iter = m_eventListeners.begin();
+   tGUIEventListenerList::iterator end = m_eventListeners.end();
+   for (; iter != end; ++iter)
    {
-      return E_POINTER;
-   }
-
-   const cGUIPage * pPage = GetCurrentPage();
-   if (pPage != NULL)
-   {
-      std::list<IGUIElement*> hitElements;
-      if (pPage->GetHitElements(point, &hitElements) == S_OK)
+      if ((*iter)->OnEvent(pEvent) != S_OK)
       {
-         Assert(!hitElements.empty());
-         *ppElement = CTAddRef(hitElements.front());
-         std::for_each(hitElements.begin(), hitElements.end(), CTInterfaceMethod(&IGUIElement::Release));
-         return S_OK;
+         return true;
       }
    }
-
-   return S_FALSE;
+   return false;
 }
 
 ///////////////////////////////////////
@@ -936,19 +920,25 @@ void cGUIContext::RenderDebugInfo()
 
 ///////////////////////////////////////
 
-#ifdef GUI_DEBUG
 bool cGUIContext::HandleInputEvent(const sInputEvent * pEvent)
 {
    Assert(pEvent != NULL);
 
+#ifdef GUI_DEBUG
    if (pEvent->key == kMouseMove)
    {
       m_lastMousePos = pEvent->point;
    }
-
-   return tGUIEventRouterBase::HandleInputEvent(pEvent);
-}
 #endif
+
+   cGUIPage * pPage = GetCurrentPage();
+   if (pPage != NULL)
+   {
+      return pPage->HandleInputEvent(pEvent);
+   }
+
+   return false;
+}
 
 ///////////////////////////////////////
 
