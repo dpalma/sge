@@ -525,7 +525,7 @@ tResult cGUIPage::RenderElement(IGUIElement * pElement, IGUIElementRenderer * pR
 {
    uint state = kGUIElementRenderStateDefault;
 
-   if (CTIsSameObject(AccessDrag(), pElement))
+   if (CTIsSameObject(AccessArmed(), pElement))
    {
       state |= kGUIElementRenderStateArmed;
    }

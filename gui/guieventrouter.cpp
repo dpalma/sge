@@ -81,7 +81,17 @@ static bool GUIEventSourceElementIs(IGUIEvent * pEvent, IGUIElement * pElement)
 
 class cGUITestElement : public cComObject<cGUIElementBase<IGUIElement>, &IID_IGUIElement>
 {
-public:
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUIDraggableTestElement
+//
+
+class cGUIDraggableTestElement : public cComObject2<cGUIElementBase<IGUIElement>, &IID_IGUIElement,
+                                                    IMPLEMENTS(IGUIDraggable)>
+{
 };
 
 
@@ -172,11 +182,32 @@ public:
    virtual tResult AddEventListener(IGUIEventListener * pListener);
    virtual tResult RemoveEventListener(IGUIEventListener * pListener);
 
-   tResult CreateTestElement(const tChar * pszId, const tGUIPoint & position, const tGUISize & size, IGUIElement * * ppElement);
+   template <typename ELEMENT>
+   tResult CreateTestElement(const tChar * pszId, const tGUIPoint & position, const tGUISize & size, IGUIElement * * ppElement)
+   {
+      cAutoIPtr<IGUIElement> pElement(static_cast<IGUIElement*>(new ELEMENT));
+      if (!pElement)
+      {
+         return E_OUTOFMEMORY;
+      }
+      if (pszId != NULL)
+      {
+         pElement->SetId(pszId);
+      }
+      pElement->SetPosition(position);
+      pElement->SetSize(size);
+      tResult result = AddElement(pElement);
+      if (result == S_OK && ppElement != NULL)
+      {
+         *ppElement = CTAddRef(pElement);
+      }
+      return result;
+   }
 
+   template <typename ELEMENT>
    inline tResult CreateTestElement(const tChar * pszId, const tGUIPoint & position, const tGUISize & size)
    {
-      return CreateTestElement(pszId, position, size, NULL);
+      return CreateTestElement<ELEMENT>(pszId, position, size, NULL);
    }
 
    struct sHitTest
@@ -267,32 +298,6 @@ tResult cGUIEventRouterFixture::RemoveEventListener(IGUIEventListener * pListene
    return remove_interface(m_eventListeners, pListener) ? S_OK : E_FAIL;
 }
 
-////////////////////////////////////////
-
-tResult cGUIEventRouterFixture::CreateTestElement(const tChar * pszId,
-                                                  const tGUIPoint & position,
-                                                  const tGUISize & size,
-                                                  IGUIElement * * ppElement)
-{
-   cAutoIPtr<IGUIElement> pElement(static_cast<IGUIElement*>(new cGUITestElement));
-   if (!pElement)
-   {
-      return E_OUTOFMEMORY;
-   }
-   if (pszId != NULL)
-   {
-      pElement->SetId(pszId);
-   }
-   pElement->SetPosition(position);
-   pElement->SetSize(size);
-   tResult result = AddElement(pElement);
-   if (result == S_OK && ppElement != NULL)
-   {
-      *ppElement = CTAddRef(pElement);
-   }
-   return result;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // Move the mouse inside an element and check that a mouse enter and 
 // mouse move event occurred, and that the mouse enter happens before
@@ -301,7 +306,7 @@ tResult cGUIEventRouterFixture::CreateTestElement(const tChar * pszId,
 TEST_FIXTURE(cGUIEventRouterFixture, MouseEnter)
 {
    // Element at position (1,1); size 1x1 pixels
-   CHECK_EQUAL(S_OK, CreateTestElement(_T("mouseEnterElement"), tGUIPoint(1,1), tGUISize(1,1)));
+   CHECK_EQUAL(S_OK, CreateTestElement<cGUITestElement>(_T("mouseEnterElement"), tGUIPoint(1,1), tGUISize(1,1)));
 
    static const sInputEvent inputEvents[] =
    {
@@ -326,7 +331,7 @@ TEST_FIXTURE(cGUIEventRouterFixture, MouseEnter)
 TEST_FIXTURE(cGUIEventRouterFixture, MouseEnterLeave)
 {
    // Element at position (1,1); size 1x1 pixels
-   CHECK_EQUAL(S_OK, CreateTestElement(_T("mouseEnterLeaveElement"), tGUIPoint(1,1), tGUISize(1,1)));
+   CHECK_EQUAL(S_OK, CreateTestElement<cGUITestElement>(_T("mouseEnterLeaveElement"), tGUIPoint(1,1), tGUISize(1,1)));
 
    static const sInputEvent inputEvents[] =
    {
@@ -355,7 +360,7 @@ TEST_FIXTURE(cGUIEventRouterFixture, MouseEnterLeave)
 TEST_FIXTURE(cGUIEventRouterFixture, MouseWheel)
 {
    // Element at position (1,1); size 1x1 pixels
-   CHECK_EQUAL(S_OK, CreateTestElement(_T("mouseWheelElement"), tGUIPoint(1,1), tGUISize(1,1)));
+   CHECK_EQUAL(S_OK, CreateTestElement<cGUITestElement>(_T("mouseWheelElement"), tGUIPoint(1,1), tGUISize(1,1)));
 
    static const sInputEvent inputEvents[] =
    {
@@ -383,7 +388,7 @@ TEST_FIXTURE(cGUIEventRouterFixture, MouseWheel)
 TEST_FIXTURE(cGUIEventRouterFixture, SimplestPossibleClick)
 {
    // Element at position (1,1); size 1x1 pixels
-   CHECK_EQUAL(S_OK, CreateTestElement(_T("clickElement"), tGUIPoint(1,1), tGUISize(1,1)));
+   CHECK_EQUAL(S_OK, CreateTestElement<cGUITestElement>(_T("clickElement"), tGUIPoint(1,1), tGUISize(1,1)));
 
    static const sInputEvent mouseDownEvent = { kMouseLeft, kMK_None, true,  cVec2<int>(1,1), .01 };
    static const sInputEvent mouseUpEvent   = { kMouseLeft, kMK_None, false, cVec2<int>(1,1), .02 };
@@ -403,7 +408,7 @@ TEST_FIXTURE(cGUIEventRouterFixture, SimplestPossibleClick)
 TEST_FIXTURE(cGUIEventRouterFixture, CancelClick)
 {
    // Element at position (1,1); size 1x1 pixels
-   CHECK_EQUAL(S_OK, CreateTestElement(_T("cancelClickElement"), tGUIPoint(1,1), tGUISize(1,1)));
+   CHECK_EQUAL(S_OK, CreateTestElement<cGUITestElement>(_T("cancelClickElement"), tGUIPoint(1,1), tGUISize(1,1)));
 
    static const sInputEvent inputEvents[] =
    {
@@ -433,7 +438,7 @@ TEST_FIXTURE(cGUIEventRouterFixture, CancelClick)
 TEST_FIXTURE(cGUIEventRouterFixture, KeyEventNoFocus)
 {
    // Element at position (1,1); size 1x1 pixels
-   CHECK_EQUAL(S_OK, CreateTestElement(_T("noFocusElement"), tGUIPoint(1,1), tGUISize(1,1)));
+   CHECK_EQUAL(S_OK, CreateTestElement<cGUITestElement>(_T("noFocusElement"), tGUIPoint(1,1), tGUISize(1,1)));
 
    static const sInputEvent inputEvents[] =
    {
@@ -456,7 +461,7 @@ TEST_FIXTURE(cGUIEventRouterFixture, KeyEventFocus)
 {
    // Element at position (1,1); size 1x1 pixels
    cAutoIPtr<IGUIElement> pTestElement;
-   CHECK_EQUAL(S_OK, CreateTestElement(_T("focusElement"), tGUIPoint(1,1), tGUISize(1,1), &pTestElement));
+   CHECK_EQUAL(S_OK, CreateTestElement<cGUITestElement>(_T("focusElement"), tGUIPoint(1,1), tGUISize(1,1), &pTestElement));
 
    tGUIEventRouterBase::SetFocus(pTestElement);
 
@@ -474,6 +479,55 @@ TEST_FIXTURE(cGUIEventRouterFixture, KeyEventFocus)
    CHECK_EQUAL(2, m_eventCollector.GetEventCount());
    CHECK_EQUAL(kGUIEventKeyDown, GUIEventCode(m_eventCollector.AccessEvent(0)));
    CHECK_EQUAL(kGUIEventKeyUp, GUIEventCode(m_eventCollector.AccessEvent(1)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+TEST_FIXTURE(cGUIEventRouterFixture, SimpleDragMove)
+{
+   // Element starts at position (1,1) and gets dragged
+   cAutoIPtr<IGUIElement> pTestElement;
+   CHECK_EQUAL(S_OK, CreateTestElement<cGUIDraggableTestElement>(_T("dragElement"), tGUIPoint(1,1), tGUISize(1,1), &pTestElement));
+
+   static const sInputEvent inputEvents[] =
+   {
+      { kMouseMove, kMK_None, false, cVec2<int>(0,0), .01 }, // move
+      { kMouseMove, kMK_None, false, cVec2<int>(1,1), .02 }, // move
+      { kMouseLeft, kMK_None, true,  cVec2<int>(1,1), .03 }, // mouse down
+      { kMouseMove, kMK_None, false, cVec2<int>(2,1), .04 }, // drag
+      { kMouseMove, kMK_None, false, cVec2<int>(3,1), .05 }, // drag
+      { kMouseMove, kMK_None, false, cVec2<int>(4,1), .06 }, // drag
+      { kMouseMove, kMK_None, false, cVec2<int>(5,1), .07 }, // drag
+      { kMouseLeft, kMK_None, false, cVec2<int>(5,1), .08 }, // mouse up
+   };
+
+   for (int i = 0; i < _countof(inputEvents); ++i)
+   {
+      HandleInputEvent(&inputEvents[i]);
+   }
+
+   static const eGUIEventCode expectedEvents[] =
+   {
+      kGUIEventMouseMove,
+      kGUIEventMouseMove,
+      kGUIEventMouseEnter,
+      kGUIEventMouseDown,
+      kGUIEventMouseMove,
+      kGUIEventMouseMove,
+      kGUIEventMouseMove,
+      kGUIEventMouseMove,
+      kGUIEventMouseUp,
+   };
+
+   //CHECK_EQUAL(_countof(expectedEvents), m_eventCollector.GetEventCount());
+   //for (int i = 0; i < _countof(expectedEvents); ++i)
+   //{
+   //   CHECK_EQUAL(expectedEvents[i], GUIEventCode(m_eventCollector.AccessEvent(i)));
+   //}
+
+   //tGUIPoint newPosition = pTestElement->GetPosition();
+   //CHECK(5 == newPosition.x);
+   //CHECK(1 == newPosition.y);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

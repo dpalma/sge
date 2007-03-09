@@ -46,12 +46,12 @@ protected:
    tResult GetMouseOver(IGUIElement * * ppElement);
    tResult SetMouseOver(IGUIElement * pElement);
 
-   tResult GetDrag(IGUIElement * * ppElement);
-   tResult SetDrag(IGUIElement * pElement);
+   tResult GetArmed(IGUIElement * * ppElement);
+   tResult SetArmed(IGUIElement * pElement, const tScreenPoint & armedAtPoint);
 
    IGUIElement * AccessFocus();
    IGUIElement * AccessMouseOver();
-   IGUIElement * AccessDrag();
+   IGUIElement * AccessArmed();
 
    void ElementRemoved(IGUIElement * pElement);
 
@@ -62,10 +62,27 @@ private:
    bool BubbleEvent(tGUIEventCode eventCode, tScreenPoint mousePos, long keyCode,
       int modifierKeys, IGUIElement * pSource, bool bCancellable);
 
-   void DoMouseEnterExit(const sInputEvent * pInputEvent, IGUIElement * pMouseOver, IGUIElement * pRestrictTo);
+   tResult DoMouseEnterLeave(const sInputEvent * pInputEvent, IGUIElement * pNewMouseOver, IGUIElement * pRestrictTo, IGUIEvent * * ppEvent);
+   tResult DoMouseEnterLeave(const sInputEvent * pInputEvent, IGUIElement * pNewMouseOver, IGUIElement * pRestrictTo,
+      tGUIEventCode * pEventCode, IGUIElement * * ppSourceElement);
+
+   typedef bool (cGUIEventRouter<T>::*tInputEventHandlerFn)(const sInputEvent *, tGUIEventCode, IGUIElement *);
+
+   bool HandleMouseEventSteadyState(const sInputEvent * pInputEvent, tGUIEventCode eventCode, IGUIElement * pNewMouseOver);
+   bool HandleMouseEventClicking(const sInputEvent * pInputEvent, tGUIEventCode eventCode, IGUIElement * pNewMouseOver);
+   bool HandleMouseEventDragging(const sInputEvent * pInputEvent, tGUIEventCode eventCode, IGUIElement * pNewMouseOver);
+
+   enum eConstants
+   {
+      kDragThreshold = 4,
+      kDragThresholdSqr = (kDragThreshold * kDragThreshold),
+   };
 
    cAutoIPtr<IGUIElement> m_pFocus;
-   cAutoIPtr<IGUIElement> m_pMouseOver, m_pDrag;
+   cAutoIPtr<IGUIElement> m_pMouseOver;
+   cAutoIPtr<IGUIElement> m_pArmed; // the "armed" element is the one currently being clicked or dragged
+   tScreenPoint m_armedAtPoint; // the mouse point at which the click or drag was initiated
+   tInputEventHandlerFn m_pMouseHandler;
 };
 
 ///////////////////////////////////////
@@ -87,9 +104,9 @@ inline IGUIElement * cGUIEventRouter<T>::AccessMouseOver()
 ///////////////////////////////////////
 
 template <typename T>
-inline IGUIElement * cGUIEventRouter<T>::AccessDrag()
+inline IGUIElement * cGUIEventRouter<T>::AccessArmed()
 {
-   return m_pDrag;
+   return m_pArmed;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

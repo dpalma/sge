@@ -51,7 +51,7 @@ class TiXmlElement;
 
 interface IGUIElement : IUnknown
 {
-   /// @return The semi-unique identifier assigned to this element
+   /// @return The identifier assigned to this element
    virtual tResult GetId(tGUIString * pId) const = 0;
    virtual void SetId(const tGUIChar * pszId) = 0;
 
