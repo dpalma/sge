@@ -90,8 +90,13 @@ class cGUITestElement : public cComObject<cGUIElementBase<IGUIElement>, &IID_IGU
 //
 
 class cGUIDraggableTestElement : public cComObject2<cGUIElementBase<IGUIElement>, &IID_IGUIElement,
-                                                    IMPLEMENTS(IGUIDraggable)>
+                                                    IMPLEMENTS(IGUIDragSource)>
 {
+public:
+   virtual tResult QueryContinueDrag(const sInputEvent * pInputEvent)
+   {
+      return S_OK;
+   }
 };
 
 

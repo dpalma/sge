@@ -276,63 +276,6 @@ template <typename T>
 tResult cGUIEventRouter<T>::DoMouseEnterLeave(const sInputEvent * pInputEvent,
                                               IGUIElement * pNewMouseOver,
                                               IGUIElement * pRestrictTo,
-                                              IGUIEvent * * ppEvent)
-{
-   if (pNewMouseOver != NULL)
-   {
-      bool bMouseOverSame = false;
-
-      cAutoIPtr<IGUIElement> pOldMouseOver;
-      if (GetMouseOver(&pOldMouseOver) == S_OK)
-      {
-         bMouseOverSame = CTIsSameObject(pNewMouseOver, pOldMouseOver);
-
-         if (!bMouseOverSame)
-         {
-            SetMouseOver(NULL);
-
-            return GUIEventCreate(kGUIEventMouseLeave,
-               pInputEvent->point, pInputEvent->key, pInputEvent->modifierKeys,
-               pOldMouseOver, true, ppEvent);
-         }
-      }
-
-      if (!bMouseOverSame 
-         && ((pRestrictTo == NULL) || (CTIsSameObject(pNewMouseOver, pRestrictTo))))
-      {
-         SetMouseOver(pNewMouseOver);
-
-         return GUIEventCreate(kGUIEventMouseEnter,
-            pInputEvent->point, pInputEvent->key, pInputEvent->modifierKeys,
-            pNewMouseOver, true, ppEvent);
-      }
-   }
-   else
-   {
-      cAutoIPtr<IGUIElement> pOldMouseOver;
-      if (GetMouseOver(&pOldMouseOver) == S_OK)
-      {
-         tGUIPoint absPos = GUIElementAbsolutePosition(pOldMouseOver);
-
-         tGUIPoint relPoint(pInputEvent->point.x - absPos.x, pInputEvent->point.y - absPos.y); // TODO: ADDED_tScreenPoint
-
-         SetMouseOver(NULL);
-
-         return GUIEventCreate(kGUIEventMouseLeave,
-            pInputEvent->point, pInputEvent->key, pInputEvent->modifierKeys,
-            pOldMouseOver, true, ppEvent);
-      }
-   }
-
-   return S_FALSE;
-}
-
-///////////////////////////////////////
-
-template <typename T>
-tResult cGUIEventRouter<T>::DoMouseEnterLeave(const sInputEvent * pInputEvent,
-                                              IGUIElement * pNewMouseOver,
-                                              IGUIElement * pRestrictTo,
                                               tGUIEventCode * pEventCode,
                                               IGUIElement * * ppSourceElement)
 {
@@ -397,10 +340,16 @@ bool cGUIEventRouter<T>::HandleMouseEventSteadyState(const sInputEvent * pInputE
 {
    if (eventCode == kGUIEventMouseMove)
    {
-      cAutoIPtr<IGUIEvent> pEvent;
-      if (DoMouseEnterLeave(pInputEvent, pNewMouseOver, NULL, &pEvent) == S_OK)
+      tGUIEventCode enterLeaveEventCode = kGUIEventNone;
+      cAutoIPtr<IGUIElement> pEnterLeaveElement;
+      if (DoMouseEnterLeave(pInputEvent, pNewMouseOver, NULL, &enterLeaveEventCode, &pEnterLeaveElement) == S_OK)
       {
-         DoEvent(pEvent);
+         cAutoIPtr<IGUIEvent> pEvent;
+         if (GUIEventCreate(enterLeaveEventCode, pInputEvent->point, pInputEvent->key, pInputEvent->modifierKeys,
+            pEnterLeaveElement, true, &pEvent) == S_OK)
+         {
+            DoEvent(pEvent);
+         }
       }
    }
 
@@ -432,12 +381,15 @@ bool cGUIEventRouter<T>::HandleMouseEventClicking(const sInputEvent * pInputEven
    if (eventCode == kGUIEventMouseMove)
    {
       tGUIEventCode enterLeaveEventCode = kGUIEventNone;
-
-      cAutoIPtr<IGUIEvent> pEvent;
-      if (DoMouseEnterLeave(pInputEvent, pNewMouseOver, NULL, &pEvent) == S_OK)
+      cAutoIPtr<IGUIElement> pEnterLeaveElement;
+      if (DoMouseEnterLeave(pInputEvent, pNewMouseOver, NULL, &enterLeaveEventCode, &pEnterLeaveElement) == S_OK)
       {
-         DoEvent(pEvent);
-         Verify(pEvent->GetEventCode(&enterLeaveEventCode) == S_OK);
+         cAutoIPtr<IGUIEvent> pEvent;
+         if (GUIEventCreate(enterLeaveEventCode, pInputEvent->point, pInputEvent->key, pInputEvent->modifierKeys,
+            pEnterLeaveElement, true, &pEvent) == S_OK)
+         {
+            DoEvent(pEvent);
+         }
       }
 
       // Test for the start of a drag
@@ -447,8 +399,8 @@ bool cGUIEventRouter<T>::HandleMouseEventClicking(const sInputEvent * pInputEven
          int distSqr = Vec2DistanceSqr(pInputEvent->point, m_armedAtPoint);
          if ((enterLeaveEventCode == kGUIEventMouseLeave) || (distSqr >= kDragThresholdSqr))
          {
-            cAutoIPtr<IGUIDraggable> pDraggable;
-            if (pArmed->QueryInterface(IID_IGUIDraggable, (void**)&pDraggable) == S_OK)
+            Assert(!m_pDragSource);
+            if (pArmed->QueryInterface(IID_IGUIDragSource, (void**)&m_pDragSource) == S_OK)
             {
                m_pMouseHandler = &cGUIEventRouter<T>::HandleMouseEventDragging;
                return true;
@@ -494,6 +446,8 @@ bool cGUIEventRouter<T>::HandleMouseEventDragging(const sInputEvent * pInputEven
                                                   tGUIEventCode eventCode,
                                                   IGUIElement * pNewMouseOver)
 {
+   Assert(!!m_pDragSource);
+
    if (eventCode == kGUIEventMouseMove)
    {
       tGUIEventCode enterLeaveEventCode = kGUIEventNone;
@@ -510,10 +464,19 @@ bool cGUIEventRouter<T>::HandleMouseEventDragging(const sInputEvent * pInputEven
    }
    else if (eventCode == kGUIEventMouseUp)
    {
-      m_pMouseHandler = &cGUIEventRouter<T>::HandleMouseEventSteadyState;
+      EndDrag();
    }
 
    return false;
+}
+
+///////////////////////////////////////
+
+template <typename T>
+void cGUIEventRouter<T>::EndDrag()
+{
+   m_pMouseHandler = &cGUIEventRouter<T>::HandleMouseEventSteadyState;
+   SafeRelease(m_pDragSource);
 }
 
 

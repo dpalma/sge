@@ -62,7 +62,6 @@ private:
    bool BubbleEvent(tGUIEventCode eventCode, tScreenPoint mousePos, long keyCode,
       int modifierKeys, IGUIElement * pSource, bool bCancellable);
 
-   tResult DoMouseEnterLeave(const sInputEvent * pInputEvent, IGUIElement * pNewMouseOver, IGUIElement * pRestrictTo, IGUIEvent * * ppEvent);
    tResult DoMouseEnterLeave(const sInputEvent * pInputEvent, IGUIElement * pNewMouseOver, IGUIElement * pRestrictTo,
       tGUIEventCode * pEventCode, IGUIElement * * ppSourceElement);
 
@@ -71,6 +70,8 @@ private:
    bool HandleMouseEventSteadyState(const sInputEvent * pInputEvent, tGUIEventCode eventCode, IGUIElement * pNewMouseOver);
    bool HandleMouseEventClicking(const sInputEvent * pInputEvent, tGUIEventCode eventCode, IGUIElement * pNewMouseOver);
    bool HandleMouseEventDragging(const sInputEvent * pInputEvent, tGUIEventCode eventCode, IGUIElement * pNewMouseOver);
+
+   void EndDrag();
 
    enum eConstants
    {
@@ -83,6 +84,7 @@ private:
    cAutoIPtr<IGUIElement> m_pArmed; // the "armed" element is the one currently being clicked or dragged
    tScreenPoint m_armedAtPoint; // the mouse point at which the click or drag was initiated
    tInputEventHandlerFn m_pMouseHandler;
+   cAutoIPtr<IGUIDragSource> m_pDragSource;
 };
 
 ///////////////////////////////////////
