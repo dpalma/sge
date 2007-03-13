@@ -5,6 +5,7 @@
 #define INCLUDED_GUITITLEBAR_H
 
 #include "guielementbase.h"
+#include "gui/guiapi.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -17,13 +18,16 @@
 
 typedef cGUIElementBase<IGUITitleBarElement> tGUITitleBarBase;
 
-class cGUITitleBarElement : public cComObject<tGUITitleBarBase, &IID_IGUITitleBarElement>
+class cGUITitleBarElement : public cComObject2<tGUITitleBarBase, &IID_IGUITitleBarElement,
+                                               IMPLEMENTS(IGUIDragSource)>
 {
 public:
    cGUITitleBarElement();
    ~cGUITitleBarElement();
 
    virtual tResult OnEvent(IGUIEvent * pEvent);
+
+   virtual tResult QueryContinueDrag(const sInputEvent * pInputEvent);
 
    virtual tResult GetTitle(tGUIString * pTitle);
    virtual tResult SetTitle(const tGUIChar * pszTitle);

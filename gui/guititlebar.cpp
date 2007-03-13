@@ -55,55 +55,62 @@ tResult cGUITitleBarElement::OnEvent(IGUIEvent * pEvent)
    tScreenPoint mousePos;
    Verify(pEvent->GetMousePosition(&mousePos) == S_OK);
 
-   switch (eventCode)
-   {
-      case kGUIEventDragStart:
-      {
-         tGUIRect rect = GetAbsoluteRect();
-         if (rect.PtInside(mousePos.x, mousePos.y))
-         {
-            LocalMsg("TitleBar drag start\n");
-            m_bDragging = true;
-            // TODO: ADDED_tScreenPoint
-            m_dragOffset.x = mousePos.x - rect.left;
-            m_dragOffset.y = mousePos.y - rect.top;
-            pEvent->SetCancelBubble(true);
-         }
-         break;
-      }
+   //switch (eventCode)
+   //{
+   //   case kGUIEventDragStart:
+   //   {
+   //      tGUIRect rect = GetAbsoluteRect();
+   //      if (rect.PtInside(mousePos.x, mousePos.y))
+   //      {
+   //         LocalMsg("TitleBar drag start\n");
+   //         m_bDragging = true;
+   //         // TODO: ADDED_tScreenPoint
+   //         m_dragOffset.x = mousePos.x - rect.left;
+   //         m_dragOffset.y = mousePos.y - rect.top;
+   //         pEvent->SetCancelBubble(true);
+   //      }
+   //      break;
+   //   }
 
-      case kGUIEventDragMove:
-      {
-         if (m_bDragging)
-         {
-            LocalMsg("TitleBar drag move\n");
-            cAutoIPtr<IGUIElement> pParent;
-            if (GetParent(&pParent) == S_OK)
-            {
-               // TODO: ADDED_tScreenPoint
-               tGUIPoint parentPos(
-                  static_cast<float>(mousePos.x - m_dragOffset.x - GetPosition().x),
-                  static_cast<float>(mousePos.y - m_dragOffset.y - GetPosition().y));
-               pParent->SetPosition(parentPos);
-            }
-         }
-         pEvent->SetCancelBubble(true);
-         // Prevent the drag-over event since drag is being used to implement 
-         // moving the parent element
-         result = S_FALSE;
-         break;
-      }
+   //   case kGUIEventDragMove:
+   //   {
+   //      if (m_bDragging)
+   //      {
+   //         LocalMsg("TitleBar drag move\n");
+   //         cAutoIPtr<IGUIElement> pParent;
+   //         if (GetParent(&pParent) == S_OK)
+   //         {
+   //            // TODO: ADDED_tScreenPoint
+   //            tGUIPoint parentPos(
+   //               static_cast<float>(mousePos.x - m_dragOffset.x - GetPosition().x),
+   //               static_cast<float>(mousePos.y - m_dragOffset.y - GetPosition().y));
+   //            pParent->SetPosition(parentPos);
+   //         }
+   //      }
+   //      pEvent->SetCancelBubble(true);
+   //      // Prevent the drag-over event since drag is being used to implement 
+   //      // moving the parent element
+   //      result = S_FALSE;
+   //      break;
+   //   }
 
-      case kGUIEventDragEnd:
-      {
-         LocalMsg("TitleBar drag end\n");
-         m_bDragging = false;
-         pEvent->SetCancelBubble(true);
-         break;
-      }
-   }
+   //   case kGUIEventDragEnd:
+   //   {
+   //      LocalMsg("TitleBar drag end\n");
+   //      m_bDragging = false;
+   //      pEvent->SetCancelBubble(true);
+   //      break;
+   //   }
+   //}
 
    return result;
+}
+
+///////////////////////////////////////
+
+tResult cGUITitleBarElement::QueryContinueDrag(const sInputEvent * pInputEvent)
+{
+   return E_NOTIMPL;
 }
 
 ///////////////////////////////////////

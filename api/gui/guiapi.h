@@ -103,10 +103,8 @@ enum eGUIEventCode
    kGUIEventKeyDown,
    kGUIEventClick,
    kGUIEventHover,
-   kGUIEventDragStart,
-   kGUIEventDragEnd,
-   kGUIEventDragMove,
-   kGUIEventDragOver,
+   kGUIEventDragEnter,
+   kGUIEventDragLeave,
    kGUIEventDrop,
 };
 

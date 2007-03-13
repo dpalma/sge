@@ -454,16 +454,35 @@ bool cGUIEventRouter<T>::HandleMouseEventDragging(const sInputEvent * pInputEven
       cAutoIPtr<IGUIElement> pEnterLeaveElement;
       if (DoMouseEnterLeave(pInputEvent, pNewMouseOver, NULL, &enterLeaveEventCode, &pEnterLeaveElement) == S_OK)
       {
+         if (enterLeaveEventCode == kGUIEventMouseEnter)
+         {
+            enterLeaveEventCode = kGUIEventDragEnter;
+         }
+         else if (enterLeaveEventCode == kGUIEventMouseLeave)
+         {
+            enterLeaveEventCode = kGUIEventDragLeave;
+         }
+         else
+         {
+            Assert(!"Unexpected event code returned from DoMouseEnterLeave");
+         }
+
          cAutoIPtr<IGUIEvent> pEvent;
          if (GUIEventCreate(enterLeaveEventCode, pInputEvent->point, pInputEvent->key, pInputEvent->modifierKeys,
             pEnterLeaveElement, true, &pEvent) == S_OK)
          {
-            //DoEvent(pEvent);
+            DoEvent(pEvent);
          }
       }
    }
    else if (eventCode == kGUIEventMouseUp)
    {
+      if (pNewMouseOver != NULL)
+      {
+         BubbleEvent(kGUIEventDrop, pInputEvent->point, pInputEvent->key,
+            pInputEvent->modifierKeys, pNewMouseOver, true);
+      }
+
       EndDrag();
    }
 

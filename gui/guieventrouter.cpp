@@ -86,10 +86,10 @@ class cGUITestElement : public cComObject<cGUIElementBase<IGUIElement>, &IID_IGU
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cGUIDraggableTestElement
+// CLASS: cGUIDragTestElement
 //
 
-class cGUIDraggableTestElement : public cComObject2<cGUIElementBase<IGUIElement>, &IID_IGUIElement,
+class cGUIDragTestElement : public cComObject2<cGUIElementBase<IGUIElement>, &IID_IGUIElement,
                                                     IMPLEMENTS(IGUIDragSource)>
 {
 public:
@@ -488,22 +488,22 @@ TEST_FIXTURE(cGUIEventRouterFixture, KeyEventFocus)
 
 ///////////////////////////////////////////////////////////////////////////////
 
-TEST_FIXTURE(cGUIEventRouterFixture, SimpleDragMove)
+TEST_FIXTURE(cGUIEventRouterFixture, SimpleDrag)
 {
-   // Element starts at position (1,1) and gets dragged
    cAutoIPtr<IGUIElement> pTestElement;
-   CHECK_EQUAL(S_OK, CreateTestElement<cGUIDraggableTestElement>(_T("dragElement"), tGUIPoint(1,1), tGUISize(1,1), &pTestElement));
+   CHECK_EQUAL(S_OK, CreateTestElement<cGUIDragTestElement>(_T("dragElement"), tGUIPoint(1,1), tGUISize(1,1), &pTestElement));
 
    static const sInputEvent inputEvents[] =
    {
-      { kMouseMove, kMK_None, false, cVec2<int>(0,0), .01 }, // move
-      { kMouseMove, kMK_None, false, cVec2<int>(1,1), .02 }, // move
+      { kMouseMove, kMK_None, false, cVec2<int>(0,0), .01 }, // move, outside
+      { kMouseMove, kMK_None, false, cVec2<int>(1,1), .02 }, // move, inside
       { kMouseLeft, kMK_None, true,  cVec2<int>(1,1), .03 }, // mouse down
-      { kMouseMove, kMK_None, false, cVec2<int>(2,1), .04 }, // drag
-      { kMouseMove, kMK_None, false, cVec2<int>(3,1), .05 }, // drag
-      { kMouseMove, kMK_None, false, cVec2<int>(4,1), .06 }, // drag
-      { kMouseMove, kMK_None, false, cVec2<int>(5,1), .07 }, // drag
-      { kMouseLeft, kMK_None, false, cVec2<int>(5,1), .08 }, // mouse up
+      { kMouseMove, kMK_None, false, cVec2<int>(2,1), .04 }, // mouse still down, inside
+      { kMouseMove, kMK_None, false, cVec2<int>(3,1), .05 }, // move, outside (drag begins)
+      { kMouseMove, kMK_None, false, cVec2<int>(2,1), .06 }, // drag, inside
+      { kMouseMove, kMK_None, false, cVec2<int>(3,1), .07 }, // drag, outside
+      { kMouseMove, kMK_None, false, cVec2<int>(2,1), .08 }, // drag, inside
+      { kMouseLeft, kMK_None, false, cVec2<int>(2,1), .09 }, // mouse up
    };
 
    for (int i = 0; i < _countof(inputEvents); ++i)
@@ -513,26 +513,22 @@ TEST_FIXTURE(cGUIEventRouterFixture, SimpleDragMove)
 
    static const eGUIEventCode expectedEvents[] =
    {
-      kGUIEventMouseMove,
-      kGUIEventMouseMove,
       kGUIEventMouseEnter,
+      kGUIEventMouseMove,
       kGUIEventMouseDown,
       kGUIEventMouseMove,
-      kGUIEventMouseMove,
-      kGUIEventMouseMove,
-      kGUIEventMouseMove,
-      kGUIEventMouseUp,
+      kGUIEventMouseLeave,
+      kGUIEventDragEnter,
+      kGUIEventDragLeave,
+      kGUIEventDragEnter,
+      kGUIEventDrop,
    };
 
-   //CHECK_EQUAL(_countof(expectedEvents), m_eventCollector.GetEventCount());
-   //for (int i = 0; i < _countof(expectedEvents); ++i)
-   //{
-   //   CHECK_EQUAL(expectedEvents[i], GUIEventCode(m_eventCollector.AccessEvent(i)));
-   //}
-
-   //tGUIPoint newPosition = pTestElement->GetPosition();
-   //CHECK(5 == newPosition.x);
-   //CHECK(1 == newPosition.y);
+   CHECK_EQUAL(_countof(expectedEvents), m_eventCollector.GetEventCount());
+   for (int i = 0; i < _countof(expectedEvents); ++i)
+   {
+      CHECK_EQUAL(expectedEvents[i], GUIEventCode(m_eventCollector.AccessEvent(i)));
+   }
 }
 
 ///////////////////////////////////////////////////////////////////////////////

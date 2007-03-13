@@ -35,10 +35,8 @@ g_guiEventNameTable[] =
    { kGUIEventKeyDown, "keydown" },
    { kGUIEventClick, "click" },
    { kGUIEventHover, "hover" },
-   { kGUIEventDragStart, "dragstart" },
-   { kGUIEventDragEnd, "dragend" },
-   { kGUIEventDragMove, "dragmove" },
-   { kGUIEventDragOver, "dragover" },
+   { kGUIEventDragEnter, "dragenter" },
+   { kGUIEventDragLeave, "dragleave" },
    { kGUIEventDrop, "drop" },
 };
 
