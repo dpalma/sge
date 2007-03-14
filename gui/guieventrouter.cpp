@@ -304,6 +304,52 @@ tResult cGUIEventRouterFixture::RemoveEventListener(IGUIEventListener * pListene
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// Remove an element during execution of its event handler; Check that nothing
+// bad happens and that the element actually does get removed
+
+TEST_FIXTURE(cGUIEventRouterFixture, RemoveElementFromEventHandler)
+{
+   class cRemoveElement : public cGUITestElement
+   {
+   public:
+      virtual tResult OnEvent(IGUIEvent * pEvent)
+      {
+         cAutoIPtr<IGUIElement> pParent;
+         if (GetParent(&pParent) == S_OK)
+         {
+            cAutoIPtr<IGUIContainerElement> pContainer;
+            if (pParent->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK)
+            {
+               pContainer->RemoveElement(static_cast<IGUIElement*>(this));
+            }
+         }
+         return S_OK;
+      }
+   };
+
+   // Element at position (1,1); size 1x1 pixels
+   cAutoIPtr<IGUIElement> pTestElement;
+   CHECK_EQUAL(S_OK, CreateTestElement<cRemoveElement>(_T("removeElement"), tGUIPoint(1,1), tGUISize(1,1), &pTestElement));
+
+   SetFocus(pTestElement);
+
+   CHECK_EQUAL(S_OK, HasElement(pTestElement));
+
+   static const sInputEvent inputEvents[] =
+   {
+      { kDelete, kMK_None, true, cVec2<int>(0,0), .01 },
+      { kDelete, kMK_None, false, cVec2<int>(0,0), .02 },
+   };
+
+   for (int i = 0; i < _countof(inputEvents); ++i)
+   {
+      HandleInputEvent(&inputEvents[i]);
+   }
+
+   CHECK_EQUAL(S_FALSE, HasElement(pTestElement));
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Move the mouse inside an element and check that a mouse enter and 
 // mouse move event occurred, and that the mouse enter happens before
 // the mouse move.
