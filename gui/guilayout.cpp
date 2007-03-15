@@ -182,6 +182,12 @@ tResult cGUIGridLayout::Layout(IGUIElement * pParent, const tGUIRect & rect)
       return E_POINTER;
    }
 
+   cAutoIPtr<IGUIContainerElement> pContainer;
+   if (pParent->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) != S_OK)
+   {
+      return E_INVALIDARG;
+   }
+
    if (m_rows == 0 || m_columns == 0)
    {
       ErrorMsgIf(m_rows == 0, "Number of rows is zero\n");
@@ -203,7 +209,7 @@ tResult cGUIGridLayout::Layout(IGUIElement * pParent, const tGUIRect & rect)
    LocalMsg4("Grid Layout (%d rows, %d columns), cell size %d x %d\n", m_rows, m_columns, cellWidth, cellHeight);
 
    cAutoIPtr<IGUIElementEnum> pEnum;
-   if (pParent->EnumChildren(&pEnum) == S_OK)
+   if (pContainer->EnumChildren(&pEnum) == S_OK)
    {
       IGUIElement * pChildren[32];
       ulong count = 0;
@@ -488,12 +494,18 @@ tResult cGUIFlowLayout::Layout(IGUIElement * pParent, const tGUIRect & rect)
       return E_POINTER;
    }
 
+   cAutoIPtr<IGUIContainerElement> pContainer;
+   if (pParent->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) != S_OK)
+   {
+      return E_INVALIDARG;
+   }
+
    const tGUISize clientSize(
       static_cast<tGUISizeType>(rect.GetWidth()),
       static_cast<tGUISizeType>(rect.GetHeight()));
 
    cAutoIPtr<IGUIElementEnum> pEnum;
-   if (pParent->EnumChildren(&pEnum) == S_OK)
+   if (pContainer->EnumChildren(&pEnum) == S_OK)
    {
       int x = rect.left;
       int y = rect.top;

@@ -125,46 +125,6 @@ tResult cGUIListBoxElement::OnEvent(IGUIEvent * pEvent)
 
 ////////////////////////////////////////
 
-tResult cGUIListBoxElement::EnumChildren(IGUIElementEnum * * ppChildren)
-{
-   if (!!m_pVScrollBar)
-   {
-      tGUIElementList children;
-      children.push_back(m_pVScrollBar);
-      return GUIElementEnumCreate(children, ppChildren);
-   }
-   return S_FALSE;
-}
-
-////////////////////////////////////////
-
-tResult cGUIListBoxElement::ComputeClientArea(IGUIElementRenderer * pRenderer, tGUIRect * pClientArea)
-{
-   if (pRenderer == NULL || pClientArea == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (!!m_pVScrollBar && m_pVScrollBar->IsVisible())
-   {
-      tGUISize scrollBarSize(0,0);
-      if (pRenderer->GetPreferredSize(m_pVScrollBar, GetSize(), &scrollBarSize) == S_OK)
-      {
-         scrollBarSize.height = static_cast<tGUISizeType>(pClientArea->GetHeight());
-         LocalMsg2("Vertical scrollbar size %.0f x %.0f\n", scrollBarSize.width, scrollBarSize.height);
-         m_pVScrollBar->SetPosition(tGUIPoint(pClientArea->right - scrollBarSize.width, static_cast<float>(pClientArea->top)));
-         m_pVScrollBar->SetSize(scrollBarSize);
-         pClientArea->right -= FloatToInt(scrollBarSize.width);
-         // Returning S_FALSE will signal the page layout code not to size or position the scrollbar
-         return S_FALSE;
-      }
-   }
-
-   return E_FAIL;
-}
-
-////////////////////////////////////////
-
 tResult cGUIListBoxElement::AddItem(const tChar * pszString, uint_ptr extra)
 {
    if (pszString == NULL)
@@ -509,13 +469,6 @@ tResult cGUIListBoxElement::SetRowCount(uint rowCount)
    }
    m_rowCount = rowCount;
    return S_OK;
-}
-
-////////////////////////////////////////
-
-tResult cGUIListBoxElement::GetVerticalScrollBar(IGUIScrollBarElement * * ppScrollBar)
-{
-   return m_pVScrollBar.GetPointer(ppScrollBar);
 }
 
 ////////////////////////////////////////

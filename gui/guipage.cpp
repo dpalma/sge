@@ -176,6 +176,19 @@ struct sRenderLoopStackElement
 
 typedef std::stack<sRenderLoopStackElement> tRenderLoopStack;
 
+inline void PushChildElement(tRenderLoopStack * pStack,
+                             IGUIElement * pChild,
+                             IGUIElementRenderer * pRenderer,
+                             const tGUIPoint & position)
+{
+   cAutoIPtr<IGUIElementRenderer> pChildRenderer;
+   if (pChild->GetRenderer(&pChildRenderer) == S_OK)
+   {
+      pRenderer = pChildRenderer;
+   }
+   pStack->push(sRenderLoopStackElement(CTAddRef(pChild), CTAddRef(pRenderer), position));
+}
+
 template <typename ITERATOR, typename FUNCTOR, typename DATA>
 void GUIElementRenderLoop(ITERATOR begin, ITERATOR end, FUNCTOR f, DATA d)
 {
@@ -218,8 +231,10 @@ void GUIElementRenderLoop(ITERATOR begin, ITERATOR end, FUNCTOR f, DATA d)
          break;
       }
 
+      cAutoIPtr<IGUIContainerElement> pContainer;
       cAutoIPtr<IGUIElementEnum> pEnum;
-      if (pElement->EnumChildren(&pEnum) == S_OK)
+      if (pElement->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK
+         && pContainer->EnumChildren(&pEnum) == S_OK)
       {
          IGUIElement * pChildren[32];
          ulong count = 0;
@@ -229,19 +244,21 @@ void GUIElementRenderLoop(ITERATOR begin, ITERATOR end, FUNCTOR f, DATA d)
             {
                if (pChildren[i]->IsVisible())
                {
-                  cAutoIPtr<IGUIElementRenderer> pChildRenderer;
-                  if (pChildren[i]->GetRenderer(&pChildRenderer) != S_OK)
-                  {
-                     pChildRenderer = pRenderer; // Copying smart pointers--no AddRef
-                  }
-                  s.push(sRenderLoopStackElement(pChildren[i], CTAddRef(pChildRenderer), position));
+                  PushChildElement(&s, pChildren[i], pRenderer, position);
                }
-               else
-               {
-                  SafeRelease(pChildren[i]);
-               }
+               SafeRelease(pChildren[i]);
             }
             count = 0;
+         }
+      }
+
+      cAutoIPtr<IGUIScrollable> pScrollable;
+      if (pElement->QueryInterface(IID_IGUIScrollable, (void**)&pScrollable) == S_OK)
+      {
+         cAutoIPtr<IGUIScrollBarElement> pVertScrollBar;
+         if (pScrollable->GetVerticalScrollBar(&pVertScrollBar) == S_OK)
+         {
+            PushChildElement(&s, pVertScrollBar, pRenderer, position);
          }
       }
    }
@@ -260,8 +277,10 @@ static tResult GetElementHelper(IGUIElement * pParent, F f, IGUIElement * * ppEl
    }
    else
    {
+      cAutoIPtr<IGUIContainerElement> pContainer;
       cAutoIPtr<IGUIElementEnum> pEnum;
-      if (pParent->EnumChildren(&pEnum) == S_OK)
+      if (pParent->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK
+         && pContainer->EnumChildren(&pEnum) == S_OK)
       {
          IGUIElement * pChildren[32];
          ulong count = 0;
@@ -680,10 +699,14 @@ static tResult RunScriptHelper(IGUIElement * pElement)
    }
    else
    {
-      cAutoIPtr<IGUIElementEnum> pEnum;
-      if (pElement->EnumChildren(&pEnum) == S_OK)
+      cAutoIPtr<IGUIContainerElement> pContainer;
+      if (pElement->QueryInterface(IID_IGUIContainerElement, (void**)&pContainer) == S_OK)
       {
-         ForEach(pEnum, RunScriptHelper);
+         cAutoIPtr<IGUIElementEnum> pEnum;
+         if (pContainer->EnumChildren(&pEnum) == S_OK)
+         {
+            ForEach(pEnum, RunScriptHelper);
+         }
       }
    }
    return S_FALSE;

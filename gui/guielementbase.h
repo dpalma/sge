@@ -48,12 +48,8 @@ public:
    virtual tResult GetStyle(IGUIStyle * * ppStyle);
    virtual tResult SetStyle(IGUIStyle * pStyle);
 
-   virtual tResult EnumChildren(IGUIElementEnum * * ppElements);
-
    virtual tResult GetClientArea(tGUIRect * pClientArea);
    virtual tResult SetClientArea(const tGUIRect & clientArea);
-
-   virtual tResult ComputeClientArea(IGUIElementRenderer * pRenderer, tGUIRect * pClientArea);
 
 private:
    enum eGUIElementInternalFlags

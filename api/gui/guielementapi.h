@@ -21,9 +21,7 @@ F_DECLARE_INTERFACE(IGUIElement);
 F_DECLARE_INTERFACE(IGUIStyle);
 F_DECLARE_INTERFACE(IGUIStyleSheet);
 F_DECLARE_INTERFACE(IGUIStyleElement);
-F_DECLARE_INTERFACE(IGUIElementRenderer);
-F_DECLARE_INTERFACE(IGUIElementEnum);
-F_DECLARE_INTERFACE(IGUIEvent);
+F_DECLARE_INTERFACE_GUID(IGUIScrollable, "CF9FB9EA-7A62-428c-9EFC-0C5B1AE1E11F");
 F_DECLARE_INTERFACE(IGUIContainerElement);
 F_DECLARE_INTERFACE(IGUIPanelElement);
 F_DECLARE_INTERFACE(IGUIDialogElement);
@@ -37,6 +35,10 @@ F_DECLARE_INTERFACE(IGUIScriptElement);
 F_DECLARE_INTERFACE(IGUILayoutManager);
 F_DECLARE_INTERFACE(IGUIGridLayout);
 F_DECLARE_INTERFACE(IGUIFlowLayout);
+
+F_DECLARE_INTERFACE(IGUIElementEnum);
+F_DECLARE_INTERFACE(IGUIElementRenderer);
+F_DECLARE_INTERFACE(IGUIEvent);
 
 class TiXmlElement;
 
@@ -86,12 +88,8 @@ interface IGUIElement : IUnknown
    virtual tResult GetStyle(IGUIStyle * * ppStyle) = 0;
    virtual tResult SetStyle(IGUIStyle * pStyle) = 0;
 
-   virtual tResult EnumChildren(IGUIElementEnum * * ppChildren) = 0;
-
    virtual tResult GetClientArea(tGUIRect * pClientArea) = 0;
    virtual tResult SetClientArea(const tGUIRect & clientArea) = 0;
-
-   virtual tResult ComputeClientArea(IGUIElementRenderer * pRenderer, tGUIRect * pClientArea) = 0;
 };
 
 
@@ -108,6 +106,19 @@ interface IGUIStyleElement : IGUIElement
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// INTERFACE: IGUIScrollable
+//
+
+interface IGUIScrollable : IUnknown
+{
+   virtual tResult ComputeClientArea(IGUIElementRenderer * pRenderer, tGUIRect * pClientArea) = 0;
+
+   virtual tResult GetVerticalScrollBar(IGUIScrollBarElement * * ppScrollBar) = 0;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // INTERFACE: IGUIContainerElement
 //
 
@@ -117,6 +128,8 @@ interface IGUIContainerElement : IGUIElement
    virtual tResult RemoveElement(IGUIElement * pElement) = 0;
    virtual tResult RemoveAll() = 0;
    virtual tResult HasElement(IGUIElement * pElement) const = 0;
+
+   virtual tResult EnumChildren(IGUIElementEnum * * ppChildren) = 0;
 
    virtual tResult GetLayout(IGUILayoutManager * * ppLayout) = 0;
    virtual tResult SetLayout(IGUILayoutManager * pLayout) = 0;
@@ -299,8 +312,6 @@ interface IGUIListBoxElement : IGUIElement
 
    virtual tResult GetRowCount(uint * pRowCount) const = 0;
    virtual tResult SetRowCount(uint rowCount) = 0;
-
-   virtual tResult GetVerticalScrollBar(IGUIScrollBarElement * * ppScrollBar) = 0;
 
    virtual tResult GetItemHeight(uint * pItemHeight) const = 0;
    virtual tResult SetItemHeight(uint itemHeight) = 0;

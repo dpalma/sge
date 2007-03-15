@@ -276,10 +276,16 @@ static tResult ComputeClientArea(IGUIElement * pElement, IGUIElementRenderer * p
    // Allow renderer to allocate space for borders
    pRenderer->AllocateBorderSpace(pElement, pClientArea);
 
-   tResult result = pElement->ComputeClientArea(pRenderer, pClientArea);
-   if (SUCCEEDED(result))
+   tResult result = S_FALSE;
+
+   cAutoIPtr<IGUIScrollable> pScrollable;
+   if (pElement->QueryInterface(IID_IGUIScrollable, (void**)&pScrollable) == S_OK)
    {
-      pElement->SetClientArea(*pClientArea);
+      result = pScrollable->ComputeClientArea(pRenderer, pClientArea);
+      if (SUCCEEDED(result))
+      {
+         pElement->SetClientArea(*pClientArea);
+      }
    }
 
    return result;

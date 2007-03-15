@@ -48,11 +48,56 @@ inline void cGUIListBoxItem::Deselect() { m_bSelected = false; }
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// TEMPLATE: cGUIScrollable
+//
+
+template <typename T, typename INTRFC = IGUIScrollable>
+class cGUIScrollable : public INTRFC
+{
+public:
+   tResult ComputeClientArea(IGUIElementRenderer * pRenderer, tGUIRect * pClientArea)
+   {
+      if (pRenderer == NULL || pClientArea == NULL)
+      {
+         return E_POINTER;
+      }
+
+      T * pT = static_cast<T*>(this);
+
+      if (!!m_pVScrollBar && m_pVScrollBar->IsVisible())
+      {
+         tGUISize scrollBarSize(0,0);
+         if (pRenderer->GetPreferredSize(m_pVScrollBar, pT->GetSize(), &scrollBarSize) == S_OK)
+         {
+            scrollBarSize.height = static_cast<tGUISizeType>(pClientArea->GetHeight());
+            m_pVScrollBar->SetPosition(tGUIPoint(pClientArea->right - scrollBarSize.width, static_cast<float>(pClientArea->top)));
+            m_pVScrollBar->SetSize(scrollBarSize);
+            pClientArea->right -= FloatToInt(scrollBarSize.width);
+            // Returning S_FALSE will signal the page layout code not to size or position the scrollbar
+            return S_FALSE;
+         }
+      }
+
+      return E_FAIL;
+   }
+
+   tResult GetVerticalScrollBar(IGUIScrollBarElement * * ppScrollBar)
+   {
+      return m_pVScrollBar.GetPointer(ppScrollBar);
+   }
+
+protected:
+   cAutoIPtr<IGUIScrollBarElement> m_pVScrollBar;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cGUIListBoxElement
 //
 
-class cGUIListBoxElement : public cComObject2<cGUIElementBase<IGUIListBoxElement>,
-                                              &IID_IGUIListBoxElement,
+class cGUIListBoxElement : public cComObject3<cGUIElementBase<IGUIListBoxElement>, &IID_IGUIListBoxElement,
+                                              cGUIScrollable<cGUIListBoxElement>, &IID_IGUIScrollable,
                                               IMPLEMENTS(IScriptable)>
 {
 public:
@@ -61,8 +106,6 @@ public:
 
    // Over-rides
    virtual tResult OnEvent(IGUIEvent * pEvent);
-   virtual tResult EnumChildren(IGUIElementEnum * * ppChildren);
-   virtual tResult ComputeClientArea(IGUIElementRenderer * pRenderer, tGUIRect * pClientArea);
 
    // IGUIListBoxElement methods
    virtual tResult AddItem(const tGUIChar * pszString, uint_ptr extra);
@@ -82,7 +125,6 @@ public:
    virtual tResult GetSelected(uint * pIndices, uint nMaxIndices);
    virtual tResult GetRowCount(uint * pRowCount) const;
    virtual tResult SetRowCount(uint rowCount);
-   virtual tResult GetVerticalScrollBar(IGUIScrollBarElement * * ppScrollBar);
    virtual tResult GetItemHeight(uint * pItemHeight) const;
    virtual tResult SetItemHeight(uint itemHeight);
    virtual tResult GetOnSelChange(tGUIString * pOnSelChange) const;
@@ -100,7 +142,6 @@ private:
    typedef std::vector<cGUIListBoxItem> tListBoxItems;
    tListBoxItems m_items;
    uint m_rowCount;
-   cAutoIPtr<IGUIScrollBarElement> m_pVScrollBar;
    uint m_itemHeight;
    tGUIString m_onSelChange;
 };

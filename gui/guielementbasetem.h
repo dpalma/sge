@@ -239,14 +239,6 @@ tResult cGUIElementBase<INTRFC>::SetStyle(IGUIStyle * pStyle)
 ///////////////////////////////////////
 
 template <typename INTRFC>
-tResult cGUIElementBase<INTRFC>::EnumChildren(IGUIElementEnum * * ppElements)
-{
-   return E_NOTIMPL;
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
 tResult cGUIElementBase<INTRFC>::GetClientArea(tGUIRect * pClientArea)
 {
    if (pClientArea == NULL)
@@ -280,14 +272,6 @@ tResult cGUIElementBase<INTRFC>::SetClientArea(const tGUIRect & clientArea)
    }
    *m_pClientArea = clientArea;
    return S_OK;
-}
-
-///////////////////////////////////////
-
-template <typename INTRFC>
-tResult cGUIElementBase<INTRFC>::ComputeClientArea(IGUIElementRenderer * pRenderer, tGUIRect * pClientArea)
-{
-   return E_NOTIMPL;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

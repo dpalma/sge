@@ -562,8 +562,10 @@ tResult cGUIBeveledRenderer::ListBoxRender(IGUIElement * pElement,
    if (pFont != NULL)
    {
       int scrollPos = 0;
+      cAutoIPtr<IGUIScrollable> pScrollable;
       cAutoIPtr<IGUIScrollBarElement> pVertScrollBar;
-      if (pListBoxElement->GetVerticalScrollBar(&pVertScrollBar) == S_OK)
+      if (pListBoxElement->QueryInterface(IID_IGUIScrollable, (void**)&pScrollable) == S_OK
+         && pScrollable->GetVerticalScrollBar(&pVertScrollBar) == S_OK)
       {
          if (pVertScrollBar->GetScrollPos(&scrollPos) != S_OK)
          {
