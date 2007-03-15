@@ -44,11 +44,15 @@ public:
    virtual tResult GetPageSize(int * pPageSize);
    virtual tResult SetPageSize(int pageSize);
 
-protected:
+private:
    int DetermineScrollPos(const tScreenPoint & mousePos) const;
    eGUIScrollBarPart GetHitPart(const tScreenPoint & point);
 
-private:
+   typedef tResult (cGUIScrollBarElement::*tEventHandlerFn)(IGUIEvent *);
+
+   tResult HandleEventSteadyState(IGUIEvent * pEvent);
+   tResult HandleEventThumbDrag(IGUIEvent * pEvent);
+
    eGUIScrollBarType m_scrollBarType;
    eGUIScrollBarPart m_armedPart, m_mouseOverPart;
    int m_rangeMin, m_rangeMax;
@@ -58,6 +62,8 @@ private:
 
    int m_dragOffset;
    int m_dragStartScrollPos;
+
+   tEventHandlerFn m_pEventHandler;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

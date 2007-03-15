@@ -58,6 +58,7 @@ cGUIScrollBarElement::cGUIScrollBarElement(eGUIScrollBarType scrollBarType)
  , m_scrollPos(0)
  , m_lineSize(1)
  , m_pageSize(5)
+ , m_pEventHandler(&cGUIScrollBarElement::HandleEventSteadyState)
 {
 }
 
@@ -75,89 +76,10 @@ tResult cGUIScrollBarElement::OnEvent(IGUIEvent * pEvent)
 
    tResult result = S_OK; // allow event processing to continue
 
-   tGUIEventCode eventCode;
-   Verify(pEvent->GetEventCode(&eventCode) == S_OK);
-
-   tScreenPoint point;
-   Verify(pEvent->GetMousePosition(&point) == S_OK);
-
-   //if (eventCode == kGUIEventDragStart)
-   //{
-   //   Verify(pEvent->SetCancelBubble(true) == S_OK);
-
-   //   m_armedPart = m_mouseOverPart;
-   //   m_dragOffset = DetermineScrollPos(point) - m_scrollPos;
-   //   m_dragStartScrollPos = m_scrollPos;
-   //}
-   //else if (eventCode == kGUIEventDragEnd)
-   //{
-   //   Verify(pEvent->SetCancelBubble(true) == S_OK);
-
-   //   if (m_armedPart != m_mouseOverPart)
-   //   {
-   //      m_armedPart = kGUIScrollBarPartNone;
-   //   }
-   //}
-   //else if (eventCode == kGUIEventDragMove)
-   //{
-   //   Verify(pEvent->SetCancelBubble(true) == S_OK);
-
-   //   // Prevent the drag-over event since drag is being used to implement 
-   //   // the arming of the scroll buttons
-   //   result = S_FALSE;
-
-   //   if (m_armedPart == kGUIScrollBarPartThumb)
-   //   {
-   //      int newScrollPos = DetermineScrollPos(point);
-   //      if (newScrollPos < 0)
-   //      {
-   //         SetScrollPos(m_dragStartScrollPos);
-   //      }
-   //      else
-   //      {
-   //         SetScrollPos(newScrollPos - m_dragOffset);
-   //      }
-   //   }
-   //}
-   //else if (eventCode == kGUIEventMouseMove)
-   //{
-   //   m_mouseOverPart = GetHitPart(point);
-   //}
-   //else if (eventCode == kGUIEventMouseLeave)
-   //{
-   //   m_mouseOverPart = kGUIScrollBarPartNone;
-   //}
-   //else if (eventCode == kGUIEventClick)
-   //{
-   //   if (m_armedPart != kGUIScrollBarPartNone && m_armedPart == m_mouseOverPart)
-   //   {
-   //      switch (m_armedPart)
-   //      {
-   //         case kGUIScrollBarPartButton1:
-   //         {
-   //            SetScrollPos(m_scrollPos - m_lineSize);
-   //            break;
-   //         }
-   //         case kGUIScrollBarPartButton2:
-   //         {
-   //            SetScrollPos(m_scrollPos + m_lineSize);
-   //            break;
-   //         }
-   //         case kGUIScrollBarPartTrack1:
-   //         {
-   //            SetScrollPos(m_scrollPos - m_pageSize);
-   //            break;
-   //         }
-   //         case kGUIScrollBarPartTrack2:
-   //         {
-   //            SetScrollPos(m_scrollPos + m_pageSize);
-   //            break;
-   //         }
-   //      }
-   //      result = S_FALSE;
-   //   }
-   //   m_armedPart = kGUIScrollBarPartNone;
-   //}
+   if (m_pEventHandler != NULL)
+   {
+      result = (this->*m_pEventHandler)(pEvent);
+   }
 
    return result;
 }
@@ -432,6 +354,107 @@ eGUIScrollBarPart cGUIScrollBarElement::GetHitPart(const tScreenPoint & point)
 
    return kGUIScrollBarPartNone;
 }
+
+///////////////////////////////////////
+
+tResult cGUIScrollBarElement::HandleEventSteadyState(IGUIEvent * pEvent)
+{
+   tGUIEventCode eventCode;
+   Verify(pEvent->GetEventCode(&eventCode) == S_OK);
+
+   tScreenPoint point;
+   Verify(pEvent->GetMousePosition(&point) == S_OK);
+
+   tResult result = S_OK;
+
+   if (eventCode == kGUIEventMouseDown)
+   {
+      eGUIScrollBarPart hitPart = GetHitPart(point);
+      m_armedPart = hitPart;
+      if (hitPart == kGUIScrollBarPartThumb)
+      {
+         m_dragOffset = DetermineScrollPos(point) - m_scrollPos;
+         m_dragStartScrollPos = m_scrollPos;
+         m_pEventHandler = &cGUIScrollBarElement::HandleEventThumbDrag;
+      }
+   }
+   else if (eventCode == kGUIEventMouseUp)
+   {
+      eGUIScrollBarPart hitPart = GetHitPart(point);
+      if ((m_armedPart != kGUIScrollBarPartNone) && (m_armedPart != hitPart))
+      {
+         m_armedPart = kGUIScrollBarPartNone;
+      }
+   }
+   else if (eventCode == kGUIEventClick)
+   {
+      eGUIScrollBarPart hitPart = GetHitPart(point);
+      if ((m_armedPart != kGUIScrollBarPartNone) && (m_armedPart == hitPart))
+      {
+         switch (m_armedPart)
+         {
+            case kGUIScrollBarPartButton1:
+            {
+               SetScrollPos(m_scrollPos - m_lineSize);
+               break;
+            }
+            case kGUIScrollBarPartButton2:
+            {
+               SetScrollPos(m_scrollPos + m_lineSize);
+               break;
+            }
+            case kGUIScrollBarPartTrack1:
+            {
+               SetScrollPos(m_scrollPos - m_pageSize);
+               break;
+            }
+            case kGUIScrollBarPartTrack2:
+            {
+               SetScrollPos(m_scrollPos + m_pageSize);
+               break;
+            }
+         }
+         result = S_FALSE;
+      }
+      m_armedPart = kGUIScrollBarPartNone;
+   }
+
+   return result;
+}
+
+///////////////////////////////////////
+
+tResult cGUIScrollBarElement::HandleEventThumbDrag(IGUIEvent * pEvent)
+{
+   tGUIEventCode eventCode;
+   Verify(pEvent->GetEventCode(&eventCode) == S_OK);
+
+   tScreenPoint point;
+   Verify(pEvent->GetMousePosition(&point) == S_OK);
+
+   tResult result = S_OK;
+
+   if (eventCode == kGUIEventMouseMove)
+   {
+      int newScrollPos = DetermineScrollPos(point);
+      if (newScrollPos < 0)
+      {
+         SetScrollPos(m_dragStartScrollPos);
+      }
+      else
+      {
+         SetScrollPos(newScrollPos - m_dragOffset);
+      }
+   }
+   else if (eventCode == kGUIEventMouseUp)
+   {
+      m_armedPart = kGUIScrollBarPartNone;
+      m_pEventHandler = &cGUIScrollBarElement::HandleEventSteadyState;
+   }
+
+   return result;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
