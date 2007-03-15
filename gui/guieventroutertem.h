@@ -353,19 +353,20 @@ bool cGUIEventRouter<T>::HandleMouseEventSteadyState(const sInputEvent * pInputE
       }
    }
 
-   if ((pNewMouseOver != NULL)
-      && pNewMouseOver->IsEnabled()
-      && BubbleEvent(eventCode, pInputEvent->point, pInputEvent->key, pInputEvent->modifierKeys, pNewMouseOver, true))
+   if ((pNewMouseOver != NULL) && pNewMouseOver->IsEnabled())
    {
-      return true;
-   }
+      if (BubbleEvent(eventCode, pInputEvent->point, pInputEvent->key, pInputEvent->modifierKeys, pNewMouseOver, true))
+      {
+         return true;
+      }
 
-   if ((eventCode == kGUIEventMouseDown) && (pNewMouseOver != NULL) && pNewMouseOver->IsEnabled())
-   {
-      SetFocus(pNewMouseOver);
-      SetArmed(pNewMouseOver, pInputEvent->point);
-      m_pMouseHandler = &cGUIEventRouter<T>::HandleMouseEventClicking;
-      return true;
+      if (eventCode == kGUIEventMouseDown)
+      {
+         SetFocus(pNewMouseOver);
+         SetArmed(pNewMouseOver, pInputEvent->point);
+         m_pMouseHandler = &cGUIEventRouter<T>::HandleMouseEventClicking;
+         return true;
+      }
    }
 
    return false;
@@ -378,11 +379,18 @@ bool cGUIEventRouter<T>::HandleMouseEventClicking(const sInputEvent * pInputEven
                                                   tGUIEventCode eventCode,
                                                   IGUIElement * pNewMouseOver)
 {
+   cAutoIPtr<IGUIElement> pArmed;
+   if (GetArmed(&pArmed) != S_OK)
+   {
+      ErrorMsg("GUI event router is in clicking state but there is no armed element\n");
+      return false;
+   }
+
    if (eventCode == kGUIEventMouseMove)
    {
       tGUIEventCode enterLeaveEventCode = kGUIEventNone;
       cAutoIPtr<IGUIElement> pEnterLeaveElement;
-      if (DoMouseEnterLeave(pInputEvent, pNewMouseOver, NULL, &enterLeaveEventCode, &pEnterLeaveElement) == S_OK)
+      if (DoMouseEnterLeave(pInputEvent, pNewMouseOver, pArmed, &enterLeaveEventCode, &pEnterLeaveElement) == S_OK)
       {
          cAutoIPtr<IGUIEvent> pEvent;
          if (GUIEventCreate(enterLeaveEventCode, pInputEvent->point, pInputEvent->key, pInputEvent->modifierKeys,
@@ -393,25 +401,20 @@ bool cGUIEventRouter<T>::HandleMouseEventClicking(const sInputEvent * pInputEven
       }
 
       // Test for the start of a drag
-      cAutoIPtr<IGUIElement> pArmed;
-      if (GetArmed(&pArmed) == S_OK)
+      int distSqr = Vec2DistanceSqr(pInputEvent->point, m_armedAtPoint);
+      if ((enterLeaveEventCode == kGUIEventMouseLeave) || (distSqr >= kDragThresholdSqr))
       {
-         int distSqr = Vec2DistanceSqr(pInputEvent->point, m_armedAtPoint);
-         if ((enterLeaveEventCode == kGUIEventMouseLeave) || (distSqr >= kDragThresholdSqr))
+         Assert(!m_pDragSource);
+         if (pArmed->QueryInterface(IID_IGUIDragSource, (void**)&m_pDragSource) == S_OK)
          {
-            Assert(!m_pDragSource);
-            if (pArmed->QueryInterface(IID_IGUIDragSource, (void**)&m_pDragSource) == S_OK)
-            {
-               m_pMouseHandler = &cGUIEventRouter<T>::HandleMouseEventDragging;
-               return true;
-            }
+            m_pMouseHandler = &cGUIEventRouter<T>::HandleMouseEventDragging;
+            return true;
          }
       }
    }
 
-   if ((pNewMouseOver != NULL)
-      && pNewMouseOver->IsEnabled()
-      && BubbleEvent(eventCode, pInputEvent->point, pInputEvent->key, pInputEvent->modifierKeys, pNewMouseOver, true))
+   // During a click, the armed element implicitly "captures" all input events
+   if (BubbleEvent(eventCode, pInputEvent->point, pInputEvent->key, pInputEvent->modifierKeys, pArmed, true))
    {
       return true;
    }
@@ -420,19 +423,17 @@ bool cGUIEventRouter<T>::HandleMouseEventClicking(const sInputEvent * pInputEven
    {
       m_pMouseHandler = &cGUIEventRouter<T>::HandleMouseEventSteadyState;
 
-      cAutoIPtr<IGUIElement> pArmed;
-      if (GetArmed(&pArmed) == S_OK)
-      {
-         SetArmed(NULL, tScreenPoint(0,0));
+      SetArmed(NULL, tScreenPoint(0,0));
 
-         // If the moused-over and the armed element are the same
-         // on mouse-up, generate a click event
-         if (CTIsSameObject(pNewMouseOver, pArmed))
-         {
-            BubbleEvent(kGUIEventClick, pInputEvent->point, pInputEvent->key,
-               pInputEvent->modifierKeys, pArmed, true);
-            return true;
-         }
+      bool bMouseOverArmed = CTIsSameObject(pNewMouseOver, pArmed);
+
+      // If the moused-over and the armed element are the same
+      // on mouse-up, generate a click event
+      if (bMouseOverArmed)
+      {
+         BubbleEvent(kGUIEventClick, pInputEvent->point, pInputEvent->key,
+            pInputEvent->modifierKeys, pArmed, true);
+         return true;
       }
    }
 

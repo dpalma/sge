@@ -616,7 +616,7 @@ tResult cGUIContext::GetOverlayElement(const tGUIChar * pszId, IGUIElement * * p
       return E_POINTER;
    }
    tGUIPageList::iterator iter = m_pagePlanes[kOverlays].begin();
-   for (; iter != m_pagePlanes[kOverlays].end(); iter++)
+   for (; iter != m_pagePlanes[kOverlays].end(); ++iter)
    {
       if ((*iter)->GetElement(pszId, ppElement) == S_OK)
       {

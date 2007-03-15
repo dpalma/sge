@@ -475,12 +475,13 @@ TEST_FIXTURE(cGUIEventRouterFixture, CancelClick)
       HandleInputEvent(&inputEvents[i]);
    }
 
-   CHECK_EQUAL(4, m_eventCollector.GetEventCount());
+   CHECK_EQUAL(6, m_eventCollector.GetEventCount());
    CHECK_EQUAL(kGUIEventMouseEnter, GUIEventCode(m_eventCollector.AccessEvent(0)));
    CHECK_EQUAL(kGUIEventMouseMove, GUIEventCode(m_eventCollector.AccessEvent(1)));
    CHECK_EQUAL(kGUIEventMouseDown, GUIEventCode(m_eventCollector.AccessEvent(2)));
    CHECK_EQUAL(kGUIEventMouseLeave, GUIEventCode(m_eventCollector.AccessEvent(3)));
-   // TODO: should a mouse-up occur even when the click is cancelled?
+   CHECK_EQUAL(kGUIEventMouseMove, GUIEventCode(m_eventCollector.AccessEvent(4)));
+   CHECK_EQUAL(kGUIEventMouseUp, GUIEventCode(m_eventCollector.AccessEvent(5)));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
