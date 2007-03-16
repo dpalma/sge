@@ -189,8 +189,8 @@ inline void PushChildElement(tRenderLoopStack * pStack,
    pStack->push(sRenderLoopStackElement(CTAddRef(pChild), CTAddRef(pRenderer), position));
 }
 
-template <typename ITERATOR, typename FUNCTOR, typename DATA>
-void GUIElementRenderLoop(ITERATOR begin, ITERATOR end, FUNCTOR f, DATA d)
+template <typename ITERATOR, typename FUNCTOR>
+void GUIElementRenderLoop(ITERATOR begin, ITERATOR end, FUNCTOR f)
 {
    tRenderLoopStack s;
 
@@ -215,7 +215,7 @@ void GUIElementRenderLoop(ITERATOR begin, ITERATOR end, FUNCTOR f, DATA d)
       tGUIPoint position(pElement->GetPosition() + t.base);
       s.pop();
 
-      tResult result = f(pElement, pRenderer, position, d);
+      tResult result = f(pElement, pRenderer, position);
       if (result == S_FALSE)
       {
          continue;
@@ -510,7 +510,7 @@ void cGUIPage::UpdateLayout(const tGUIRect & rect)
       m_layoutRequests.pop_front();
 
       cGUIPageLayout pageLayout(rect, pRequester, options);
-      GUIElementRenderLoop(m_elements.rbegin(), m_elements.rend(), pageLayout, static_cast<void*>(NULL));
+      GUIElementRenderLoop(m_elements.rbegin(), m_elements.rend(), pageLayout);
 
       ++nLayoutUpdates;
    }
@@ -528,7 +528,7 @@ public:
    cMemberFunctor(T * pT, tMethod pMethod)
       : m_pT(pT), m_pMethod(pMethod) {}
 
-   RETURN operator ()(ARG1 arg1, ARG2 arg2, ARG3 arg3, void *)
+   RETURN operator ()(ARG1 arg1, ARG2 arg2, ARG3 arg3)
    {
       Assert(m_pT != NULL);
       Assert(m_pMethod != NULL);
@@ -569,8 +569,7 @@ tResult cGUIPage::RenderElement(IGUIElement * pElement, IGUIElementRenderer * pR
 void cGUIPage::Render()
 {
    GUIElementRenderLoop(m_elements.rbegin(), m_elements.rend(),
-      cMemberFunctor<cGUIPage, tResult, IGUIElement *, IGUIElementRenderer *, const tGUIPoint &>(this, &cGUIPage::RenderElement),
-      static_cast<void*>(NULL));
+      cMemberFunctor<cGUIPage, tResult, IGUIElement *, IGUIElementRenderer *, const tGUIPoint &>(this, &cGUIPage::RenderElement));
 }
 
 ///////////////////////////////////////
@@ -610,27 +609,34 @@ tResult cGUIPage::GetHitElement(const tScreenPoint & point, IGUIElement * * ppEl
 
 ///////////////////////////////////////
 
-struct sGetElementData
+class cCollectHitElements
 {
-   tScreenPoint point;
-   tGUIElementList * pElements;
-};
-
-static tResult GetHitElementHelper(IGUIElement * pElement, IGUIElementRenderer * pRenderer,
-                                   const tGUIPoint & position, sGetElementData * pGetElementData)
-{
-   const tGUISize & size = pElement->GetSize();
-
-   tRectf rect(position.x, position.y, position.x + size.width, position.y + size.height);
-
-   if (rect.PtInside(static_cast<float>(pGetElementData->point.x), static_cast<float>(pGetElementData->point.y)))
+public:
+   cCollectHitElements(const tScreenPoint & point, tGUIElementList * pHitElements)
+    : m_point(static_cast<float>(point.x), static_cast<float>(point.y))
+    , m_pHitElements(pHitElements)
    {
-      pGetElementData->pElements->push_front(CTAddRef(pElement));
-      return S_OK;
    }
 
-   return S_FALSE;
-}
+   tResult operator()(IGUIElement * pElement, IGUIElementRenderer * pRenderer, const tGUIPoint & position)
+   {
+      const tGUISize & size = pElement->GetSize();
+
+      tRectf rect(position.x, position.y, position.x + size.width, position.y + size.height);
+
+      if (rect.PtInside(m_point.x, m_point.y))
+      {
+         m_pHitElements->push_front(CTAddRef(pElement));
+         return S_OK;
+      }
+
+      return S_FALSE;
+   }
+
+private:
+   const tGUIPoint m_point;
+   tGUIElementList * m_pHitElements;
+};
 
 tResult cGUIPage::GetHitElements(const tScreenPoint & point, tGUIElementList * pElements) const
 {
@@ -644,10 +650,8 @@ tResult cGUIPage::GetHitElements(const tScreenPoint & point, tGUIElementList * p
       return S_FALSE;
    }
 
-   sGetElementData getElementData;
-   getElementData.point = point;
-   getElementData.pElements = pElements;
-   GUIElementRenderLoop(m_elements.begin(), m_elements.end(), GetHitElementHelper, &getElementData);
+   cCollectHitElements collectHitElements(point, pElements);
+   GUIElementRenderLoop(m_elements.begin(), m_elements.end(), collectHitElements);
 
    return pElements->empty() ? S_FALSE : S_OK;
 }

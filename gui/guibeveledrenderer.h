@@ -76,8 +76,6 @@ private:
 
    uint m_bevel;
    tGUIColor m_colorScheme[kBC_NumColors];
-
-   void * m_texture;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

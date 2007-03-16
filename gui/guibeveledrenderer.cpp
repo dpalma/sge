@@ -238,7 +238,6 @@ static const tGUISizeType kScrollButtonSize = 16;
 
 cGUIBeveledRenderer::cGUIBeveledRenderer(uint bevel, const tGUIColor colorScheme[kBC_NumColors])
  : m_bevel(bevel)
- , m_texture(NULL)
 {
    if (colorScheme != NULL)
    {
@@ -279,22 +278,6 @@ tResult cGUIBeveledRenderer::Render(IGUIElement * pElement, const tGUIPoint & po
    if (pElement == NULL)
    {
       return E_POINTER;
-   }
-
-   if (m_texture == NULL)
-   {
-      cAutoIPtr<IImage> pImage;
-      if (ImageCreate(512, 512, kPF_RGBA8888, NULL, &pImage) == S_OK)
-      {
-         // TODO
-
-         void * texture = NULL;
-         UseGlobal(Renderer);
-         if (pRenderer->CreateTexture(pImage, false, &texture) == S_OK)
-         {
-            m_texture = texture;
-         }
-      }
    }
 
    for (int i = 0; i < _countof(gm_methodTable); i++)
