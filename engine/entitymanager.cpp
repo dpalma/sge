@@ -9,7 +9,7 @@
 #include "engine/engineapi.h"
 #include "engine/terrainapi.h"
 
-#include "platform/inputapi.h"
+//#include "platform/inputapi.h"
 #include "platform/keys.h"
 
 #include "render/renderapi.h"
@@ -32,47 +32,6 @@
 
 extern tResult EntityCreate(const tChar * pszTypeName, tEntityId id, IEntity * * ppEntity);
 extern void RegisterBuiltInComponents();
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cEntityManagerInputListener
-//
-
-class cEntityManagerInputListener : public cComObject<IMPLEMENTS(IInputListener)>
-{
-public:
-   virtual bool OnInputEvent(const sInputEvent * pEvent);
-};
-
-///////////////////////////////////////
-
-bool cEntityManagerInputListener::OnInputEvent(const sInputEvent * pEvent)
-{
-   if (pEvent->down && pEvent->key == kMouseLeft)
-   {
-      UseGlobal(Renderer);
-
-      cAutoIPtr<IRenderCamera> pCamera;
-      cRay pickRay;
-      if (pRenderer->GetCamera(&pCamera) == S_OK
-         && pCamera->GenerateScreenPickRay(pEvent->point.x, pEvent->point.y, &pickRay) == S_OK)
-      {
-         cAutoIPtr<IEntity> pEntity;
-         UseGlobal(EntityManager);
-         if (pEntityManager->RayCast(pickRay, &pEntity) == S_OK)
-         {
-            pEntityManager->Select(pEntity);
-         }
-         else
-         {
-            pEntityManager->DeselectAll();
-         }
-      }
-   }
-
-   return false;
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -111,11 +70,6 @@ tResult cEntityManager::Init()
 
    UseGlobal(Sim);
    pSim->AddSimClient(&m_simClient);
-
-   cAutoIPtr<IInputListener> pInputListener(new cEntityManagerInputListener);
-
-   UseGlobal(Input);
-   pInput->AddInputListener(pInputListener);
 
    RegisterBuiltInComponents();
 

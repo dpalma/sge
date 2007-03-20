@@ -7,7 +7,9 @@
 
 #include "platform/inputapi.h"
 #include "platform/keys.h"
+
 #include "render/renderapi.h"
+
 #include "tech/readwriteutils.h"
 #include "tech/configapi.h"
 
@@ -17,37 +19,6 @@
 
 // REFERENCES
 // http://www.opengl.org/resources/faq/technical/viewing.htm
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cCameraControlInputListener
-//
-
-class cCameraControlInputListener : public cComObject<IMPLEMENTS(IInputListener)>
-{
-public:
-   cCameraControlInputListener(ICameraControl * pOuter);
-   virtual bool OnInputEvent(const sInputEvent * pEvent);
-
-private:
-   ICameraControl * m_pOuter;
-};
-
-///////////////////////////////////////
-
-cCameraControlInputListener::cCameraControlInputListener(ICameraControl * pOuter)
- : m_pOuter(pOuter)
-{
-}
-
-///////////////////////////////////////
-
-bool cCameraControlInputListener::OnInputEvent(const sInputEvent * pEvent)
-{
-   Assert(m_pOuter != NULL);
-   return m_pOuter->HandleInputEvent(pEvent);
-}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -95,11 +66,6 @@ tResult cCameraControl::Init()
 {
    UseGlobal(Scheduler);
    pScheduler->AddFrameTask(&m_moveCameraTask, 0, 1, 0);
-
-   cAutoIPtr<IInputListener> pInputListener(new cCameraControlInputListener(static_cast<ICameraControl*>(this)));
-
-   UseGlobal(Input);
-   pInput->AddInputListener(pInputListener);
 
    UseGlobal(SaveLoadManager);
    pSaveLoadManager->RegisterSaveLoadParticipant(SAVELOADID_CameraControl,

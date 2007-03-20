@@ -12,9 +12,6 @@
 #pragma once
 #endif
 
-template <typename T> class cVec2;
-typedef class cVec2<float> tVec2;
-
 F_DECLARE_INTERFACE(IInput);
 F_DECLARE_INTERFACE(IInputListener);
 F_DECLARE_INTERFACE(IInputModalListener);
@@ -24,26 +21,10 @@ F_DECLARE_INTERFACE(IInputModalListener);
 // INTERFACE: IInput
 //
 
-////////////////////////////////////////
-
-enum eInputListenerPriority
-{
-   kILP_Default = 1,
-   kILP_ModalListeners = 50,
-   kILP_GUI = 100, // GUI elements get first crack at messages because they overlay the game
-};
-
-////////////////////////////////////////
-
 interface IInput : IUnknown
 {
-   virtual tResult AddInputListener(IInputListener * pListener, int priority) = 0;
+   virtual tResult AddInputListener(IInputListener * pListener) = 0;
    virtual tResult RemoveInputListener(IInputListener * pListener) = 0;
-
-   inline tResult AddInputListener(IInputListener * pListener)
-   {
-      return AddInputListener(pListener, kILP_Default);
-   }
 
    virtual bool KeyIsDown(long key) = 0;
 

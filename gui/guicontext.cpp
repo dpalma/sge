@@ -46,37 +46,6 @@ LOG_DEFINE_CHANNEL(GUIContext);
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cGUIContextInputListener
-//
-
-class cGUIContextInputListener : public cComObject<IMPLEMENTS(IInputListener)>
-{
-public:
-   cGUIContextInputListener(IGUIContext * pOuter);
-   virtual bool OnInputEvent(const sInputEvent * pEvent);
-
-private:
-   IGUIContext * m_pOuter;
-};
-
-///////////////////////////////////////
-
-cGUIContextInputListener::cGUIContextInputListener(IGUIContext * pOuter)
- : m_pOuter(pOuter)
-{
-}
-
-///////////////////////////////////////
-
-bool cGUIContextInputListener::OnInputEvent(const sInputEvent * pEvent)
-{
-   Assert(m_pOuter != NULL);
-   return m_pOuter->HandleInputEvent(pEvent);
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
 
 static bool g_bExitModalLoop = false;
 tSysFrameFn g_pfnOuterFrameHandler = NULL;
@@ -263,11 +232,6 @@ cGUIContext::~cGUIContext()
 
 tResult cGUIContext::Init()
 {
-   cAutoIPtr<IInputListener> pInputListener(new cGUIContextInputListener(static_cast<IGUIContext*>(this)));
-
-   UseGlobal(Input);
-   pInput->AddInputListener(pInputListener, kILP_GUI);
-
    GUILayoutRegisterBuiltInTypes();
 
    UseGlobal(ScriptInterpreter);

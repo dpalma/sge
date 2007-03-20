@@ -47,8 +47,7 @@ private:
 // CLASS: cInput
 //
 
-class cInput : public cComObject2<IMPLEMENTS(IInput), IMPLEMENTS(IGlobalObject)>
-             , public cConnectionPointEx<cInput, IInputListener>
+class cInput : public cComObject2<IMPLEMENTSCP(IInput, IInputListener), IMPLEMENTS(IGlobalObject)>
              , public cKeyBindings
 {
 public:
@@ -61,10 +60,8 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
-   virtual tResult AddInputListener(IInputListener * pListener, int priority);
+   virtual tResult AddInputListener(IInputListener * pListener);
    virtual tResult RemoveInputListener(IInputListener * pListener);
-
-   void SortSinks(tSinksIterator first, tSinksIterator last);
 
    virtual bool KeyIsDown(long key);
 
@@ -73,7 +70,6 @@ public:
 
    virtual tResult PushModalListener(IInputModalListener * pModalListener);
    virtual tResult PopModalListener();
-   tResult SetModalListenerPriority(int priority);
 
 private:
    void ReportKeyEvent(long key, bool down, double time);

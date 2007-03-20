@@ -14,6 +14,7 @@
 #include "gui/guielementapi.h"
 #include "network/netapi.h"
 #include "platform/inputapi.h"
+#include "platform/keys.h"
 #include "platform/sys.h"
 #include "render/renderapi.h"
 #include "script/scriptapi.h"
@@ -26,6 +27,7 @@
 #include "tech/techstring.h"
 #include "tech/globalobj.h"
 #include "tech/multivar.h"
+#include "tech/ray.h"
 #include "tech/schedulerapi.h"
 #include "tech/simapi.h"
 #include "tech/statemachine.h"
@@ -93,6 +95,58 @@ void DictionaryUnload(void * pData)
    // Nothing to unload
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cMainInputListener
+//
+
+class cMainInputListener : public cComObject<IMPLEMENTS(IInputListener)>
+{
+public:
+   virtual bool OnInputEvent(const sInputEvent * pEvent);
+};
+
+///////////////////////////////////////
+
+bool cMainInputListener::OnInputEvent(const sInputEvent * pEvent)
+{
+   UseGlobal(GUIContext);
+   if (!!pGUIContext && pGUIContext->HandleInputEvent(pEvent))
+   {
+      return true;
+   }
+
+   UseGlobal(CameraControl);
+   if (!!pCameraControl && pCameraControl->HandleInputEvent(pEvent))
+   {
+      return true;
+   }
+
+   if (pEvent->down && pEvent->key == kMouseLeft)
+   {
+      UseGlobal(Renderer);
+
+      cAutoIPtr<IRenderCamera> pCamera;
+      cRay pickRay;
+      if (pRenderer->GetCamera(&pCamera) == S_OK
+         && pCamera->GenerateScreenPickRay(pEvent->point.x, pEvent->point.y, &pickRay) == S_OK)
+      {
+         cAutoIPtr<IEntity> pEntity;
+         UseGlobal(EntityManager);
+         if (pEntityManager->RayCast(pickRay, &pEntity) == S_OK)
+         {
+            pEntityManager->Select(pEntity);
+         }
+         else
+         {
+            pEntityManager->DeselectAll();
+         }
+      }
+   }
+
+   return false;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -465,6 +519,13 @@ tResult cMainInitTask::CreateMainWindow()
    {
       UseGlobal(Scheduler);
       pScheduler->AddRenderTask(pMainRenderTask);
+   }
+
+   cAutoIPtr<IInputListener> pInputListener(new cMainInputListener);
+   if (!!pInputListener)
+   {
+      UseGlobal(Input);
+      pInput->AddInputListener(pInputListener);
    }
 
    return S_OK;

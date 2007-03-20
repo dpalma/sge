@@ -164,7 +164,7 @@ tResult cInput::Init()
    SysSetMouseMoveCallback(OnSysMouseMove, reinterpret_cast<uint_ptr>(this));
    SysSetMouseEventCallback(OnSysMouseEvent, reinterpret_cast<uint_ptr>(this));
 
-   AddInputListener(&m_modalListeners, kILP_ModalListeners);
+   AddInputListener(&m_modalListeners);
 
    return S_OK;
 }
@@ -187,23 +187,16 @@ tResult cInput::Term()
 
 ///////////////////////////////////////
 
-tResult cInput::AddInputListener(IInputListener * pListener, int priority)
+tResult cInput::AddInputListener(IInputListener * pListener)
 {
-   return cConnectionPointEx<cInput, IInputListener>::AddSink(pListener, priority);
+   return Connect(pListener);
 }
 
 ///////////////////////////////////////
 
 tResult cInput::RemoveInputListener(IInputListener * pListener)
 {
-   return cConnectionPointEx<cInput, IInputListener>::RemoveSink(pListener);
-}
-
-///////////////////////////////////////
-
-void cInput::SortSinks(tSinksIterator first, tSinksIterator last)
-{
-   std::stable_sort(first, last, std::greater< std::pair<int, IInputListener*> >());
+   return Disconnect(pListener);
 }
 
 ///////////////////////////////////////
@@ -246,15 +239,6 @@ tResult cInput::PushModalListener(IInputModalListener * pModalListener)
 tResult cInput::PopModalListener()
 {
    return m_modalListeners.PopModalListener();
-}
-
-///////////////////////////////////////
-
-tResult cInput::SetModalListenerPriority(int priority)
-{
-   RemoveInputListener(&m_modalListeners);
-   AddInputListener(&m_modalListeners, priority);
-   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -305,7 +289,7 @@ bool cInput::DispatchInputEvent(int x, int y, long key, bool down, double time)
    tSinksIterator end = EndSinks();
    for (; iter != end; ++iter)
    {
-      if (iter->second->OnInputEvent(&event))
+      if ((*iter)->OnInputEvent(&event))
       {
          if (!bGotToModalListeners)
          {
@@ -314,7 +298,7 @@ bool cInput::DispatchInputEvent(int x, int y, long key, bool down, double time)
          return true; // do no further processing for this key event
       }
 
-      if (CTIsSameObject(iter->second, &m_modalListeners))
+      if (CTIsSameObject(*iter, &m_modalListeners))
       {
          bGotToModalListeners = true;
       }
