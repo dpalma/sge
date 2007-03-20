@@ -5,6 +5,7 @@
 
 #include "camera.h"
 
+#include "platform/inputapi.h"
 #include "platform/keys.h"
 #include "render/renderapi.h"
 #include "tech/readwriteutils.h"
@@ -16,6 +17,37 @@
 
 // REFERENCES
 // http://www.opengl.org/resources/faq/technical/viewing.htm
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cCameraControlInputListener
+//
+
+class cCameraControlInputListener : public cComObject<IMPLEMENTS(IInputListener)>
+{
+public:
+   cCameraControlInputListener(ICameraControl * pOuter);
+   virtual bool OnInputEvent(const sInputEvent * pEvent);
+
+private:
+   ICameraControl * m_pOuter;
+};
+
+///////////////////////////////////////
+
+cCameraControlInputListener::cCameraControlInputListener(ICameraControl * pOuter)
+ : m_pOuter(pOuter)
+{
+}
+
+///////////////////////////////////////
+
+bool cCameraControlInputListener::OnInputEvent(const sInputEvent * pEvent)
+{
+   Assert(m_pOuter != NULL);
+   return m_pOuter->HandleInputEvent(pEvent);
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -64,8 +96,10 @@ tResult cCameraControl::Init()
    UseGlobal(Scheduler);
    pScheduler->AddFrameTask(&m_moveCameraTask, 0, 1, 0);
 
+   cAutoIPtr<IInputListener> pInputListener(new cCameraControlInputListener(static_cast<ICameraControl*>(this)));
+
    UseGlobal(Input);
-   pInput->AddInputListener(static_cast<IInputListener*>(this));
+   pInput->AddInputListener(pInputListener);
 
    UseGlobal(SaveLoadManager);
    pSaveLoadManager->RegisterSaveLoadParticipant(SAVELOADID_CameraControl,
@@ -81,93 +115,10 @@ tResult cCameraControl::Term()
    UseGlobal(SaveLoadManager);
    pSaveLoadManager->RevokeSaveLoadParticipant(SAVELOADID_CameraControl, gm_currentSaveLoadVer);
 
-   UseGlobal(Input);
-   pInput->RemoveInputListener(static_cast<IInputListener*>(this));
-
    UseGlobal(Scheduler);
    pScheduler->RemoveFrameTask(&m_moveCameraTask);
 
    return S_OK;
-}
-
-///////////////////////////////////////
-
-bool cCameraControl::OnInputEvent(const sInputEvent * pEvent)
-{
-   switch (pEvent->key)
-   {
-      case kLeft:
-      {
-         if (pEvent->down)
-         {
-            m_cameraMove |= kCameraMoveLeft;
-         }
-         else
-         {
-            m_cameraMove &= ~kCameraMoveLeft;
-         }
-         break;
-      }
-
-      case kRight:
-      {
-         if (pEvent->down)
-         {
-            m_cameraMove |= kCameraMoveRight;
-         }
-         else
-         {
-            m_cameraMove &= ~kCameraMoveRight;
-         }
-         break;
-      }
-
-      case kUp:
-      {
-         if (pEvent->down)
-         {
-            m_cameraMove |= kCameraMoveForward;
-         }
-         else
-         {
-            m_cameraMove &= ~kCameraMoveForward;
-         }
-         break;
-      }
-
-      case kDown:
-      {
-         if (pEvent->down)
-         {
-            m_cameraMove |= kCameraMoveBack;
-         }
-         else
-         {
-            m_cameraMove &= ~kCameraMoveBack;
-         }
-         break;
-      }
-
-      case kMouseWheelUp:
-      {
-         if (pEvent->down)
-         {
-            Raise();
-         }
-         break;
-      }
-
-      case kMouseWheelDown:
-      {
-         if (pEvent->down)
-         {
-            Lower();
-         }
-         break;
-      }
-   }
-
-   return false;
 }
 
 ///////////////////////////////////////
@@ -300,6 +251,86 @@ tResult cCameraControl::Lower()
 {
    m_elevationLerp.Restart(m_elevation, m_elevation - kElevationStep, kElevationSpeed);
    return S_OK;
+}
+
+///////////////////////////////////////
+
+bool cCameraControl::HandleInputEvent(const sInputEvent * pEvent)
+{
+   switch (pEvent->key)
+   {
+      case kLeft:
+      {
+         if (pEvent->down)
+         {
+            m_cameraMove |= kCameraMoveLeft;
+         }
+         else
+         {
+            m_cameraMove &= ~kCameraMoveLeft;
+         }
+         break;
+      }
+
+      case kRight:
+      {
+         if (pEvent->down)
+         {
+            m_cameraMove |= kCameraMoveRight;
+         }
+         else
+         {
+            m_cameraMove &= ~kCameraMoveRight;
+         }
+         break;
+      }
+
+      case kUp:
+      {
+         if (pEvent->down)
+         {
+            m_cameraMove |= kCameraMoveForward;
+         }
+         else
+         {
+            m_cameraMove &= ~kCameraMoveForward;
+         }
+         break;
+      }
+
+      case kDown:
+      {
+         if (pEvent->down)
+         {
+            m_cameraMove |= kCameraMoveBack;
+         }
+         else
+         {
+            m_cameraMove &= ~kCameraMoveBack;
+         }
+         break;
+      }
+
+      case kMouseWheelUp:
+      {
+         if (pEvent->down)
+         {
+            Raise();
+         }
+         break;
+      }
+
+      case kMouseWheelDown:
+      {
+         if (pEvent->down)
+         {
+            Lower();
+         }
+         break;
+      }
+   }
+
+   return false;
 }
 
 ///////////////////////////////////////

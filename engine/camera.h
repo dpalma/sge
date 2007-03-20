@@ -6,7 +6,6 @@
 
 #include "engine/cameraapi.h"
 #include "engine/saveloadapi.h"
-#include "platform/inputapi.h"
 #include "tech/schedulerapi.h"
 
 #include "tech/globalobjdef.h"
@@ -24,8 +23,7 @@ F_DECLARE_GUID(SAVELOADID_CameraControl);
 // CLASS: cCameraControl
 //
 
-class cCameraControl : public cComObject4<IMPLEMENTS(ICameraControl),
-                                          IMPLEMENTS(IInputListener),
+class cCameraControl : public cComObject3<IMPLEMENTS(ICameraControl),
                                           IMPLEMENTS(IGlobalObject),
                                           IMPLEMENTS(ISaveLoadParticipant)>
 {
@@ -41,8 +39,6 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
-   virtual bool OnInputEvent(const sInputEvent * pEvent);
-
    void SimFrame(double elapsedTime);
 
    virtual tResult GetElevation(float * pElevation) const;
@@ -54,6 +50,8 @@ public:
    virtual void SetMovement(uint mask, uint flag);
    virtual tResult Raise();
    virtual tResult Lower();
+
+   virtual bool HandleInputEvent(const sInputEvent *);
 
    // ISaveLoadParticipant methods
    virtual tResult Save(IWriter *);

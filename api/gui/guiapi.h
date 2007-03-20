@@ -295,6 +295,8 @@ interface IGUIContext : IUnknown
 
    virtual tResult AddEventListener(IGUIEventListener * pListener) = 0;
    virtual tResult RemoveEventListener(IGUIEventListener * pListener) = 0;
+
+   virtual bool HandleInputEvent(const sInputEvent *) = 0;
 };
 
 ///////////////////////////////////////

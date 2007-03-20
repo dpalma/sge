@@ -13,6 +13,8 @@
 
 F_DECLARE_INTERFACE(ICameraControl);
 
+struct sInputEvent;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -43,6 +45,8 @@ interface ICameraControl : IUnknown
 
    virtual tResult Raise() = 0;
    virtual tResult Lower() = 0;
+
+   virtual bool HandleInputEvent(const sInputEvent *) = 0;
 };
 
 ////////////////////////////////////////

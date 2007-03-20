@@ -110,17 +110,6 @@ private:
 
    bool HandleInputEvent(const sInputEvent * pEvent);
 
-   class cInputListener : public cComObject<IMPLEMENTS(IInputListener)>
-   {
-      cGUIContext * m_pOuter;
-   public:
-      cInputListener(cGUIContext * pOuter);
-      virtual bool OnInputEvent(const sInputEvent * pEvent);
-   };
-
-   friend class cInputListener;
-   cInputListener m_inputListener;
-
    bool m_bShowingModalDialog;
 
    tGUIString m_scriptName;

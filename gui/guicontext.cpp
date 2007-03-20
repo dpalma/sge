@@ -44,6 +44,38 @@ LOG_DEFINE_CHANNEL(GUIContext);
 #define LocalMsgIf1(cond,msg,a1)       DebugMsgIfEx1(GUIContext,(cond),(msg),(a1))
 #define LocalMsgIf2(cond,msg,a1,a2)    DebugMsgIfEx2(GUIContext,(cond),(msg),(a1),(a2))
 
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cGUIContextInputListener
+//
+
+class cGUIContextInputListener : public cComObject<IMPLEMENTS(IInputListener)>
+{
+public:
+   cGUIContextInputListener(IGUIContext * pOuter);
+   virtual bool OnInputEvent(const sInputEvent * pEvent);
+
+private:
+   IGUIContext * m_pOuter;
+};
+
+///////////////////////////////////////
+
+cGUIContextInputListener::cGUIContextInputListener(IGUIContext * pOuter)
+ : m_pOuter(pOuter)
+{
+}
+
+///////////////////////////////////////
+
+bool cGUIContextInputListener::OnInputEvent(const sInputEvent * pEvent)
+{
+   Assert(m_pOuter != NULL);
+   return m_pOuter->HandleInputEvent(pEvent);
+}
+
+
 ///////////////////////////////////////////////////////////////////////////////
 
 static bool g_bExitModalLoop = false;
@@ -206,8 +238,7 @@ END_CONSTRAINTS()
 ///////////////////////////////////////
 
 cGUIContext::cGUIContext(const tChar * pszScriptName)
- : m_inputListener(this)
- , m_bShowingModalDialog(false)
+ : m_bShowingModalDialog(false)
  , m_scriptName((pszScriptName != NULL) ? pszScriptName : _T(""))
 #ifdef GUI_DEBUG
  , m_bShowDebugInfo(false)
@@ -232,8 +263,10 @@ cGUIContext::~cGUIContext()
 
 tResult cGUIContext::Init()
 {
+   cAutoIPtr<IInputListener> pInputListener(new cGUIContextInputListener(static_cast<IGUIContext*>(this)));
+
    UseGlobal(Input);
-   pInput->AddInputListener(&m_inputListener, kILP_GUI);
+   pInput->AddInputListener(pInputListener, kILP_GUI);
 
    GUILayoutRegisterBuiltInTypes();
 
@@ -250,9 +283,6 @@ tResult cGUIContext::Term()
 {
    std::for_each(m_eventListeners.begin(), m_eventListeners.end(), CTInterfaceMethod(&IGUIEventListener::Release));
    m_eventListeners.clear();
-
-   UseGlobal(Input);
-   pInput->RemoveInputListener(&m_inputListener);
 
    for (int i = 0; i < _countof(m_pagePlanes); i++)
    {
@@ -938,21 +968,6 @@ bool cGUIContext::HandleInputEvent(const sInputEvent * pEvent)
    }
 
    return false;
-}
-
-///////////////////////////////////////
-
-cGUIContext::cInputListener::cInputListener(cGUIContext * pOuter)
- : m_pOuter(pOuter)
-{
-}
-
-///////////////////////////////////////
-
-bool cGUIContext::cInputListener::OnInputEvent(const sInputEvent * pEvent)
-{
-   Assert(m_pOuter != NULL);
-   return m_pOuter->HandleInputEvent(pEvent);
 }
 
 ///////////////////////////////////////

@@ -6,7 +6,6 @@
 
 #include "engine/entityapi.h"
 
-#include "platform/inputapi.h"
 #include "engine/saveloadapi.h"
 
 #include "tech/axisalignedbox.h"
@@ -131,15 +130,6 @@ private:
    };
    friend class cSimClient;
    cSimClient m_simClient;
-
-   class cInputListener : public cComObject<IMPLEMENTS(IInputListener)>
-   {
-   public:
-      virtual void DeleteThis() {}
-      virtual bool OnInputEvent(const sInputEvent * pEvent);
-   };
-   friend class cInputListener;
-   cInputListener m_inputListener;
 
    tEntityId m_nextId;
    tEntityList m_entities;
