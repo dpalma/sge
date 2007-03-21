@@ -9,6 +9,10 @@
 #include "platform/sys.h"
 #include "script/scriptapi.h"
 
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
+#endif
+
 #include <cstring>
 #include <cstdlib>
 #include <functional>
@@ -39,6 +43,43 @@ inline long KeyGetBindable(long key)
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cScriptKeyBindTarget
+//
+
+class cScriptKeyBindTarget : public cComObject<IMPLEMENTS(IInputKeyBindTarget)>
+{
+public:
+   cScriptKeyBindTarget(const char * pszDownCmd, const char * pszUpCmd);
+
+   virtual void ExecuteBinding(long key, bool down, double time);
+
+private:
+   cStr m_down, m_up;
+};
+
+///////////////////////////////////////
+
+cScriptKeyBindTarget::cScriptKeyBindTarget(const char * pszDownCmd, const char * pszUpCmd)
+ : m_down((pszDownCmd != NULL) ? pszDownCmd : "")
+ , m_up((pszUpCmd != NULL) ? pszUpCmd : "")
+{
+}
+
+///////////////////////////////////////
+
+void cScriptKeyBindTarget::ExecuteBinding(long key, bool down, double time)
+{
+   const cStr & binding = down ? m_down : m_up;
+   if (!binding.empty())
+   {
+      UseGlobal(ScriptInterpreter);
+      pScriptInterpreter->ExecString(binding.c_str());
+   }
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cKeyBindings
 //
 
@@ -46,10 +87,6 @@ inline long KeyGetBindable(long key)
 
 cKeyBindings::cKeyBindings()
 {
-   Assert(_countof(m_keyDownBindings) == kMaxKeys);
-   Assert(_countof(m_keyDownBindings) == _countof(m_keyUpBindings));
-   memset(m_keyDownBindings, 0, sizeof(m_keyDownBindings));
-   memset(m_keyUpBindings, 0, sizeof(m_keyUpBindings));
 }
 
 ///////////////////////////////////////
@@ -61,26 +98,22 @@ cKeyBindings::~cKeyBindings()
 
 ///////////////////////////////////////
 
-void cKeyBindings::Bind(long key, const char * pszDownCmd, const char * pszUpCmd)
+tResult cKeyBindings::Bind(long key, IInputKeyBindTarget * pKeyBindTarget)
 {
    Assert(key > -1 && key < kMaxKeys);
+   Assert(pKeyBindTarget != NULL);
 
-   Assert(m_keyDownBindings[toupper(key)] == NULL);
    key = KeyGetBindable(key);
 
-   Unbind(key);
-
-   if (pszDownCmd != NULL && *pszDownCmd != 0)
+   tKeyBindTargetMap::iterator f = m_keyBindTargetMap.find(key);
+   if (f != m_keyBindTargetMap.end())
    {
-      m_keyDownBindings[key] = new char[strlen(pszDownCmd) + 1];
-      strcpy(m_keyDownBindings[key], pszDownCmd);
+      SafeRelease(f->second);
    }
 
-   if (pszUpCmd != NULL && *pszUpCmd != 0)
-   {
-      m_keyUpBindings[key] = new char[strlen(pszUpCmd) + 1];
-      strcpy(m_keyUpBindings[key], pszUpCmd);
-   }
+   m_keyBindTargetMap[key] = CTAddRef(pKeyBindTarget);
+
+   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -91,47 +124,36 @@ void cKeyBindings::Unbind(long key)
 
    key = KeyGetBindable(key);
 
-   delete [] m_keyDownBindings[key];
-   m_keyDownBindings[key] = NULL;
-
-   delete [] m_keyUpBindings[key];
-   m_keyUpBindings[key] = NULL;
+   tKeyBindTargetMap::iterator f = m_keyBindTargetMap.find(key);
+   if (f != m_keyBindTargetMap.end())
+   {
+      SafeRelease(f->second);
+      m_keyBindTargetMap.erase(f);
+   }
 }
 
 ///////////////////////////////////////
 
 void cKeyBindings::UnbindAll()
 {
-   Assert(_countof(m_keyDownBindings) == _countof(m_keyUpBindings));
-   for (int i = 0; i < _countof(m_keyDownBindings); i++)
+   tKeyBindTargetMap::iterator iter = m_keyBindTargetMap.begin(), end = m_keyBindTargetMap.end();
+   for (; iter != end; ++iter)
    {
-      delete [] m_keyDownBindings[i];
-      m_keyDownBindings[i] = NULL;
-      delete [] m_keyUpBindings[i];
-      m_keyUpBindings[i] = NULL;
+      SafeRelease(iter->second);
    }
+   m_keyBindTargetMap.clear();
 }
 
 ///////////////////////////////////////
 
-const char * cKeyBindings::GetDownBinding(long key) const
+void cKeyBindings::ExecuteBinding(long key, bool down, double time)
 {
-   Assert(key > -1 && key < kMaxKeys);
-   if (key > -1 && key < kMaxKeys)
-      return m_keyDownBindings[KeyGetBindable(key)];
-   else
-      return NULL;
-}
-
-///////////////////////////////////////
-
-const char * cKeyBindings::GetUpBinding(long key) const
-{
-   Assert(key > -1 && key < kMaxKeys);
-   if (key > -1 && key < kMaxKeys)
-      return m_keyUpBindings[KeyGetBindable(key)];
-   else
-      return NULL;
+   tKeyBindTargetMap::iterator f = m_keyBindTargetMap.find(key);
+   if (f != m_keyBindTargetMap.end())
+   {
+      f->second->ExecuteBinding(key, down, time);
+      return;
+   }
 }
 
 
@@ -217,7 +239,26 @@ bool cInput::KeyIsDown(long key)
 
 void cInput::KeyBind(long key, const char * pszDownCmd, const char * pszUpCmd)
 {
-   Bind(key, pszDownCmd, pszUpCmd);
+   cAutoIPtr<IInputKeyBindTarget> pKeyBindTarget(static_cast<IInputKeyBindTarget *>(new cScriptKeyBindTarget(pszDownCmd, pszUpCmd)));
+
+   Bind(key, pKeyBindTarget);
+}
+
+///////////////////////////////////////
+
+tResult cInput::KeyBind(long key, IInputKeyBindTarget * pKeyBindTarget)
+{
+   if (key < 0 || key >= kMaxKeys)
+   {
+      return E_INVALIDARG;
+   }
+
+   if (pKeyBindTarget == NULL)
+   {
+      return E_POINTER;
+   }
+
+   return Bind(key, pKeyBindTarget);
 }
 
 ///////////////////////////////////////
@@ -352,12 +393,7 @@ void cInput::ReportKeyEvent(long key, bool down, double time)
       return;
    }
 
-   const char * pBinding = down ? GetDownBinding(key) : GetUpBinding(key);
-   if (pBinding != NULL)
-   {
-      UseGlobal(ScriptInterpreter);
-      pScriptInterpreter->ExecString(pBinding);
-   }
+   ExecuteBinding(key, down, time);
 }
 
 ///////////////////////////////////////
@@ -466,5 +502,69 @@ tResult InputCreate()
    }
    return RegisterGlobalObject(IID_IInput, pInput);
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_UNITTESTPP
+
+struct sTestKeyEvent
+{
+   long key;
+   bool down;
+   double time;
+};
+
+static bool operator ==(const sTestKeyEvent & a, const sTestKeyEvent & b)
+{
+   return (a.key == b.key)
+      && (a.down == b.down)
+      && (a.time == b.time);
+}
+
+class cTestKeyBindTarget : public cComObject<IMPLEMENTS(IInputKeyBindTarget)>
+{
+public:
+   virtual void ExecuteBinding(long key, bool down, double time)
+   {
+      sTestKeyEvent keyEvent = { key, down, time };
+      m_events.push_back(keyEvent);
+   }
+
+   size_t EventCount() const { return m_events.size(); }
+   const sTestKeyEvent & Event(size_t index) { return m_events[index]; }
+   std::vector<sTestKeyEvent>::const_iterator FirstEvent() const { return m_events.begin(); }
+   std::vector<sTestKeyEvent>::const_iterator LastEvent() const { return m_events.end(); }
+
+private:
+   std::vector<sTestKeyEvent> m_events;
+};
+
+TEST_FIXTURE(cInput, KeyBinding)
+{
+   cAutoIPtr<cTestKeyBindTarget> pKeyBindTarget(new cTestKeyBindTarget);
+
+   KeyBind('t', static_cast<IInputKeyBindTarget*>(pKeyBindTarget));
+
+   static const sTestKeyEvent keyEvents[] =
+   {
+      { 't', true, .01 },
+      { 't', false, .02 },
+      { 'e', true, .03 },
+      { 'e', false, .04 },
+   };
+
+   for (int i = 0; i < _countof(keyEvents); ++i)
+   {
+      const sTestKeyEvent & keyEvent = keyEvents[i];
+      ReportKeyEvent(keyEvent.key, keyEvent.down, keyEvent.time);
+   }
+
+   CHECK_EQUAL(2, pKeyBindTarget->EventCount());
+   CHECK(pKeyBindTarget->Event(0) == keyEvents[0]);
+   CHECK(pKeyBindTarget->Event(1) == keyEvents[1]);
+}
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////

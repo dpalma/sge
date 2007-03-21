@@ -14,6 +14,7 @@
 
 F_DECLARE_INTERFACE(IInput);
 F_DECLARE_INTERFACE(IInputListener);
+F_DECLARE_INTERFACE_GUID(IInputKeyBindTarget, "4B0BADD8-B0F1-4aac-9B1B-71D1B5374006");
 F_DECLARE_INTERFACE(IInputModalListener);
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -29,6 +30,7 @@ interface IInput : IUnknown
    virtual bool KeyIsDown(long key) = 0;
 
    virtual void KeyBind(long key, const char * pszDownCmd, const char * pszUpCmd) = 0;
+   virtual tResult KeyBind(long key, IInputKeyBindTarget * pKeyBindTarget) = 0;
    virtual void KeyUnbind(long key) = 0;
 
    virtual tResult PushModalListener(IInputModalListener * pModalListener) = 0;
@@ -59,9 +61,15 @@ interface IInputListener : IUnknown
    virtual bool OnInputEvent(const sInputEvent * pEvent) = 0;
 };
 
-class cDefaultInputListener : public IInputListener
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IInputKeyBindTarget
+//
+
+interface IInputKeyBindTarget : IUnknown
 {
-   virtual bool OnInputEvent(const sInputEvent * pEvent) { return false; }
+   virtual void ExecuteBinding(long key, bool down, double time) = 0;
 };
 
 

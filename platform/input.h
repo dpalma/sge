@@ -8,6 +8,7 @@
 #include "tech/globalobjdef.h"
 #include "tech/connptimpl.h"
 
+#include <map>
 #include <stack>
 
 #ifdef _MSC_VER
@@ -29,16 +30,15 @@ public:
    cKeyBindings();
    ~cKeyBindings();
 
-   void Bind(long key, const char * pszDownCmd, const char * pszUpCmd);
+   tResult Bind(long key, IInputKeyBindTarget * pKeyBindTarget);
    void Unbind(long key);
    void UnbindAll();
 
-   const char * GetDownBinding(long key) const;
-   const char * GetUpBinding(long key) const;
+   void ExecuteBinding(long key, bool down, double time);
 
 private:
-   char * m_keyDownBindings[kMaxKeys];
-   char * m_keyUpBindings[kMaxKeys];
+   typedef std::map<long, IInputKeyBindTarget *> tKeyBindTargetMap;
+   tKeyBindTargetMap m_keyBindTargetMap;
 };
 
 
@@ -47,7 +47,8 @@ private:
 // CLASS: cInput
 //
 
-class cInput : public cComObject2<IMPLEMENTSCP(IInput, IInputListener), IMPLEMENTS(IGlobalObject)>
+class cInput : public cComObject2<IMPLEMENTSCP(IInput, IInputListener),
+                                  IMPLEMENTS(IGlobalObject)>
              , public cKeyBindings
 {
 public:
@@ -66,12 +67,13 @@ public:
    virtual bool KeyIsDown(long key);
 
    virtual void KeyBind(long key, const char * pszDownCmd, const char * pszUpCmd);
+   virtual tResult KeyBind(long key, IInputKeyBindTarget * pKeyBindTarget);
    virtual void KeyUnbind(long key);
 
    virtual tResult PushModalListener(IInputModalListener * pModalListener);
    virtual tResult PopModalListener();
 
-private:
+protected:
    void ReportKeyEvent(long key, bool down, double time);
    void ReportMouseEvent(int x, int y, uint mouseState, double time);
 
@@ -80,6 +82,7 @@ private:
    static void OnSysMouseMove(int x, int y, uint mouseState, double time, uint_ptr userData);
    static void OnSysMouseEvent(int x, int y, uint mouseState, double time, uint_ptr userData);
 
+private:
    bool DispatchInputEvent(int x, int y, long key, bool down, double time);
 
    class cInputModalListeners : public cComObject<IMPLEMENTS(IInputListener)>
