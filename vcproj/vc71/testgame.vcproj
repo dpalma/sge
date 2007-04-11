@@ -4,7 +4,7 @@
 	Version="7.10"
 	Name="game"
 	ProjectGUID="{7DC53734-89E3-4D11-9854-F581B974FA01}"
-	RootNamespace="game">
+	RootNamespace="testgame">
 	<Platforms>
 		<Platform
 			Name="Win32"/>
@@ -13,7 +13,7 @@
 		<Configuration
 			Name="StaticRelease|Win32"
 			OutputDirectory=".\..\..\Build.vc71\StaticRelease"
-			IntermediateDirectory=".\..\..\Build.vc71\StaticRelease\game"
+			IntermediateDirectory=".\..\..\Build.vc71\StaticRelease\testgame"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -28,10 +28,10 @@
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\..\Build.vc71\StaticRelease\game/game.pch"
-				AssemblerListingLocation=".\..\..\Build.vc71\StaticRelease\game/"
-				ObjectFile=".\..\..\Build.vc71\StaticRelease\game/"
-				ProgramDataBaseFileName=".\..\..\Build.vc71\StaticRelease\game/"
+				PrecompiledHeaderFile=".\..\..\Build.vc71\StaticRelease\testgame/testgame.pch"
+				AssemblerListingLocation=".\..\..\Build.vc71\StaticRelease\testgame/"
+				ObjectFile=".\..\..\Build.vc71\StaticRelease\testgame/"
+				ProgramDataBaseFileName=".\..\..\Build.vc71\StaticRelease\testgame/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				CompileAs="0"/>
@@ -41,12 +41,12 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="ws2_32.lib opengl32.lib glu32.lib Cg.lib CgGL.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\jpeg.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib $(OutDir)\ftgl.lib $(OutDir)\freetype.lib"
-				OutputFile=".\..\..\Build.vc71\StaticRelease/game.exe"
+				OutputFile=".\..\..\Build.vc71\StaticRelease/testgame.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\StaticRelease/game.map"
+				MapFileName="..\..\Build.vc71\StaticRelease/testgame.map"
 				SubSystem="2"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -54,7 +54,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\StaticRelease/game.tlb"/>
+				TypeLibraryName=".\..\..\Build.vc71\StaticRelease/testgame.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -79,7 +79,7 @@
 		<Configuration
 			Name="Opt|Win32"
 			OutputDirectory=".\..\..\Build.vc71\Opt"
-			IntermediateDirectory=".\..\..\Build.vc71\Opt\game"
+			IntermediateDirectory=".\..\..\Build.vc71\Opt\testgame"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -94,10 +94,10 @@
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\..\Build.vc71\Opt\game/game.pch"
-				AssemblerListingLocation=".\..\..\Build.vc71\Opt\game/"
-				ObjectFile=".\..\..\Build.vc71\Opt\game/"
-				ProgramDataBaseFileName=".\..\..\Build.vc71\Opt\game/"
+				PrecompiledHeaderFile=".\..\..\Build.vc71\Opt\testgame/testgame.pch"
+				AssemblerListingLocation=".\..\..\Build.vc71\Opt\testgame/"
+				ObjectFile=".\..\..\Build.vc71\Opt\testgame/"
+				ProgramDataBaseFileName=".\..\..\Build.vc71\Opt\testgame/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"
@@ -108,13 +108,13 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib"
-				OutputFile=".\..\..\Build.vc71\Opt/game.exe"
+				OutputFile=".\..\..\Build.vc71\Opt/testgame.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				GenerateDebugInformation="TRUE"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\Opt/game.map"
+				MapFileName="..\..\Build.vc71\Opt/testgame.map"
 				SubSystem="2"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -122,7 +122,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\Opt/game.tlb"/>
+				TypeLibraryName=".\..\..\Build.vc71\Opt/testgame.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -147,7 +147,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\..\..\Build.vc71\Debug"
-			IntermediateDirectory=".\..\..\Build.vc71\Debug\game"
+			IntermediateDirectory=".\..\..\Build.vc71\Debug\testgame"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -161,10 +161,10 @@
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\..\Build.vc71\Debug\game/game.pch"
-				AssemblerListingLocation=".\..\..\Build.vc71\Debug\game/"
-				ObjectFile=".\..\..\Build.vc71\Debug\game/"
-				ProgramDataBaseFileName=".\..\..\Build.vc71\Debug\game/"
+				PrecompiledHeaderFile=".\..\..\Build.vc71\Debug\testgame/testgame.pch"
+				AssemblerListingLocation=".\..\..\Build.vc71\Debug\testgame/"
+				ObjectFile=".\..\..\Build.vc71\Debug\testgame/"
+				ProgramDataBaseFileName=".\..\..\Build.vc71\Debug\testgame/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="4"
@@ -175,14 +175,14 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib"
-				OutputFile=".\..\..\Build.vc71\Debug/game.exe"
+				OutputFile=".\..\..\Build.vc71\Debug/testgame.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\..\..\Build.vc71\Debug/game.pdb"
+				ProgramDatabaseFile=".\..\..\Build.vc71\Debug/testgame.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\Debug/game.map"
+				MapFileName="..\..\Build.vc71\Debug/testgame.map"
 				SubSystem="2"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -190,7 +190,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\Debug/game.tlb"/>
+				TypeLibraryName=".\..\..\Build.vc71\Debug/testgame.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -215,7 +215,7 @@
 		<Configuration
 			Name="StaticDebug|Win32"
 			OutputDirectory=".\..\..\Build.vc71\StaticDebug"
-			IntermediateDirectory=".\..\..\Build.vc71\StaticDebug\game"
+			IntermediateDirectory=".\..\..\Build.vc71\StaticDebug\testgame"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -229,10 +229,10 @@
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\..\Build.vc71\StaticDebug\game/game.pch"
-				AssemblerListingLocation=".\..\..\Build.vc71\StaticDebug\game/"
-				ObjectFile=".\..\..\Build.vc71\StaticDebug\game/"
-				ProgramDataBaseFileName=".\..\..\Build.vc71\StaticDebug\game/"
+				PrecompiledHeaderFile=".\..\..\Build.vc71\StaticDebug\testgame/testgame.pch"
+				AssemblerListingLocation=".\..\..\Build.vc71\StaticDebug\testgame/"
+				ObjectFile=".\..\..\Build.vc71\StaticDebug\testgame/"
+				ProgramDataBaseFileName=".\..\..\Build.vc71\StaticDebug\testgame/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="4"
@@ -243,14 +243,14 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="ws2_32.lib opengl32.lib glu32.lib Cg.lib CgGL.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\jpeg.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib $(OutDir)\ftgl.lib $(OutDir)\freetype.lib $(OutDir)\UnitTest++.lib"
-				OutputFile=".\..\..\Build.vc71\StaticDebug/game.exe"
+				OutputFile=".\..\..\Build.vc71\StaticDebug/testgame.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				GenerateDebugInformation="TRUE"
-				ProgramDatabaseFile=".\..\..\Build.vc71\StaticDebug/game.pdb"
+				ProgramDatabaseFile=".\..\..\Build.vc71\StaticDebug/testgame.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\StaticDebug/game.map"
+				MapFileName="..\..\Build.vc71\StaticDebug/testgame.map"
 				SubSystem="2"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -258,7 +258,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\StaticDebug/game.tlb"/>
+				TypeLibraryName=".\..\..\Build.vc71\StaticDebug/testgame.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -283,7 +283,7 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory=".\..\..\Build.vc71\Release"
-			IntermediateDirectory=".\..\..\Build.vc71\Release\game"
+			IntermediateDirectory=".\..\..\Build.vc71\Release\testgame"
 			ConfigurationType="1"
 			UseOfMFC="0"
 			ATLMinimizesCRunTimeLibraryUsage="FALSE"
@@ -298,10 +298,10 @@
 				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\..\Build.vc71\Release\game/game.pch"
-				AssemblerListingLocation=".\..\..\Build.vc71\Release\game/"
-				ObjectFile=".\..\..\Build.vc71\Release\game/"
-				ProgramDataBaseFileName=".\..\..\Build.vc71\Release\game/"
+				PrecompiledHeaderFile=".\..\..\Build.vc71\Release\testgame/testgame.pch"
+				AssemblerListingLocation=".\..\..\Build.vc71\Release\testgame/"
+				ObjectFile=".\..\..\Build.vc71\Release\testgame/"
+				ProgramDataBaseFileName=".\..\..\Build.vc71\Release\testgame/"
 				WarningLevel="3"
 				SuppressStartupBanner="TRUE"
 				CompileAs="0"/>
@@ -311,13 +311,13 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib"
-				OutputFile=".\..\..\Build.vc71\Release/game.exe"
+				OutputFile=".\..\..\Build.vc71\Release/testgame.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="TRUE"
 				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
-				ProgramDatabaseFile=".\..\..\Build.vc71\Release/game.pdb"
+				ProgramDatabaseFile=".\..\..\Build.vc71\Release/testgame.pdb"
 				GenerateMapFile="TRUE"
-				MapFileName="..\..\Build.vc71\Release/game.map"
+				MapFileName="..\..\Build.vc71\Release/testgame.map"
 				SubSystem="2"/>
 			<Tool
 				Name="VCMIDLTool"
@@ -325,7 +325,7 @@
 				MkTypLibCompatible="TRUE"
 				SuppressStartupBanner="TRUE"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc71\Release/game.tlb"/>
+				TypeLibraryName=".\..\..\Build.vc71\Release/testgame.tlb"/>
 			<Tool
 				Name="VCPostBuildEventTool"/>
 			<Tool
@@ -355,13 +355,13 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
-				RelativePath="..\..\game\game.rc">
+				RelativePath="..\..\tests\testgame\game.rc">
 			</File>
 			<File
-				RelativePath="..\..\game\main.cpp">
+				RelativePath="..\..\tests\testgame\main.cpp">
 			</File>
 			<File
-				RelativePath="..\..\game\stdhdr.cpp">
+				RelativePath="..\..\tests\testgame\stdhdr.cpp">
 				<FileConfiguration
 					Name="StaticRelease|Win32">
 					<Tool
@@ -398,14 +398,14 @@
 			Name="Header Files"
 			Filter="h;hpp;hxx;hm;inl">
 			<File
-				RelativePath="..\..\game\stdhdr.h">
+				RelativePath="..\..\tests\testgame\stdhdr.h">
 			</File>
 		</Filter>
 		<Filter
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
-				RelativePath="..\..\game\game.ico">
+				RelativePath="..\..\tests\testgame\game.ico">
 			</File>
 		</Filter>
 	</Files>

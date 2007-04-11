@@ -2,9 +2,9 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="8.00"
-	Name="game"
+	Name="testgame"
 	ProjectGUID="{7DC53734-89E3-4D11-9854-F581B974FA01}"
-	RootNamespace="game"
+	RootNamespace="testgame"
 	>
 	<Platforms>
 		<Platform
@@ -17,7 +17,7 @@
 		<Configuration
 			Name="StaticRelease|Win32"
 			OutputDirectory=".\..\..\Build.vc8\StaticRelease"
-			IntermediateDirectory=".\..\..\Build.vc8\StaticRelease\game"
+			IntermediateDirectory=".\..\..\Build.vc8\StaticRelease\testgame"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -42,7 +42,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc8\StaticRelease/game.tlb"
+				TypeLibraryName=".\..\..\Build.vc8\StaticRelease/testgame.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
@@ -54,10 +54,10 @@
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\..\Build.vc8\StaticRelease\game/game.pch"
-				AssemblerListingLocation=".\..\..\Build.vc8\StaticRelease\game/"
-				ObjectFile=".\..\..\Build.vc8\StaticRelease\game/"
-				ProgramDataBaseFileName=".\..\..\Build.vc8\StaticRelease\game/"
+				PrecompiledHeaderFile=".\..\..\Build.vc8\StaticRelease\testgame/testgame.pch"
+				AssemblerListingLocation=".\..\..\Build.vc8\StaticRelease\testgame/"
+				ObjectFile=".\..\..\Build.vc8\StaticRelease\testgame/"
+				ProgramDataBaseFileName=".\..\..\Build.vc8\StaticRelease\testgame/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				CompileAs="0"
@@ -77,12 +77,12 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="ws2_32.lib opengl32.lib glu32.lib Cg.lib CgGL.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\jpeg.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib $(OutDir)\ftgl.lib $(OutDir)\freetype.lib"
-				OutputFile=".\..\..\Build.vc8\StaticRelease/game.exe"
+				OutputFile=".\..\..\Build.vc8\StaticRelease/testgame.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				GenerateMapFile="true"
-				MapFileName="..\..\Build.vc8\StaticRelease/game.map"
+				MapFileName="..\..\Build.vc8\StaticRelease/testgame.map"
 				SubSystem="2"
 			/>
 			<Tool
@@ -113,7 +113,7 @@
 		<Configuration
 			Name="Opt|Win32"
 			OutputDirectory=".\..\..\Build.vc8\Opt"
-			IntermediateDirectory=".\..\..\Build.vc8\Opt\game"
+			IntermediateDirectory=".\..\..\Build.vc8\Opt\testgame"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -138,7 +138,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc8\Opt/game.tlb"
+				TypeLibraryName=".\..\..\Build.vc8\Opt/testgame.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
@@ -150,10 +150,10 @@
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\..\Build.vc8\Opt\game/game.pch"
-				AssemblerListingLocation=".\..\..\Build.vc8\Opt\game/"
-				ObjectFile=".\..\..\Build.vc8\Opt\game/"
-				ProgramDataBaseFileName=".\..\..\Build.vc8\Opt\game/"
+				PrecompiledHeaderFile=".\..\..\Build.vc8\Opt\testgame/testgame.pch"
+				AssemblerListingLocation=".\..\..\Build.vc8\Opt\testgame/"
+				ObjectFile=".\..\..\Build.vc8\Opt\testgame/"
+				ProgramDataBaseFileName=".\..\..\Build.vc8\Opt\testgame/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="3"
@@ -174,13 +174,13 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib"
-				OutputFile=".\..\..\Build.vc8\Opt/game.exe"
+				OutputFile=".\..\..\Build.vc8\Opt/testgame.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				GenerateDebugInformation="true"
 				GenerateMapFile="true"
-				MapFileName="..\..\Build.vc8\Opt/game.map"
+				MapFileName="..\..\Build.vc8\Opt/testgame.map"
 				SubSystem="2"
 			/>
 			<Tool
@@ -211,7 +211,7 @@
 		<Configuration
 			Name="Debug|Win32"
 			OutputDirectory=".\..\..\Build.vc8\Debug"
-			IntermediateDirectory=".\..\..\Build.vc8\Debug\game"
+			IntermediateDirectory=".\..\..\Build.vc8\Debug\testgame"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -236,7 +236,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc8\Debug/game.tlb"
+				TypeLibraryName=".\..\..\Build.vc8\Debug/testgame.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
@@ -247,10 +247,10 @@
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\..\Build.vc8\Debug\game/game.pch"
-				AssemblerListingLocation=".\..\..\Build.vc8\Debug\game/"
-				ObjectFile=".\..\..\Build.vc8\Debug\game/"
-				ProgramDataBaseFileName=".\..\..\Build.vc8\Debug\game/"
+				PrecompiledHeaderFile=".\..\..\Build.vc8\Debug\testgame/testgame.pch"
+				AssemblerListingLocation=".\..\..\Build.vc8\Debug\testgame/"
+				ObjectFile=".\..\..\Build.vc8\Debug\testgame/"
+				ProgramDataBaseFileName=".\..\..\Build.vc8\Debug\testgame/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
@@ -271,14 +271,14 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib"
-				OutputFile=".\..\..\Build.vc8\Debug/game.exe"
+				OutputFile=".\..\..\Build.vc8\Debug/testgame.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\..\..\Build.vc8\Debug/game.pdb"
+				ProgramDatabaseFile=".\..\..\Build.vc8\Debug/testgame.pdb"
 				GenerateMapFile="true"
-				MapFileName="..\..\Build.vc8\Debug/game.map"
+				MapFileName="..\..\Build.vc8\Debug/testgame.map"
 				SubSystem="2"
 			/>
 			<Tool
@@ -309,7 +309,7 @@
 		<Configuration
 			Name="StaticDebug|Win32"
 			OutputDirectory=".\..\..\Build.vc8\StaticDebug"
-			IntermediateDirectory=".\..\..\Build.vc8\StaticDebug\game"
+			IntermediateDirectory=".\..\..\Build.vc8\StaticDebug\testgame"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -334,7 +334,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc8\StaticDebug/game.tlb"
+				TypeLibraryName=".\..\..\Build.vc8\StaticDebug/testgame.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
@@ -345,10 +345,10 @@
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\..\Build.vc8\StaticDebug\game/game.pch"
-				AssemblerListingLocation=".\..\..\Build.vc8\StaticDebug\game/"
-				ObjectFile=".\..\..\Build.vc8\StaticDebug\game/"
-				ProgramDataBaseFileName=".\..\..\Build.vc8\StaticDebug\game/"
+				PrecompiledHeaderFile=".\..\..\Build.vc8\StaticDebug\testgame/testgame.pch"
+				AssemblerListingLocation=".\..\..\Build.vc8\StaticDebug\testgame/"
+				ObjectFile=".\..\..\Build.vc8\StaticDebug\testgame/"
+				ProgramDataBaseFileName=".\..\..\Build.vc8\StaticDebug\testgame/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="4"
@@ -369,14 +369,14 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="ws2_32.lib opengl32.lib glu32.lib Cg.lib CgGL.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\jpeg.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib $(OutDir)\ftgl.lib $(OutDir)\freetype.lib $(OutDir)\UnitTest++.lib"
-				OutputFile=".\..\..\Build.vc8\StaticDebug/game.exe"
+				OutputFile=".\..\..\Build.vc8\StaticDebug/testgame.exe"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
 				GenerateDebugInformation="true"
-				ProgramDatabaseFile=".\..\..\Build.vc8\StaticDebug/game.pdb"
+				ProgramDatabaseFile=".\..\..\Build.vc8\StaticDebug/testgame.pdb"
 				GenerateMapFile="true"
-				MapFileName="..\..\Build.vc8\StaticDebug/game.map"
+				MapFileName="..\..\Build.vc8\StaticDebug/testgame.map"
 				SubSystem="2"
 			/>
 			<Tool
@@ -407,7 +407,7 @@
 		<Configuration
 			Name="Release|Win32"
 			OutputDirectory=".\..\..\Build.vc8\Release"
-			IntermediateDirectory=".\..\..\Build.vc8\Release\game"
+			IntermediateDirectory=".\..\..\Build.vc8\Release\testgame"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
 			UseOfMFC="0"
@@ -432,7 +432,7 @@
 				MkTypLibCompatible="true"
 				SuppressStartupBanner="true"
 				TargetEnvironment="1"
-				TypeLibraryName=".\..\..\Build.vc8\Release/game.tlb"
+				TypeLibraryName=".\..\..\Build.vc8\Release/testgame.tlb"
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
@@ -444,10 +444,10 @@
 				EnableFunctionLevelLinking="true"
 				UsePrecompiledHeader="2"
 				PrecompiledHeaderThrough="stdhdr.h"
-				PrecompiledHeaderFile=".\..\..\Build.vc8\Release\game/game.pch"
-				AssemblerListingLocation=".\..\..\Build.vc8\Release\game/"
-				ObjectFile=".\..\..\Build.vc8\Release\game/"
-				ProgramDataBaseFileName=".\..\..\Build.vc8\Release\game/"
+				PrecompiledHeaderFile=".\..\..\Build.vc8\Release\testgame/testgame.pch"
+				AssemblerListingLocation=".\..\..\Build.vc8\Release\testgame/"
+				ObjectFile=".\..\..\Build.vc8\Release\testgame/"
+				ProgramDataBaseFileName=".\..\..\Build.vc8\Release\testgame/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				CompileAs="0"
@@ -467,13 +467,13 @@
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				AdditionalDependencies="opengl32.lib glu32.lib winmm.lib $(OutDir)\tinyxml.lib $(OutDir)\lua.lib $(OutDir)\zlibwapi.lib $(OutDir)\glew.lib"
-				OutputFile=".\..\..\Build.vc8\Release/game.exe"
+				OutputFile=".\..\..\Build.vc8\Release/testgame.exe"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				AdditionalLibraryDirectories="..\..\3rdparty\Cg\lib"
-				ProgramDatabaseFile=".\..\..\Build.vc8\Release/game.pdb"
+				ProgramDatabaseFile=".\..\..\Build.vc8\Release/testgame.pdb"
 				GenerateMapFile="true"
-				MapFileName="..\..\Build.vc8\Release/game.map"
+				MapFileName="..\..\Build.vc8\Release/testgame.map"
 				SubSystem="2"
 			/>
 			<Tool
@@ -510,15 +510,15 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="..\..\game\game.rc"
+				RelativePath="..\..\tests\testgame\game.rc"
 				>
 			</File>
 			<File
-				RelativePath="..\..\game\main.cpp"
+				RelativePath="..\..\tests\testgame\main.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\game\stdhdr.cpp"
+				RelativePath="..\..\tests\testgame\stdhdr.cpp"
 				>
 				<FileConfiguration
 					Name="StaticRelease|Win32"
@@ -567,7 +567,7 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="..\..\game\stdhdr.h"
+				RelativePath="..\..\tests\testgame\stdhdr.h"
 				>
 			</File>
 		</Filter>
@@ -576,7 +576,7 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
-				RelativePath="..\..\game\game.ico"
+				RelativePath="..\..\tests\testgame\game.ico"
 				>
 			</File>
 		</Filter>
