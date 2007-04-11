@@ -510,7 +510,7 @@
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
 			>
 			<File
-				RelativePath="..\..\tests\testgame\game.rc"
+				RelativePath="..\..\tests\testgame\testgame.rc"
 				>
 			</File>
 			<File
@@ -576,7 +576,7 @@
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
 			>
 			<File
-				RelativePath="..\..\tests\testgame\game.ico"
+				RelativePath="..\..\tests\testgame\testgame.ico"
 				>
 			</File>
 		</Filter>

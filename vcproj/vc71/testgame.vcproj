@@ -2,7 +2,7 @@
 <VisualStudioProject
 	ProjectType="Visual C++"
 	Version="7.10"
-	Name="game"
+	Name="testgame"
 	ProjectGUID="{7DC53734-89E3-4D11-9854-F581B974FA01}"
 	RootNamespace="testgame">
 	<Platforms>
@@ -355,7 +355,7 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
-				RelativePath="..\..\tests\testgame\game.rc">
+				RelativePath="..\..\tests\testgame\testgame.rc">
 			</File>
 			<File
 				RelativePath="..\..\tests\testgame\main.cpp">
@@ -405,7 +405,7 @@
 			Name="Resource Files"
 			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
 			<File
-				RelativePath="..\..\tests\testgame\game.ico">
+				RelativePath="..\..\tests\testgame\testgame.ico">
 			</File>
 		</Filter>
 	</Files>
