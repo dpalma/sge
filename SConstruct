@@ -3,7 +3,8 @@
 
 import os
 import re
-from Walk import Walk
+from .tools.scripts.Walk import Walk
+
 
 #############################################################################
 

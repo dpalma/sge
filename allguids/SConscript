@@ -8,6 +8,6 @@ sourceFiles = Split("""
 """)
 
 local = env.Copy()
-local.Append(CPPPATH=['#editor'])
+local.Append(CPPPATH=['#tests/mfceditor'])
 local.BuildStaticLibrary(target='allguids',
                          source=sourceFiles)

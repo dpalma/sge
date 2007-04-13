@@ -8,9 +8,10 @@ sourceFiles = Split("""
 """)
 
 if env['PLATFORM'] == 'win32':
-   sourceFiles += env.RES('game.rc')
+   sourceFiles += env.RES('testgame.rc')
 
 libPaths = Split("""
+   #ai
    #allguids
    #engine
    #gui
@@ -23,6 +24,7 @@ libPaths = Split("""
 """)
 
 linkLibs = Split("""
+   ai
    allguids
    engine
    gui
@@ -45,7 +47,7 @@ local.UseFTGL()
 local.UseLua()
 local.UseTinyxml()
 local.UseZLib()
-local.BuildExecutable(target='game',
+local.BuildExecutable(target='testgame',
                       source=sourceFiles,
                       lib_path=libPaths,
                       libs=linkLibs)
