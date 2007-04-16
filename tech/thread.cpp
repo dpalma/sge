@@ -281,16 +281,7 @@ cThreadEvent::cThreadEvent()
 
 cThreadEvent::~cThreadEvent()
 {
-#ifdef _WIN32
-   if (m_hEvent != NULL)
-   {
-      CloseHandle(m_hEvent);
-      m_hEvent = NULL;
-   }
-#else
-   pthread_cond_destroy(&m_cond);
-   pthread_mutex_destroy(&m_mutex);
-#endif
+   Destroy();
 }
 
 ////////////////////////////////////////
@@ -317,6 +308,26 @@ bool cThreadEvent::Create()
    pthread_cond_init(&m_cond, NULL);
    m_bInitialized = true;
    return true;
+#endif
+}
+
+////////////////////////////////////////
+
+void cThreadEvent::Destroy()
+{
+#ifdef _WIN32
+   if (m_hEvent != NULL)
+   {
+      CloseHandle(m_hEvent);
+      m_hEvent = NULL;
+   }
+#else
+   if (m_bInitialized)
+   {
+      pthread_cond_destroy(&m_cond);
+      pthread_mutex_destroy(&m_mutex);
+      m_bInitialized = false;
+   }
 #endif
 }
 
@@ -406,8 +417,8 @@ bool cThreadEvent::Signal()
 {
 #ifdef _WIN32
    // Release a single thread waiting on the event.  See
-   // documentation of PulseEvent for auto-reset events.
-   if ((m_hEvent != NULL) && PulseEvent(m_hEvent))
+   // documentation of SetEvent for auto-reset events.
+   if ((m_hEvent != NULL) && SetEvent(m_hEvent))
    {
       return true;
    }

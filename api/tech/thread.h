@@ -95,6 +95,7 @@ public:
    ~cThreadEvent();
 
    bool Create();
+   void Destroy();
 
    bool Wait();
    bool Wait(uint timeout);
