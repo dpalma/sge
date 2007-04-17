@@ -34,6 +34,7 @@ sourceFiles = Split("""
    readwriteutils.cpp
    resourceformat.cpp
    resourcemanager.cpp
+   resourcemanagertest.cpp
    resourcestore.cpp
    resourceutils.cpp
    scheduler.cpp

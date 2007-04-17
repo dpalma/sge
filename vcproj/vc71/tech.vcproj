@@ -447,6 +447,9 @@
 				RelativePath="..\..\tech\resourcemanager.cpp">
 			</File>
 			<File
+				RelativePath="..\..\tech\resourcemanagertest.cpp">
+			</File>
+			<File
 				RelativePath="..\..\tech\resourcestore.cpp">
 			</File>
 			<File
