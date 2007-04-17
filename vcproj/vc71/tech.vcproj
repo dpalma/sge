@@ -453,6 +453,9 @@
 				RelativePath="..\..\tech\resourcestore.cpp">
 			</File>
 			<File
+				RelativePath="..\..\tech\resourcestorezip.cpp">
+			</File>
+			<File
 				RelativePath="..\..\tech\resourceutils.cpp">
 			</File>
 			<File

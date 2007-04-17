@@ -152,7 +152,7 @@ tResult cResourceManager::AddArchive(const tChar * pszArchive)
 {
    tResult result = E_FAIL;
    IResourceStore * pStore = NULL;
-   if ((result = ZipResourceStoreCreate(pszArchive, &pStore)) == S_OK)
+   if ((result = ResourceStoreCreateZip(pszArchive, &pStore)) == S_OK)
    {
       m_stores.push_back(pStore);
       return S_OK;

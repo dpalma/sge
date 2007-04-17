@@ -36,6 +36,7 @@ sourceFiles = Split("""
    resourcemanager.cpp
    resourcemanagertest.cpp
    resourcestore.cpp
+   resourcestorezip.cpp
    resourceutils.cpp
    scheduler.cpp
    schedulerclock.cpp
