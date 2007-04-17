@@ -14,7 +14,7 @@
 #pragma once
 #endif
 
-class cResourceStore;
+F_DECLARE_INTERFACE(IResourceStore);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -67,7 +67,8 @@ private:
    tResult Open(const tChar * pszName, IReader * * ppReader);
    tResult DoLoadFromReader(IReader * pReader, const cResourceFormat * pFormat, ulong dataSize, void * param, void * * ppData);
 
-   std::vector<cResourceStore *> m_stores;
+   typedef std::vector<IResourceStore *> tResourceStores;
+   tResourceStores m_stores;
 
    cResourceFormatTable m_formats;
 

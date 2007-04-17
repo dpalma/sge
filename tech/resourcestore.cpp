@@ -39,18 +39,6 @@ static const int kUnzMaxPath = 260;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cResourceStore
-//
-
-////////////////////////////////////////
-
-cResourceStore::~cResourceStore()
-{
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
 // CLASS: cDirectoryResourceStore
 //
 
@@ -281,7 +269,7 @@ tResult cZipResourceStore::OpenEntry(const tChar * pszName, IReader * * ppReader
 
 ////////////////////////////////////////
 
-tResult ZipResourceStoreCreate(const tChar * pszArchive, cResourceStore * * ppStore)
+tResult ZipResourceStoreCreate(const tChar * pszArchive, IResourceStore * * ppStore)
 {
    if (pszArchive == NULL || ppStore == NULL)
    {
@@ -296,7 +284,7 @@ tResult ZipResourceStoreCreate(const tChar * pszArchive, cResourceStore * * ppSt
 
    unzClose(handle);
 
-   cResourceStore * pStore = static_cast<cResourceStore *>(new cZipResourceStore(pszArchive));
+   IResourceStore * pStore = static_cast<IResourceStore *>(new cZipResourceStore(pszArchive));
    if (pStore == NULL)
    {
       return E_OUTOFMEMORY;

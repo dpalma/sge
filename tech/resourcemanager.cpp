@@ -18,6 +18,8 @@
 
 #include "tech/dbgalloc.h" // must be last header
 
+using namespace std;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 LOG_DEFINE_CHANNEL(ResourceManager);
@@ -84,11 +86,7 @@ tResult cResourceManager::Term()
    UnloadAll();
 
    {
-      std::vector<cResourceStore *>::iterator iter = m_stores.begin();
-      for (; iter != m_stores.end(); iter++)
-      {
-         delete *iter;
-      }
+      for_each(m_stores.begin(), m_stores.end(), CTInterfaceMethod(&IResourceStore::Release));
       m_stores.clear();
    }
 
@@ -104,7 +102,7 @@ tResult cResourceManager::AddDirectory(const tChar * pszDir)
       return E_POINTER;
    }
 
-   cResourceStore * pStore = static_cast<cResourceStore *>(new cDirectoryResourceStore(pszDir));
+   IResourceStore * pStore = static_cast<IResourceStore *>(new cDirectoryResourceStore(pszDir));
    if (pStore == NULL)
    {
       return E_OUTOFMEMORY;
@@ -153,7 +151,7 @@ tResult cResourceManager::AddDirectoryTreeFlattened(const tChar * pszDir)
 tResult cResourceManager::AddArchive(const tChar * pszArchive)
 {
    tResult result = E_FAIL;
-   cResourceStore * pStore = NULL;
+   IResourceStore * pStore = NULL;
    if ((result = ZipResourceStoreCreate(pszArchive, &pStore)) == S_OK)
    {
       m_stores.push_back(pStore);
@@ -255,7 +253,7 @@ tResult cResourceManager::LoadWithFormat(const tChar * pszName, tResourceType ty
       }
       else
       {
-         std::set<uint> extsPossible;
+         set<uint> extsPossible;
          uint extensionId = m_formats.GetExtensionIdForName(pszName);
          if (extensionId == kNoIndex)
          {
@@ -263,7 +261,7 @@ tResult cResourceManager::LoadWithFormat(const tChar * pszName, tResourceType ty
             m_formats.GetExtensionsForType(type, &extsPossible);
          }
 
-         std::set<uint>::const_iterator iter = extsPossible.begin();
+         set<uint>::const_iterator iter = extsPossible.begin();
          for (; iter != extsPossible.end(); iter++)
          {
             name.SetFileExt(m_formats.GetExtension(*iter));
@@ -300,8 +298,8 @@ tResult cResourceManager::Open(const tChar * pszName, IReader * * ppReader)
 {
    Assert(pszName != NULL);
    Assert(ppReader != NULL);
-   std::vector<cResourceStore *>::iterator iter = m_stores.begin();
-   for (; iter != m_stores.end(); iter++)
+   tResourceStores::iterator iter = m_stores.begin(), end = m_stores.end();
+   for (; iter != end; ++iter)
    {
       cAutoIPtr<IReader> pReader;
       if ((*iter)->OpenEntry(pszName, &pReader) == S_OK)
@@ -386,15 +384,15 @@ tResult cResourceManager::RegisterFormat(tResourceType type,
 
 ////////////////////////////////////////
 
-tResult cResourceManager::ListResources(const tChar * pszMatch, std::vector<cStr> * pNames) const
+tResult cResourceManager::ListResources(const tChar * pszMatch, vector<cStr> * pNames) const
 {
    if (pszMatch == NULL || pNames == NULL)
    {
       return E_POINTER;
    }
 
-   std::vector<cResourceStore *>::const_iterator iter = m_stores.begin();
-   for (; iter != m_stores.end(); iter++)
+   tResourceStores::const_iterator iter = m_stores.begin(), end = m_stores.end();
+   for (; iter != end; ++iter)
    {
       if (FAILED((*iter)->CollectResourceNames(pszMatch, pNames)))
       {
@@ -402,7 +400,7 @@ tResult cResourceManager::ListResources(const tChar * pszMatch, std::vector<cStr
       }
    }
 
-   std::unique(pNames->begin(), pNames->end());
+   unique(pNames->begin(), pNames->end());
    return pNames->empty() ? S_FALSE : S_OK;
 }
 

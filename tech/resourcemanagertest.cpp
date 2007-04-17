@@ -25,7 +25,7 @@ typedef pair<cStr, cStr> tStrPair;
 // CLASS: cTestResourceStore
 //
 
-class cTestResourceStore : public cResourceStore
+class cTestResourceStore : public cComObject<IMPLEMENTS(IResourceStore)>
 {
 public:
    cTestResourceStore(const tStrPair * pTestData, size_t nTestData);
@@ -134,7 +134,7 @@ void cResourceManagerTests::AddTestData(const tStrPair * pTestData, size_t nTest
    if ((pTestData != NULL) && (nTestData > 0))
    {
       cTestResourceStore * pStore = new cTestResourceStore(pTestData, nTestData);
-      m_pResourceManager->m_stores.push_back(static_cast<cResourceStore*>(pStore));
+      m_pResourceManager->m_stores.push_back(static_cast<IResourceStore*>(pStore));
    }
 }
 

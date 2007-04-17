@@ -17,19 +17,16 @@
 
 class cFileSpec;
 
-class cResourceStore;
+F_DECLARE_INTERFACE(IResourceStore);
 
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cResourceStore
+// CLASS: IResourceStore
 //
 
-class cResourceStore
+interface IResourceStore : IUnknown
 {
-public:
-   virtual ~cResourceStore() = 0;
-
    virtual tResult CollectResourceNames(const tChar * pszMatch, std::vector<cStr> * pNames) = 0;
    virtual tResult OpenEntry(const tChar * pszName, IReader * * ppReader) = 0;
 };
@@ -40,7 +37,7 @@ public:
 // CLASS: cDirectoryResourceStore
 //
 
-class cDirectoryResourceStore : public cResourceStore
+class cDirectoryResourceStore : public cComObject<IMPLEMENTS(IResourceStore)>
 {
 public:
    cDirectoryResourceStore(const tChar * pszDir);
@@ -59,7 +56,7 @@ private:
 // CLASS: cZipResourceStore
 //
 
-class cZipResourceStore : public cResourceStore
+class cZipResourceStore : public cComObject<IMPLEMENTS(IResourceStore)>
 {
 public:
    cZipResourceStore(const tChar * pszArchive);
@@ -77,7 +74,7 @@ private:
 
 ////////////////////////////////////////
 
-tResult ZipResourceStoreCreate(const tChar * pszArchive, cResourceStore * * ppStore);
+tResult ZipResourceStoreCreate(const tChar * pszArchive, IResourceStore * * ppStore);
 
 
 ///////////////////////////////////////////////////////////////////////////////
