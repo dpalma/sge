@@ -56,10 +56,12 @@ public:
 
 private:
    unzFile m_unzHandle;
+   bool m_bAtEnd;
 };
 
 cUnzipIterator::cUnzipIterator(unzFile unzHandle)
  : m_unzHandle(unzHandle)
+ , m_bAtEnd(false)
 {
    if (m_unzHandle != NULL)
    {
@@ -73,11 +75,14 @@ cUnzipIterator::~cUnzipIterator()
 
 bool cUnzipIterator::Next(unz_file_pos * pFilePos, unz_file_info * pFileInfo, char * pszFile, size_t maxFile)
 {
-   if (unzGetFilePos(m_unzHandle, pFilePos) == UNZ_OK &&
-      unzGetCurrentFileInfo(m_unzHandle, pFileInfo, pszFile, maxFile, NULL, 0, NULL, 0) == UNZ_OK)
+   if (!m_bAtEnd)
    {
-      unzGoToNextFile(m_unzHandle);
-      return true;
+      if (unzGetFilePos(m_unzHandle, pFilePos) == UNZ_OK &&
+         unzGetCurrentFileInfo(m_unzHandle, pFileInfo, pszFile, maxFile, NULL, 0, NULL, 0) == UNZ_OK)
+      {
+         m_bAtEnd = (unzGoToNextFile(m_unzHandle) == UNZ_END_OF_LIST_OF_FILE);
+         return true;
+      }
    }
    return false;
 }
@@ -264,6 +269,12 @@ tResult cZipResourceStore::OpenEntry(const tChar * pszName, IReader * * ppReader
    if (pszName == NULL || ppReader == NULL)
    {
       return E_POINTER;
+   }
+
+   // HACK
+   if (m_dirCache.empty())
+   {
+      CollectResourceNames(NULL, NULL);
    }
 
    tZipDirCache::iterator f = m_dirCache.find(pszName);

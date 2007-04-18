@@ -427,7 +427,10 @@ tResult cMainInitTask::SetupResourceManager()
    cStr temp;
    if (ConfigGet(_T("data"), &temp) == S_OK)
    {
-      pResourceManager->AddDirectoryTreeFlattened(temp.c_str());
+      if (pResourceManager->AddArchive(temp.c_str()) != S_OK)
+      {
+         pResourceManager->AddDirectoryTreeFlattened(temp.c_str());
+      }
    }
 
    cFileSpec config(m_argv0.c_str());
