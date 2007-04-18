@@ -166,6 +166,12 @@ tResult cZipResourceStore::OpenEntry(const tChar * pszName, IReader * * ppReader
 
          unzCloseCurrentFile(m_unzHandle);
       }
+
+      if (result != S_OK)
+      {
+         delete [] pBuffer;
+         pBuffer = NULL;
+      }
    }
 
    return result;
