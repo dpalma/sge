@@ -85,10 +85,8 @@ tResult cResourceManager::Term()
 {
    UnloadAll();
 
-   {
-      for_each(m_stores.begin(), m_stores.end(), CTInterfaceMethod(&IResourceStore::Release));
-      m_stores.clear();
-   }
+   for_each(m_stores.begin(), m_stores.end(), CTInterfaceMethod(&IResourceStore::Release));
+   m_stores.clear();
 
    return S_OK;
 }
@@ -97,21 +95,15 @@ tResult cResourceManager::Term()
 
 tResult cResourceManager::AddDirectory(const tChar * pszDir)
 {
-   if (pszDir == NULL)
+   tResult result = E_FAIL;
+   cAutoIPtr<IResourceStore> pStore;
+   if ((result = ResourceStoreCreateFileSystem(pszDir, &pStore)) == S_OK)
    {
-      return E_POINTER;
+      LocalMsg1("Adding directory store for \"%s\"\n", pszDir);
+      m_stores.push_back(CTAddRef(pStore));
+      result = S_OK;
    }
-
-   IResourceStore * pStore = static_cast<IResourceStore *>(new cDirectoryResourceStore(pszDir));
-   if (pStore == NULL)
-   {
-      return E_OUTOFMEMORY;
-   }
-
-   LocalMsg1("Adding directory store for \"%s\"\n", pszDir);
-   
-   m_stores.push_back(pStore);
-   return S_OK;
+   return result;
 }
 
 ////////////////////////////////////////
@@ -151,11 +143,12 @@ tResult cResourceManager::AddDirectoryTreeFlattened(const tChar * pszDir)
 tResult cResourceManager::AddArchive(const tChar * pszArchive)
 {
    tResult result = E_FAIL;
-   IResourceStore * pStore = NULL;
+   cAutoIPtr<IResourceStore> pStore;
    if ((result = ResourceStoreCreateZip(pszArchive, &pStore)) == S_OK)
    {
-      m_stores.push_back(pStore);
-      return S_OK;
+      LocalMsg1("Adding archive store for \"%s\"\n", pszArchive);
+      m_stores.push_back(CTAddRef(pStore));
+      result = S_OK;
    }
    return result;
 }

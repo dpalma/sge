@@ -39,6 +39,12 @@ private:
    vector<tStrPair> m_testData;
 };
 
+class cStackTestResourceStore : public cTestResourceStore
+{
+public:
+   virtual void DeleteThis() {}
+};
+
 cTestResourceStore::cTestResourceStore(const tStrPair * pTestData, size_t nTestData)
  : m_testData(nTestData)
 {
