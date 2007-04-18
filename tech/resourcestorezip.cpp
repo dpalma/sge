@@ -43,6 +43,145 @@ static const int kUnzMaxPath = 260;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cUnzipIterator
+//
+
+class cUnzipIterator
+{
+public:
+   cUnzipIterator(unzFile unzHandle);
+   ~cUnzipIterator();
+
+   bool Next(unz_file_pos * pFilePos, unz_file_info * pFileInfo, char * pszFile, size_t maxFile);
+
+private:
+   unzFile m_unzHandle;
+};
+
+cUnzipIterator::cUnzipIterator(unzFile unzHandle)
+ : m_unzHandle(unzHandle)
+{
+   if (m_unzHandle != NULL)
+   {
+      unzGoToFirstFile(m_unzHandle);
+   }
+}
+
+cUnzipIterator::~cUnzipIterator()
+{
+}
+
+bool cUnzipIterator::Next(unz_file_pos * pFilePos, unz_file_info * pFileInfo, char * pszFile, size_t maxFile)
+{
+   if (unzGetFilePos(m_unzHandle, pFilePos) == UNZ_OK &&
+      unzGetCurrentFileInfo(m_unzHandle, pFileInfo, pszFile, maxFile, NULL, 0, NULL, 0) == UNZ_OK)
+   {
+      unzGoToNextFile(m_unzHandle);
+      return true;
+   }
+   return false;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cUnzipArchive
+//
+
+class cUnzipArchive
+{
+public:
+   cUnzipArchive(unzFile unzHandle);
+   ~cUnzipArchive();
+
+   cUnzipIterator Iterate();
+
+   tResult OpenMember(const unz_file_pos & filePos, IReader * * ppReader);
+
+private:
+   unzFile m_unzHandle;
+};
+
+////////////////////////////////////////
+
+cUnzipArchive::cUnzipArchive(unzFile unzHandle)
+ : m_unzHandle(unzHandle)
+{
+}
+
+////////////////////////////////////////
+
+cUnzipArchive::~cUnzipArchive()
+{
+   if (m_unzHandle != NULL)
+   {
+      unzClose(m_unzHandle);
+      m_unzHandle = NULL;
+   }
+}
+
+////////////////////////////////////////
+
+cUnzipIterator cUnzipArchive::Iterate()
+{
+   return cUnzipIterator(m_unzHandle);
+}
+
+////////////////////////////////////////
+
+tResult cUnzipArchive::OpenMember(const unz_file_pos & filePos, IReader * * ppReader)
+{
+   if (ppReader == NULL)
+   {
+      return E_POINTER;
+   }
+
+   Assert(m_unzHandle != NULL);
+
+   if (unzGoToFilePos(m_unzHandle, const_cast<unz_file_pos*>(&filePos)) != UNZ_OK)
+   {
+      return E_FAIL;
+   }
+
+   tResult result = E_FAIL;
+
+   unz_file_info fileInfo;
+   char szFile[kUnzMaxPath];
+   if (unzGetCurrentFileInfo(m_unzHandle, &fileInfo, szFile, _countof(szFile), NULL, 0, NULL, 0) == UNZ_OK)
+   {
+      if (unzOpenCurrentFile(m_unzHandle) == UNZ_OK)
+      {
+         byte * pBuffer = new byte[fileInfo.uncompressed_size];
+         if (pBuffer == NULL)
+         {
+            result = E_OUTOFMEMORY;
+         }
+         else
+         {
+            cAutoIPtr<IReader> pReader;
+            if (unzReadCurrentFile(m_unzHandle, pBuffer, fileInfo.uncompressed_size) >= 0
+               && MemReaderCreate(pBuffer, fileInfo.uncompressed_size, true, &pReader) == S_OK)
+            {
+               *ppReader = CTAddRef(pReader);
+               result = S_OK;
+            }
+            else
+            {
+               delete [] pBuffer;
+               pBuffer = NULL;
+            }
+         }
+
+         unzCloseCurrentFile(m_unzHandle);
+      }
+   }
+
+   return result;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cZipResourceStore
 //
 
@@ -56,7 +195,8 @@ public:
    virtual tResult OpenEntry(const tChar * pszName, IReader * * ppReader);
 
 private:
-   unzFile m_unzHandle;
+   cUnzipArchive m_unzArchive;
+
    typedef map<cStr, unz_file_pos_s> tZipDirCache;
    tZipDirCache m_dirCache;
 };
@@ -64,7 +204,7 @@ private:
 ////////////////////////////////////////
 
 cZipResourceStore::cZipResourceStore(unzFile unzHandle)
- : m_unzHandle(unzHandle)
+ : m_unzArchive(unzHandle)
 {
 }
 
@@ -72,49 +212,47 @@ cZipResourceStore::cZipResourceStore(unzFile unzHandle)
 
 cZipResourceStore::~cZipResourceStore()
 {
-   if (m_unzHandle != NULL)
-   {
-      unzClose(m_unzHandle);
-      m_unzHandle = NULL;
-   }
 }
 
 ////////////////////////////////////////
 
 tResult cZipResourceStore::CollectResourceNames(const tChar * pszMatch, vector<cStr> * pNames)
 {
-   if (pszMatch == NULL || pNames == NULL)
-   {
-      return E_POINTER;
-   }
+   cUnzipIterator iter(m_unzArchive.Iterate());
 
-   Assert(m_unzHandle != NULL);
+   unz_file_pos filePos;
+   unz_file_info fileInfo;
+   char szFile[kUnzMaxPath];
 
-   do
+   while (iter.Next(&filePos, &fileInfo, szFile, _countof(szFile)))
    {
-      unz_file_pos filePos;
-      unz_file_info fileInfo;
-      char szFile[kUnzMaxPath];
-      if (unzGetFilePos(m_unzHandle, &filePos) == UNZ_OK &&
-         unzGetCurrentFileInfo(m_unzHandle, &fileInfo, szFile, _countof(szFile), NULL, 0, NULL, 0) == UNZ_OK)
-      {
-         LocalMsg2("[%d] %s\n", filePos.num_of_file, szFile);
+      LocalMsg2("[%d] %s\n", filePos.num_of_file, szFile);
+
 #ifdef _UNICODE
-         size_t size = mbstowcs(NULL, szFile, 0);
-         wchar_t * pszTemp = reinterpret_cast<wchar_t*>(alloca(size));
-         mbstowcs(pszTemp, szFile, size);
-         cFileSpec file(pszTemp);
+      size_t size = mbstowcs(NULL, szFile, 0);
+      wchar_t * pszTemp = reinterpret_cast<wchar_t*>(alloca(size));
+      mbstowcs(pszTemp, szFile, size);
+      cFileSpec file(pszTemp);
 #else
-         cFileSpec file(szFile);
+      cFileSpec file(szFile);
 #endif
-         m_dirCache[cStr(file.CStr())] = filePos;
-         if (WildCardMatch(pszMatch, file.CStr()))
+      m_dirCache[cStr(file.CStr())] = filePos;
+
+      if (pNames != NULL)
+      {
+         if (pszMatch != NULL)
+         {
+            if (WildCardMatch(pszMatch, file.CStr()))
+            {
+               pNames->push_back(file.CStr());
+            }
+         }
+         else
          {
             pNames->push_back(file.CStr());
          }
       }
    }
-   while (unzGoToNextFile(m_unzHandle) == UNZ_OK);
 
    return S_OK;
 }
@@ -128,8 +266,6 @@ tResult cZipResourceStore::OpenEntry(const tChar * pszName, IReader * * ppReader
       return E_POINTER;
    }
 
-   Assert(m_unzHandle != NULL);
-
    tZipDirCache::iterator f = m_dirCache.find(pszName);
    if (f == m_dirCache.end())
    {
@@ -137,44 +273,7 @@ tResult cZipResourceStore::OpenEntry(const tChar * pszName, IReader * * ppReader
       return E_NOTIMPL;
    }
 
-   if (unzGoToFilePos(m_unzHandle, &(f->second)) != UNZ_OK)
-   {
-      return E_FAIL;
-   }
-
-   tResult result = E_FAIL;
-
-   unz_file_info fileInfo;
-   char szFile[kUnzMaxPath];
-   if (unzGetCurrentFileInfo(m_unzHandle, &fileInfo, szFile, _countof(szFile), NULL, 0, NULL, 0) == UNZ_OK)
-   {
-      byte * pBuffer = new byte[fileInfo.uncompressed_size];
-      if (pBuffer == NULL)
-      {
-         return E_OUTOFMEMORY;
-      }
-
-      if (unzOpenCurrentFile(m_unzHandle) == UNZ_OK)
-      {
-         cAutoIPtr<IReader> pReader;
-         if (unzReadCurrentFile(m_unzHandle, pBuffer, fileInfo.uncompressed_size) >= 0
-            && MemReaderCreate(pBuffer, fileInfo.uncompressed_size, true, &pReader) == S_OK)
-         {
-            *ppReader = CTAddRef(pReader);
-            result = S_OK;
-         }
-
-         unzCloseCurrentFile(m_unzHandle);
-      }
-
-      if (result != S_OK)
-      {
-         delete [] pBuffer;
-         pBuffer = NULL;
-      }
-   }
-
-   return result;
+   return m_unzArchive.OpenMember(f->second, ppReader);
 }
 
 ////////////////////////////////////////
