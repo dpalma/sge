@@ -43,53 +43,6 @@ static const int kUnzMaxPath = 260;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cUnzipIterator
-//
-
-class cUnzipIterator
-{
-public:
-   cUnzipIterator(unzFile unzHandle);
-   ~cUnzipIterator();
-
-   bool Next(unz_file_pos * pFilePos, unz_file_info * pFileInfo, char * pszFile, size_t maxFile);
-
-private:
-   unzFile m_unzHandle;
-   bool m_bAtEnd;
-};
-
-cUnzipIterator::cUnzipIterator(unzFile unzHandle)
- : m_unzHandle(unzHandle)
- , m_bAtEnd(false)
-{
-   if (m_unzHandle != NULL)
-   {
-      unzGoToFirstFile(m_unzHandle);
-   }
-}
-
-cUnzipIterator::~cUnzipIterator()
-{
-}
-
-bool cUnzipIterator::Next(unz_file_pos * pFilePos, unz_file_info * pFileInfo, char * pszFile, size_t maxFile)
-{
-   if (!m_bAtEnd)
-   {
-      if (unzGetFilePos(m_unzHandle, pFilePos) == UNZ_OK &&
-         unzGetCurrentFileInfo(m_unzHandle, pFileInfo, pszFile, maxFile, NULL, 0, NULL, 0) == UNZ_OK)
-      {
-         m_bAtEnd = (unzGoToNextFile(m_unzHandle) == UNZ_END_OF_LIST_OF_FILE);
-         return true;
-      }
-   }
-   return false;
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
 // CLASS: cUnzipArchive
 //
 
@@ -99,18 +52,21 @@ public:
    cUnzipArchive(unzFile unzHandle);
    ~cUnzipArchive();
 
-   cUnzipIterator Iterate();
+   void IterStart();
+   bool IterNext(unz_file_pos * pFilePos, unz_file_info * pFileInfo, char * pszFile, size_t maxFile);
 
    tResult OpenMember(const unz_file_pos & filePos, IReader * * ppReader);
 
 private:
    unzFile m_unzHandle;
+   bool m_bIterAtEnd;
 };
 
 ////////////////////////////////////////
 
 cUnzipArchive::cUnzipArchive(unzFile unzHandle)
  : m_unzHandle(unzHandle)
+ , m_bIterAtEnd(false)
 {
 }
 
@@ -127,9 +83,32 @@ cUnzipArchive::~cUnzipArchive()
 
 ////////////////////////////////////////
 
-cUnzipIterator cUnzipArchive::Iterate()
+void cUnzipArchive::IterStart()
 {
-   return cUnzipIterator(m_unzHandle);
+   if (m_unzHandle != NULL)
+   {
+      unzGoToFirstFile(m_unzHandle);
+   }
+   m_bIterAtEnd = false;
+}
+
+////////////////////////////////////////
+
+bool cUnzipArchive::IterNext(unz_file_pos * pFilePos, unz_file_info * pFileInfo, char * pszFile, size_t maxFile)
+{
+   if (!m_bIterAtEnd)
+   {
+      if (m_unzHandle != NULL)
+      {
+         if (unzGetFilePos(m_unzHandle, pFilePos) == UNZ_OK &&
+            unzGetCurrentFileInfo(m_unzHandle, pFileInfo, pszFile, maxFile, NULL, 0, NULL, 0) == UNZ_OK)
+         {
+            m_bIterAtEnd = (unzGoToNextFile(m_unzHandle) == UNZ_END_OF_LIST_OF_FILE);
+            return true;
+         }
+      }
+   }
+   return false;
 }
 
 ////////////////////////////////////////
@@ -223,13 +202,12 @@ cZipResourceStore::~cZipResourceStore()
 
 tResult cZipResourceStore::CollectResourceNames(const tChar * pszMatch, vector<cStr> * pNames)
 {
-   cUnzipIterator iter(m_unzArchive.Iterate());
-
    unz_file_pos filePos;
    unz_file_info fileInfo;
    char szFile[kUnzMaxPath];
 
-   while (iter.Next(&filePos, &fileInfo, szFile, _countof(szFile)))
+   m_unzArchive.IterStart();
+   while (m_unzArchive.IterNext(&filePos, &fileInfo, szFile, _countof(szFile)))
    {
       LocalMsg2("[%d] %s\n", filePos.num_of_file, szFile);
 
