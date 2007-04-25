@@ -12,6 +12,7 @@
 
 #include "tech/globalobj.h"
 #include "tech/resourceapi.h"
+#include "tech/token.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"

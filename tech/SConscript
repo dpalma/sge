@@ -54,6 +54,7 @@ sourceFiles = Split("""
    tga.cpp
    thread.cpp
    threadcaller.cpp
+   token.cpp
 """)
 
 libPaths = Split("""

@@ -4,8 +4,11 @@
 #include "stdhdr.h"
 
 #include "guiparse.h"
-#include "gui/guistyleapi.h"
 #include "guistrings.h"
+
+#include "gui/guistyleapi.h"
+
+#include "tech/token.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"

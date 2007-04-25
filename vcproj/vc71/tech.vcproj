@@ -542,6 +542,9 @@
 			<File
 				RelativePath="..\..\tech\threadcaller.cpp">
 			</File>
+			<File
+				RelativePath="..\..\tech\token.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -752,6 +755,9 @@
 			</File>
 			<File
 				RelativePath="..\..\api\tech\toposort.h">
+			</File>
+			<File
+				RelativePath="..\..\api\tech\token.h">
 			</File>
 			<File
 				RelativePath="..\..\api\tech\undbgalloc.h">

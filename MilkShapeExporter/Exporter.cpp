@@ -14,6 +14,7 @@
 #include "tech/filespec.h"
 #include "tech/readwriteapi.h"
 #include "tech/readwriteutils.h"
+#include "tech/token.h"
 
 #include "msLib.h"
 

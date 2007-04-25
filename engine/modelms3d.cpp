@@ -16,6 +16,7 @@
 #include "tech/globalobj.h"
 #include "tech/filespec.h"
 #include "tech/techmath.h"
+#include "tech/token.h"
 
 #include <algorithm>
 #include <cfloat>

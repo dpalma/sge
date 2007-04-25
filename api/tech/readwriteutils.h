@@ -9,6 +9,8 @@
 #include "readwriteapi.h"
 #include "vec3.h"
 
+#include <vector>
+
 #ifdef _MSC_VER
 #pragma once
 #endif

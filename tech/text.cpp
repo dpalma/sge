@@ -6,6 +6,7 @@
 #include "tech/readwriteapi.h"
 #include "tech/resourceapi.h"
 #include "tech/globalobj.h"
+#include "tech/token.h"
 
 #include "tech/dbgalloc.h" // must be last header
 
