@@ -13,6 +13,7 @@ sourceFiles = Split("""
    entitycmdui.cpp
    entitycomponentregistry.cpp
    entitycomponents.cpp
+   entityfactory.cpp
    entitymanager.cpp
    geomipmap.cpp
    heightmap.cpp

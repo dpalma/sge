@@ -31,10 +31,6 @@
 
 #pragma warning(disable:4355) // 'this' : used in base member initializer list
 
-///////////////////////////////////////////////////////////////////////////////
-
-extern tResult EntityCreate(const tChar * pszTypeName, tEntityId id, IEntity * * ppEntity);
-
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -44,7 +40,6 @@ extern tResult EntityCreate(const tChar * pszTypeName, tEntityId id, IEntity * *
 ///////////////////////////////////////
 
 cEntityManager::cEntityManager()
- : m_nextId(0)
 {
 }
 
@@ -112,69 +107,41 @@ tResult cEntityManager::RemoveEntityManagerListener(IEntityManagerListener * pLi
 
 tResult cEntityManager::SpawnEntity(const tChar * pszEntity, const tVec3 & position, tEntityId * pEntityId)
 {
-   if (pszEntity == NULL)
+   cAutoIPtr<IEntity> pEntity;
+   UseGlobal(EntityFactory);
+   if (pEntityFactory->CreateEntity(pszEntity, &pEntity) == S_OK)
+   {
+      cAutoIPtr<IEntityPositionComponent> pPosition;
+      if (pEntity->GetComponent(kECT_Position, IID_IEntityPositionComponent, (void**)&pPosition) == S_OK)
+      {
+         pPosition->SetPosition(position);
+      }
+
+      if (pEntityId != NULL)
+      {
+         *pEntityId = pEntity->GetId();
+      }
+
+      return AddEntity(pEntity);
+   }
+
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cEntityManager::AddEntity(IEntity * pEntity)
+{
+   if (pEntity == NULL)
    {
       return E_POINTER;
    }
 
-   const TiXmlDocument * pTiXmlDoc = NULL;
-   UseGlobal(ResourceManager);
-   if (pResourceManager->Load(pszEntity, kRT_TiXml, NULL, (void**)&pTiXmlDoc) == S_OK)
-   {
-      const TiXmlElement * pTiXmlElement = pTiXmlDoc->FirstChildElement();
-      if ((pTiXmlElement != NULL) && (_stricmp(pTiXmlElement->Value(), "entity") == 0))
-      {
-         WarnMsgIf1(pTiXmlElement->NextSiblingElement() != NULL,
-            "There should be only one entity definition per file (%s)\n", pszEntity);
+   m_entities.push_back(CTAddRef(pEntity));
 
-         uint oldNextId = m_nextId;
-         uint entityId = ++m_nextId;
+   RegisterEntityUpdatables(pEntity);
 
-         tResult result = E_FAIL;
-         cAutoIPtr<IEntity> pEntity;
-         if ((result = EntityCreate(pszEntity, entityId, &pEntity)) != S_OK)
-         {
-            m_nextId = oldNextId;
-            return result;
-         }
-
-         UseGlobal(EntityComponentRegistry);
-         if (!!pEntityComponentRegistry)
-         {
-            for (const TiXmlElement * pTiXmlChild = pTiXmlElement->FirstChildElement();
-               pTiXmlChild != NULL; pTiXmlChild = pTiXmlChild->NextSiblingElement())
-            {
-               Assert(pTiXmlChild->Type() == TiXmlNode::ELEMENT);
-
-               cAutoIPtr<IEntityComponent> pComponent;
-               if (pEntityComponentRegistry->CreateComponent(pTiXmlChild, pEntity, &pComponent) == S_OK)
-               {
-                  cAutoIPtr<IEntityPositionComponent> pPosition;
-                  if (pComponent->QueryInterface(IID_IEntityPositionComponent, (void**)&pPosition) == S_OK)
-                  {
-                     pPosition->SetPosition(position);
-                  }
-               }
-               else
-               {
-                  WarnMsgIf1(pTiXmlChild->Value() != NULL, "Failed to create entity component \"%s\"\n", pTiXmlChild->Value());
-               }
-            }
-         }
-
-         m_entities.push_back(CTAddRef(pEntity));
-         if (pEntityId != NULL)
-         {
-            *pEntityId = entityId;
-         }
-
-         RegisterEntityUpdatables(pEntity);
-
-         return S_OK;
-      }
-   }
-
-   return E_FAIL;
+   return S_OK;
 }
 
 ///////////////////////////////////////

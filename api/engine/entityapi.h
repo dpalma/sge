@@ -29,6 +29,7 @@ F_DECLARE_INTERFACE_GUID(IEntityBrainComponent, "4E16D11A-08F2-4321-AA91-B670D06
 F_DECLARE_INTERFACE_GUID(IEnumEntities, "FC22B764-3FBA-43da-97B0-56857D0A77E9");
 F_DECLARE_INTERFACE_GUID(IEntityCommandManager, "4A55B143-2588-4fad-828A-E0C6C6539284");
 F_DECLARE_INTERFACE_GUID(IEntityCommandUI, "06188D53-13DA-4e67-975B-A653460F8967");
+F_DECLARE_INTERFACE_GUID(IEntityFactory, "B44642DB-A9BE-4e57-A70F-766837E5B1AE");
 F_DECLARE_INTERFACE_GUID(IEntityManager, "92DB7247-E01C-4935-B35C-EB233295A4BE");
 F_DECLARE_INTERFACE_GUID(IEntityManagerListener, "1EC6DB1A-C833-4b68-8705-D1A9FB5CC8D3");
 
@@ -248,6 +249,19 @@ interface IEntityCommandUI : IUnknown
 ////////////////////////////////////////
 
 ENGINE_API tResult EntityCommandUICreate();
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEntityFactory
+//
+
+interface IEntityFactory : IUnknown
+{
+   virtual tResult CreateEntity(const tChar * pszEntityType, IEntity * * ppEntity) = 0;
+};
+
+ENGINE_API tResult EntityFactoryCreate();
 
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -544,6 +544,7 @@ static void RegisterGlobalObjects()
    EntityCommandManagerCreate();
    EntityCommandUICreate();
    EntityComponentRegistryCreate();
+   EntityFactoryCreate();
    EntityManagerCreate();
    InputCreate();
    GUIContextCreate();

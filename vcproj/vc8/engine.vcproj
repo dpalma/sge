@@ -504,6 +504,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\engine\entityfactory.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\engine\entitymanager.cpp"
 				>
 			</File>
@@ -642,6 +646,10 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\entitycomponents.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\engine\entityfactory.h"
 				>
 			</File>
 			<File

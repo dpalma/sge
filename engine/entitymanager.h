@@ -78,6 +78,8 @@ public:
 
    virtual tResult SpawnEntity(const tChar * pszEntity, const tVec3 & position, tEntityId * pEntityId);
 
+   tResult AddEntity(IEntity * pEntity);
+
    virtual tResult RemoveEntity(tEntityId entityId);
    virtual tResult RemoveEntity(IEntity * pEntity);
    virtual void RemoveAll();
@@ -124,7 +126,6 @@ private:
    friend class cSimClient;
    cSimClient m_simClient;
 
-   tEntityId m_nextId;
    tEntityList m_entities;
    tEntitySet m_selected;
 };
