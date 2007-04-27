@@ -157,6 +157,7 @@ static void RegisterGlobalObjects()
    CameraControlCreate();
    EditorToolStateCreate();
    EntityManagerCreate();
+   EntityComponentRegistryCreate();
    InputCreate();
    ResourceManagerCreate();
    SaveLoadManagerCreate();

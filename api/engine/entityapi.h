@@ -21,6 +21,7 @@
 F_DECLARE_INTERFACE_GUID(IEntity, "85E6F9DB-639F-411d-B365-86A8FBD1ACBF");
 F_DECLARE_INTERFACE_GUID(IUpdatable, "0A85E22A-F905-458c-B96B-E0EBB4FECE0B");
 F_DECLARE_INTERFACE_GUID(IEntityComponent, "D1A48ABA-7DB7-4fb7-96E3-72F79DFABA99");
+F_DECLARE_INTERFACE_GUID(IEntityComponentRegistry, "B0263197-201A-4ca4-8AD6-896F03CDDD19");
 F_DECLARE_INTERFACE_GUID(IEntityPositionComponent, "BA4B742C-8D6F-494a-827B-25F8A3B4801F");
 F_DECLARE_INTERFACE_GUID(IEntityRenderComponent, "AF68F8F0-EFA5-49c6-AA91-C4E21BAF6D14");
 F_DECLARE_INTERFACE_GUID(IEntitySpawnComponent, "612C76A2-151D-4322-9687-3374463BF7BA");
@@ -130,6 +131,31 @@ interface IEntityBrainComponent : IEntityComponent
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// INTERFACE: IEntityComponentRegistry
+//
+
+typedef tResult (* tEntityComponentFactoryFn)(const TiXmlElement * pTiXmlElement,
+                                              IEntity * pEntity, void * pUser,
+                                              IEntityComponent * * ppComponent);
+
+interface IEntityComponentRegistry : IUnknown
+{
+   virtual tResult RegisterComponentFactory(const tChar * pszComponent,
+                                            tEntityComponentFactoryFn pfnFactory, void * pUser) = 0;
+   inline tResult RegisterComponentFactory(const tChar * pszComponent, tEntityComponentFactoryFn pfnFactory)
+   {
+      return RegisterComponentFactory(pszComponent, pfnFactory, NULL);
+   }
+   virtual tResult RevokeComponentFactory(const tChar * pszComponent) = 0;
+   virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement, IEntity * pEntity,
+                                   IEntityComponent * * ppComponent) = 0;
+};
+
+ENGINE_API tResult EntityComponentRegistryCreate();
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // INTERFACE: IEntity
 //
 
@@ -229,10 +255,6 @@ ENGINE_API tResult EntityCommandUICreate();
 // INTERFACE: IEntityManager
 //
 
-typedef tResult (* tEntityComponentFactoryFn)(const TiXmlElement * pTiXmlElement,
-                                              IEntity * pEntity, void * pUser,
-                                              IEntityComponent * * ppComponent);
-
 interface IEntityManager : IUnknown
 {
    virtual tResult AddEntityManagerListener(IEntityManagerListener * pListener) = 0;
@@ -260,16 +282,6 @@ interface IEntityManager : IUnknown
 
    virtual tResult SetSelected(IEnumEntities * pEnum) = 0;
    virtual tResult GetSelected(IEnumEntities * * ppEnum) const = 0;
-
-   virtual tResult RegisterComponentFactory(const tChar * pszComponent,
-                                            tEntityComponentFactoryFn pfnFactory, void * pUser) = 0;
-   inline tResult RegisterComponentFactory(const tChar * pszComponent, tEntityComponentFactoryFn pfnFactory)
-   {
-      return RegisterComponentFactory(pszComponent, pfnFactory, NULL);
-   }
-   virtual tResult RevokeComponentFactory(const tChar * pszComponent) = 0;
-   virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement, IEntity * pEntity,
-                                   IEntityComponent * * ppComponent) = 0;
 };
 
 ////////////////////////////////////////

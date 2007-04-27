@@ -496,11 +496,11 @@ tResult EntityBrainComponentFactory(const TiXmlElement * pTiXmlElement,
 
 void RegisterBuiltInComponents()
 {
-   UseGlobal(EntityManager);
-   Verify(pEntityManager->RegisterComponentFactory(_T("position"), EntityPositionComponentFactory) == S_OK);
-   Verify(pEntityManager->RegisterComponentFactory(_T("render"), EntityRenderComponentFactory) == S_OK);
-   Verify(pEntityManager->RegisterComponentFactory(_T("spawns"), EntitySpawnComponentFactory) == S_OK);
-   Verify(pEntityManager->RegisterComponentFactory(_T("brain"), EntityBrainComponentFactory) == S_OK);
+   UseGlobal(EntityComponentRegistry);
+   Verify(pEntityComponentRegistry->RegisterComponentFactory(_T("position"), EntityPositionComponentFactory) == S_OK);
+   Verify(pEntityComponentRegistry->RegisterComponentFactory(_T("render"), EntityRenderComponentFactory) == S_OK);
+   Verify(pEntityComponentRegistry->RegisterComponentFactory(_T("spawns"), EntitySpawnComponentFactory) == S_OK);
+   Verify(pEntityComponentRegistry->RegisterComponentFactory(_T("brain"), EntityBrainComponentFactory) == S_OK);
 }
 
 

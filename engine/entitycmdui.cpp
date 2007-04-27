@@ -111,7 +111,9 @@ tResult cEntityCmdUI::Init()
 {
    UseGlobal(EntityManager);
    pEntityManager->AddEntityManagerListener(static_cast<IEntityManagerListener*>(this));
-   pEntityManager->RegisterComponentFactory(ENTITYCMDUICOMPONENT, EntityCmdUIComponentFactory, this);
+
+   UseGlobal(EntityComponentRegistry);
+   pEntityComponentRegistry->RegisterComponentFactory(ENTITYCMDUICOMPONENT, EntityCmdUIComponentFactory, this);
 
    UseGlobal(GUIContext);
    pGUIContext->AddEventListener(static_cast<IGUIEventListener*>(this));
@@ -131,7 +133,9 @@ tResult cEntityCmdUI::Term()
 
    UseGlobal(EntityManager);
    pEntityManager->RemoveEntityManagerListener(static_cast<IEntityManagerListener*>(this));
-   pEntityManager->RevokeComponentFactory(ENTITYCMDUICOMPONENT);
+
+   UseGlobal(EntityComponentRegistry);
+   pEntityComponentRegistry->RevokeComponentFactory(ENTITYCMDUICOMPONENT);
 
    return S_OK;
 }

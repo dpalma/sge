@@ -15,7 +15,6 @@
 #include "tech/simapi.h"
 
 #include <list>
-#include <map>
 #include <set>
 
 #ifdef _MSC_VER
@@ -95,12 +94,6 @@ public:
    virtual tResult SetSelected(IEnumEntities * pEnum);
    virtual tResult GetSelected(IEnumEntities * * ppEnum) const;
 
-   virtual tResult RegisterComponentFactory(const tChar * pszComponent,
-                                            tEntityComponentFactoryFn pfnFactory, void * pUser);
-   virtual tResult RevokeComponentFactory(const tChar * pszComponent);
-   virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement, IEntity * pEntity,
-                                   IEntityComponent * * ppComponent);
-
    ///////////////////////////////////
 
    void RegisterEntityUpdatables(IEntity * pEntity);
@@ -134,9 +127,6 @@ private:
    tEntityId m_nextId;
    tEntityList m_entities;
    tEntitySet m_selected;
-
-   typedef std::map<cStr, std::pair<tEntityComponentFactoryFn, void*> > tComponentFactoryMap;
-   tComponentFactoryMap m_componentFactoryMap;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

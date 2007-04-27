@@ -541,9 +541,10 @@ static void RegisterGlobalObjects()
 {
    AIAgentMessageRouterCreate();
    CameraControlCreate();
-   EntityManagerCreate();
    EntityCommandManagerCreate();
    EntityCommandUICreate();
+   EntityComponentRegistryCreate();
+   EntityManagerCreate();
    InputCreate();
    GUIContextCreate();
    GUIFactoryCreate();

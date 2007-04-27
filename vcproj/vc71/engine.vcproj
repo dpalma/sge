@@ -348,6 +348,9 @@
 				RelativePath="..\..\engine\entitycmdui.cpp">
 			</File>
 			<File
+				RelativePath="..\..\engine\entitycomponentregistry.cpp">
+			</File>
+			<File
 				RelativePath="..\..\engine\entitycomponents.cpp">
 			</File>
 			<File
@@ -449,6 +452,9 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\entitycmdui.h">
+			</File>
+			<File
+				RelativePath="..\..\engine\entitycomponentregistry.h">
 			</File>
 			<File
 				RelativePath="..\..\engine\entitycomponents.h">

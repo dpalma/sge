@@ -9,7 +9,6 @@
 #include "engine/engineapi.h"
 #include "engine/terrainapi.h"
 
-//#include "platform/inputapi.h"
 #include "platform/keys.h"
 
 #include "render/renderapi.h"
@@ -19,6 +18,10 @@
 #include "tech/ray.h"
 #include "tech/readwriteutils.h"
 #include "tech/resourceapi.h"
+
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
+#endif
 
 #include <tinyxml.h>
 
@@ -31,7 +34,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 extern tResult EntityCreate(const tChar * pszTypeName, tEntityId id, IEntity * * ppEntity);
-extern void RegisterBuiltInComponents();
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -70,8 +72,6 @@ tResult cEntityManager::Init()
 
    UseGlobal(Sim);
    pSim->AddSimClient(&m_simClient);
-
-   RegisterBuiltInComponents();
 
    return S_OK;
 }
@@ -138,23 +138,27 @@ tResult cEntityManager::SpawnEntity(const tChar * pszEntity, const tVec3 & posit
             return result;
          }
 
-         for (const TiXmlElement * pTiXmlChild = pTiXmlElement->FirstChildElement();
-            pTiXmlChild != NULL; pTiXmlChild = pTiXmlChild->NextSiblingElement())
+         UseGlobal(EntityComponentRegistry);
+         if (!!pEntityComponentRegistry)
          {
-            Assert(pTiXmlChild->Type() == TiXmlNode::ELEMENT);
+            for (const TiXmlElement * pTiXmlChild = pTiXmlElement->FirstChildElement();
+               pTiXmlChild != NULL; pTiXmlChild = pTiXmlChild->NextSiblingElement())
+            {
+               Assert(pTiXmlChild->Type() == TiXmlNode::ELEMENT);
 
-            cAutoIPtr<IEntityComponent> pComponent;
-            if (CreateComponent(pTiXmlChild, pEntity, &pComponent) == S_OK)
-            {
-               cAutoIPtr<IEntityPositionComponent> pPosition;
-               if (pComponent->QueryInterface(IID_IEntityPositionComponent, (void**)&pPosition) == S_OK)
+               cAutoIPtr<IEntityComponent> pComponent;
+               if (pEntityComponentRegistry->CreateComponent(pTiXmlChild, pEntity, &pComponent) == S_OK)
                {
-                  pPosition->SetPosition(position);
+                  cAutoIPtr<IEntityPositionComponent> pPosition;
+                  if (pComponent->QueryInterface(IID_IEntityPositionComponent, (void**)&pPosition) == S_OK)
+                  {
+                     pPosition->SetPosition(position);
+                  }
                }
-            }
-            else
-            {
-               WarnMsgIf1(pTiXmlChild->Value() != NULL, "Failed to create entity component \"%s\"\n", pTiXmlChild->Value());
+               else
+               {
+                  WarnMsgIf1(pTiXmlChild->Value() != NULL, "Failed to create entity component \"%s\"\n", pTiXmlChild->Value());
+               }
             }
          }
 
@@ -470,67 +474,6 @@ tResult cEntityManager::GetSelected(IEnumEntities * * ppEnum) const
       return S_FALSE;
    }
    return tEntitySetEnum::Create(m_selected, ppEnum);
-}
-
-///////////////////////////////////////
-
-tResult cEntityManager::RegisterComponentFactory(const tChar * pszComponent,
-                                                 tEntityComponentFactoryFn pfnFactory,
-                                                 void * pUser)
-{
-   if (pszComponent == NULL || pfnFactory == NULL)
-   {
-      return E_POINTER;
-   }
-
-   std::pair<tComponentFactoryMap::iterator, bool> result = 
-      m_componentFactoryMap.insert(std::make_pair(pszComponent, std::make_pair(pfnFactory, pUser)));
-   if (result.second)
-   {
-      return S_OK;
-   }
-
-   WarnMsg1("Failed to register entity component factory \"%s\"\n", pszComponent);
-   return E_FAIL;
-}
-
-///////////////////////////////////////
-
-tResult cEntityManager::RevokeComponentFactory(const tChar * pszComponent)
-{
-   if (pszComponent == NULL)
-   {
-      return E_POINTER;
-   }
-   size_t nErased = m_componentFactoryMap.erase(pszComponent);
-   return (nErased == 0) ? S_FALSE : S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cEntityManager::CreateComponent(const TiXmlElement * pTiXmlElement,
-                                        IEntity * pEntity, IEntityComponent * * ppComponent)
-{
-   if (pTiXmlElement == NULL || pEntity == NULL || ppComponent == NULL)
-   {
-      return E_POINTER;
-   }
-
-#ifdef _UNICODE
-   cMultiVar temp(pTiXmlElement->Value());
-   const wchar_t * pszComponent = temp.ToWideString();
-#else
-   const char * pszComponent = pTiXmlElement->Value();
-#endif
-
-   tComponentFactoryMap::iterator f = m_componentFactoryMap.find(pszComponent);
-   if (f != m_componentFactoryMap.end())
-   {
-      const std::pair<tEntityComponentFactoryFn, void*> & p = f->second;
-      return (*p.first)(pTiXmlElement, pEntity, p.second, ppComponent);
-   }
-
-   return E_FAIL;
 }
 
 ///////////////////////////////////////
