@@ -15,6 +15,26 @@
 #endif
 
 
+class cEntityComponentFactory : public cComObject<IMPLEMENTS(IEntityComponentFactory)>
+{
+public:
+   cEntityComponentFactory(tEntityComponentFactoryFn factoryFn, void * userData)
+      : m_factoryFn(factoryFn)
+      , m_userData(userData)
+   {
+   }
+
+   virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement, IEntity * pEntity, IEntityComponent * * ppComponent)
+   {
+      return (*m_factoryFn)(pTiXmlElement, pEntity, m_userData, ppComponent);
+   }
+
+private:
+   tEntityComponentFactoryFn m_factoryFn;
+   void * m_userData;
+};
+
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cEntityComponentRegistry
@@ -34,14 +54,15 @@ public:
    virtual tResult Term();
 
    virtual tResult RegisterComponentFactory(const tChar * pszComponent,
+                                            IEntityComponentFactory * pFactory);
+   virtual tResult RegisterComponentFactory(const tChar * pszComponent,
                                             tEntityComponentFactoryFn pfnFactory, void * pUser);
    virtual tResult RevokeComponentFactory(const tChar * pszComponent);
    virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement, IEntity * pEntity,
                                    IEntityComponent * * ppComponent);
 
 private:
-   typedef std::pair<tEntityComponentFactoryFn, void*> tComponentFactoryDataPair;
-   typedef std::map<cStr, tComponentFactoryDataPair> tComponentFactoryMap;
+   typedef std::map<cStr, IEntityComponentFactory*> tComponentFactoryMap;
    tComponentFactoryMap m_componentFactoryMap;
 };
 

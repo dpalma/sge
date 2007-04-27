@@ -50,7 +50,36 @@ tResult cEntityComponentRegistry::Init()
 
 tResult cEntityComponentRegistry::Term()
 {
+   tComponentFactoryMap::iterator iter = m_componentFactoryMap.begin(), end = m_componentFactoryMap.end();
+   for (; iter != end; ++iter)
+   {
+      SafeRelease(iter->second);
+   }
+   m_componentFactoryMap.clear();
+
    return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cEntityComponentRegistry::RegisterComponentFactory(const tChar * pszComponent,
+                                                           IEntityComponentFactory * pFactory)
+{
+   if (pszComponent == NULL || pFactory == NULL)
+   {
+      return E_POINTER;
+   }
+
+   pair<tComponentFactoryMap::iterator, bool> result =
+      m_componentFactoryMap.insert(make_pair(pszComponent, pFactory));
+   if (result.second)
+   {
+      pFactory->AddRef();
+      return S_OK;
+   }
+
+   WarnMsg1("Failed to register entity component factory \"%s\"\n", pszComponent);
+   return E_FAIL;
 }
 
 ///////////////////////////////////////
@@ -64,15 +93,13 @@ tResult cEntityComponentRegistry::RegisterComponentFactory(const tChar * pszComp
       return E_POINTER;
    }
 
-   pair<tComponentFactoryMap::iterator, bool> result = 
-      m_componentFactoryMap.insert(make_pair(pszComponent, make_pair(pfnFactory, pUser)));
-   if (result.second)
+   cAutoIPtr<IEntityComponentFactory> pFactory(new cEntityComponentFactory(pfnFactory, pUser));
+   if (!pFactory)
    {
-      return S_OK;
+      return E_FAIL;
    }
 
-   WarnMsg1("Failed to register entity component factory \"%s\"\n", pszComponent);
-   return E_FAIL;
+   return RegisterComponentFactory(pszComponent, pFactory);
 }
 
 ///////////////////////////////////////
@@ -83,8 +110,14 @@ tResult cEntityComponentRegistry::RevokeComponentFactory(const tChar * pszCompon
    {
       return E_POINTER;
    }
-   size_t nErased = m_componentFactoryMap.erase(pszComponent);
-   return (nErased == 0) ? S_FALSE : S_OK;
+   tComponentFactoryMap::iterator iter = m_componentFactoryMap.find(pszComponent);
+   if (iter == m_componentFactoryMap.end())
+   {
+      return S_FALSE;
+   }
+   iter->second->Release();
+   m_componentFactoryMap.erase(iter);
+   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -107,8 +140,8 @@ tResult cEntityComponentRegistry::CreateComponent(const TiXmlElement * pTiXmlEle
    tComponentFactoryMap::iterator f = m_componentFactoryMap.find(pszComponent);
    if (f != m_componentFactoryMap.end())
    {
-      const tComponentFactoryDataPair & p = f->second;
-      return (*p.first)(pTiXmlElement, pEntity, p.second, ppComponent);
+      IEntityComponentFactory * pFactory = f->second;
+      return pFactory->CreateComponent(pTiXmlElement, pEntity, ppComponent);
    }
 
    return E_FAIL;

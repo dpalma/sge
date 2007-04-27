@@ -21,6 +21,7 @@
 F_DECLARE_INTERFACE_GUID(IEntity, "85E6F9DB-639F-411d-B365-86A8FBD1ACBF");
 F_DECLARE_INTERFACE_GUID(IUpdatable, "0A85E22A-F905-458c-B96B-E0EBB4FECE0B");
 F_DECLARE_INTERFACE_GUID(IEntityComponent, "D1A48ABA-7DB7-4fb7-96E3-72F79DFABA99");
+F_DECLARE_INTERFACE_GUID(IEntityComponentFactory, "6AA1EDA8-EEA0-404c-B92D-5275F8CF75D6");
 F_DECLARE_INTERFACE_GUID(IEntityComponentRegistry, "B0263197-201A-4ca4-8AD6-896F03CDDD19");
 F_DECLARE_INTERFACE_GUID(IEntityPositionComponent, "BA4B742C-8D6F-494a-827B-25F8A3B4801F");
 F_DECLARE_INTERFACE_GUID(IEntityRenderComponent, "AF68F8F0-EFA5-49c6-AA91-C4E21BAF6D14");
@@ -132,6 +133,17 @@ interface IEntityBrainComponent : IEntityComponent
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// INTERFACE: IEntityComponentFactory
+//
+
+interface IEntityComponentFactory : IUnknown
+{
+   virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement, IEntity * pEntity, IEntityComponent * * ppComponent) = 0;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // INTERFACE: IEntityComponentRegistry
 //
 
@@ -141,6 +153,8 @@ typedef tResult (* tEntityComponentFactoryFn)(const TiXmlElement * pTiXmlElement
 
 interface IEntityComponentRegistry : IUnknown
 {
+   virtual tResult RegisterComponentFactory(const tChar * pszComponent,
+                                            IEntityComponentFactory * pFactory) = 0;
    virtual tResult RegisterComponentFactory(const tChar * pszComponent,
                                             tEntityComponentFactoryFn pfnFactory, void * pUser) = 0;
    inline tResult RegisterComponentFactory(const tChar * pszComponent, tEntityComponentFactoryFn pfnFactory)
