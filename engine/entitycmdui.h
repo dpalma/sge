@@ -45,14 +45,20 @@ private:
 // CLASS: cEntityCmdUI
 //
 
-class cEntityCmdUI : public cComObject4<IMPLEMENTS(IEntityCommandUI),
-                                        IMPLEMENTS(IGlobalObject),
-                                        IMPLEMENTS(IEntityManagerListener),
-                                        IMPLEMENTS(IGUIEventListener)>
+class cEntityCmdUI : public cNonDelegatingUnknown
+                   , public IEntityCommandUI
+                   , public IGlobalObject
+                   , public IEntityManagerListener
+                   , public IGUIEventListener
+                   , public IEntityComponentFactory
 {
 public:
    cEntityCmdUI();
    ~cEntityCmdUI();
+
+   virtual ulong STDMETHODCALLTYPE AddRef();
+   virtual ulong STDMETHODCALLTYPE Release();
+   virtual tResult STDMETHODCALLTYPE QueryInterface(REFGUID iid, void * * ppvObject);
 
    DECLARE_NAME(EntityCmdUI)
    DECLARE_NO_CONSTRAINTS()
@@ -67,10 +73,9 @@ public:
    virtual tResult SetEntityPanelId(const tChar * pszId);
    virtual tResult GetEntityPanelId(cStr * pId);
 
-private:
-   static tResult EntityCmdUIComponentFactory(const TiXmlElement * pTiXmlElement,
-      IEntity * pEntity, void * pUser, IEntityComponent * * ppComponent);
+   virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement, IEntity * pEntity, IEntityComponent * * ppComponent);
 
+private:
    cStr m_entityPanelId;
 
    typedef std::multimap<cStr, cEntityCmdInfo> tEntityTypeCmdMap;

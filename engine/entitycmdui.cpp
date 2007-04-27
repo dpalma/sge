@@ -15,6 +15,8 @@
 
 #include "tech/dbgalloc.h" // must be last header
 
+using namespace std;
+
 ///////////////////////////////////////////////////////////////////////////////
 
 LOG_DEFINE_CHANNEL(EntityCmdUI);
@@ -107,13 +109,41 @@ cEntityCmdUI::~cEntityCmdUI()
 
 ////////////////////////////////////////
 
+ulong STDMETHODCALLTYPE cEntityCmdUI::AddRef()
+{
+   return cNonDelegatingUnknown::DoAddRef();
+}
+
+////////////////////////////////////////
+
+ulong STDMETHODCALLTYPE cEntityCmdUI::Release()
+{
+   return cNonDelegatingUnknown::DoRelease();
+}
+
+////////////////////////////////////////
+
+tResult STDMETHODCALLTYPE cEntityCmdUI::QueryInterface(REFGUID iid, void * * ppvObject)
+{
+   const struct sQIPair pairs[] =
+   {
+      { static_cast<IEntityCommandUI *>(this),        &IID_IEntityCommandUI },
+      { static_cast<IGlobalObject *>(this),           &IID_IGlobalObject },
+      { static_cast<IEntityManagerListener *>(this),  &IID_IEntityManagerListener },
+      { static_cast<IGUIEventListener *>(this),       &IID_IGUIEventListener },
+   };
+   return cNonDelegatingUnknown::DoQueryInterface(pairs, _countof(pairs), iid, ppvObject);
+}
+
+////////////////////////////////////////
+
 tResult cEntityCmdUI::Init()
 {
    UseGlobal(EntityManager);
    pEntityManager->AddEntityManagerListener(static_cast<IEntityManagerListener*>(this));
 
    UseGlobal(EntityComponentRegistry);
-   pEntityComponentRegistry->RegisterComponentFactory(ENTITYCMDUICOMPONENT, EntityCmdUIComponentFactory, this);
+   pEntityComponentRegistry->RegisterComponentFactory(ENTITYCMDUICOMPONENT, static_cast<IEntityComponentFactory*>(this));
 
    UseGlobal(GUIContext);
    pGUIContext->AddEventListener(static_cast<IGUIEventListener*>(this));
@@ -272,7 +302,7 @@ tResult cEntityCmdUI::GetEntityPanelId(cStr * pId)
 
 ////////////////////////////////////////
 
-static tResult EntityCmdParseArgs(const TiXmlElement * pElement, std::vector<cMultiVar> * pArgs)
+static tResult EntityCmdParseArgs(const TiXmlElement * pElement, vector<cMultiVar> * pArgs)
 {
    if (pElement == NULL || pArgs == NULL)
    {
@@ -295,10 +325,11 @@ static tResult EntityCmdParseArgs(const TiXmlElement * pElement, std::vector<cMu
    return (count > 0) ? S_OK : S_FALSE;
 }
 
-tResult cEntityCmdUI::EntityCmdUIComponentFactory(const TiXmlElement * pTiXmlElement,
-                                                  IEntity * pEntity,
-                                                  void * pUser,
-                                                  IEntityComponent * * ppComponent)
+////////////////////////////////////////
+
+tResult cEntityCmdUI::CreateComponent(const TiXmlElement * pTiXmlElement,
+                                      IEntity * pEntity,
+                                      IEntityComponent * * ppComponent)
 {
    if (pTiXmlElement == NULL || pEntity == NULL)
    {
@@ -310,27 +341,14 @@ tResult cEntityCmdUI::EntityCmdUIComponentFactory(const TiXmlElement * pTiXmlEle
       return E_INVALIDARG;
    }
 
-   cEntityCmdUI * pEntityCmdUI = reinterpret_cast<cEntityCmdUI*>(pUser);
-   if (pEntityCmdUI == NULL)
-   {
-      return E_FAIL;
-   }
-
-#ifdef _DEBUG
-   {
-      UseGlobal(EntityCommandUI);
-      Assert(CTIsSameObject(pEntityCommandUI, static_cast<IEntityCommandUI*>(pEntityCmdUI)));
-   }
-#endif
-
    cStr typeName;
    if (pEntity->GetTypeName(&typeName) != S_OK)
    {
       return E_FAIL;
    }
 
-   tEntityTypeCmdMap::iterator f = pEntityCmdUI->m_entityTypeCmdMap.find(typeName);
-   if (f != pEntityCmdUI->m_entityTypeCmdMap.end())
+   tEntityTypeCmdMap::iterator f = m_entityTypeCmdMap.find(typeName);
+   if (f != m_entityTypeCmdMap.end())
    {
       // Commands for this type already registered
       return S_FALSE;
@@ -350,7 +368,7 @@ tResult cEntityCmdUI::EntityCmdUIComponentFactory(const TiXmlElement * pTiXmlEle
          cMultiVar cmdImage(pTiXmlChild->Attribute(g_szAttribImage));
          cMultiVar cmdToolTip(pTiXmlChild->Attribute(g_szAttribToolTip));
 
-         std::vector<cMultiVar> args;
+         vector<cMultiVar> args;
          if (SUCCEEDED(EntityCmdParseArgs(pTiXmlChild, &args)))
          {
             LocalMsg3("Entity type %s supports command %s (%d args)\n", typeName.c_str(), cmdName.ToString(), args.size());
@@ -358,7 +376,7 @@ tResult cEntityCmdUI::EntityCmdUIComponentFactory(const TiXmlElement * pTiXmlEle
             tEntityCmdInstance cmdInst = NULL;
             if (pEntityCommandManager->CompileCommand(cmdName, args.empty() ? NULL : &args[0], args.size(), &cmdInst) == S_OK)
             {
-               pEntityCmdUI->m_entityTypeCmdMap.insert(std::make_pair(typeName, cEntityCmdInfo(cmdImage, cmdToolTip, cmdInst)));
+               m_entityTypeCmdMap.insert(make_pair(typeName, cEntityCmdInfo(cmdImage, cmdToolTip, cmdInst)));
             }
          }
       }

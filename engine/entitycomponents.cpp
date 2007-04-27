@@ -123,7 +123,7 @@ const tMatrix4 & cEntityPositionComponent::GetWorldTransform() const
 ///////////////////////////////////////
 
 tResult EntityPositionComponentFactory(const TiXmlElement * pTiXmlElement,
-                                       IEntity * pEntity, void * pUser,
+                                       IEntity * pEntity,
                                        IEntityComponent * * ppComponent)
 {
    if (pTiXmlElement == NULL || pEntity == NULL || ppComponent == NULL)
@@ -259,7 +259,7 @@ tResult EntityCreateRenderComponent(const tChar * pszModel, IEntityRenderCompone
 ///////////////////////////////////////////////////////////////////////////////
 
 tResult EntityRenderComponentFactory(const TiXmlElement * pTiXmlElement,
-                                     IEntity * pEntity, void * pUser,
+                                     IEntity * pEntity,
                                      IEntityComponent * * ppComponent)
 {
    if (pTiXmlElement == NULL || pEntity == NULL || ppComponent == NULL)
@@ -349,7 +349,7 @@ tResult cEntitySpawnComponent::GetRallyPoint(tVec3 * pRallyPoint) const
 ///////////////////////////////////////
 
 tResult EntitySpawnComponentFactory(const TiXmlElement * pTiXmlElement,
-                                    IEntity * pEntity, void * pUser,
+                                    IEntity * pEntity,
                                     IEntityComponent * * ppComponent)
 {
    if (pTiXmlElement == NULL || pEntity == NULL || ppComponent == NULL)
@@ -462,7 +462,7 @@ tResult cEntityBrainComponent::Create(IEntity * pEntity, IEntityBrainComponent *
 ///////////////////////////////////////
 
 tResult EntityBrainComponentFactory(const TiXmlElement * pTiXmlElement,
-                                    IEntity * pEntity, void * pUser,
+                                    IEntity * pEntity,
                                     IEntityComponent * * ppComponent)
 {
    if (pTiXmlElement == NULL || pEntity == NULL || ppComponent == NULL)

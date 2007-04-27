@@ -85,15 +85,14 @@ tResult cEntityComponentRegistry::RegisterComponentFactory(const tChar * pszComp
 ///////////////////////////////////////
 
 tResult cEntityComponentRegistry::RegisterComponentFactory(const tChar * pszComponent,
-                                                           tEntityComponentFactoryFn pfnFactory,
-                                                           void * pUser)
+                                                           tEntityComponentFactoryFn pfnFactory)
 {
    if (pszComponent == NULL || pfnFactory == NULL)
    {
       return E_POINTER;
    }
 
-   cAutoIPtr<IEntityComponentFactory> pFactory(new cEntityComponentFactory(pfnFactory, pUser));
+   cAutoIPtr<IEntityComponentFactory> pFactory(new cEntityComponentFactory(pfnFactory));
    if (!pFactory)
    {
       return E_FAIL;
@@ -166,7 +165,7 @@ tResult EntityComponentRegistryCreate()
 class cTestEntityComponent : public cComObject<IMPLEMENTS(IEntityComponent)> {};
 
 static tResult TestEntityComponentFactory(const TiXmlElement * pTiXmlElement,
-                                          IEntity * pEntity, void * pUser,
+                                          IEntity * pEntity,
                                           IEntityComponent * * ppComponent)
 {
    *ppComponent = new cTestEntityComponent;
@@ -180,7 +179,7 @@ TEST(EntityComponentBasics)
    const tChar testComponentName[] = _T("TestComponent");
 
    CHECK_EQUAL(S_FALSE, pECR->RevokeComponentFactory(testComponentName));
-   CHECK_EQUAL(S_OK, pECR->RegisterComponentFactory(testComponentName, TestEntityComponentFactory, NULL));
+   CHECK_EQUAL(S_OK, pECR->RegisterComponentFactory(testComponentName, TestEntityComponentFactory));
    CHECK_EQUAL(S_OK, pECR->RevokeComponentFactory(testComponentName));
 }
 
