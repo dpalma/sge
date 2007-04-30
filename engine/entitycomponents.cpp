@@ -25,6 +25,51 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// CLASS: cOldStyleFactoryWrapper
+//
+
+typedef tResult (* tEntityComponentFactoryFn)(const TiXmlElement * pTiXmlElement,
+                                              IEntity * pEntity,
+                                              IEntityComponent * * ppComponent);
+
+class cOldStyleFactoryWrapper : public cComObject<IMPLEMENTS(IEntityComponentFactory)>
+{
+public:
+   cOldStyleFactoryWrapper(tEntityComponentFactoryFn factoryFn)
+    : m_factoryFn(factoryFn)
+   {
+   }
+
+   virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement, IEntity * pEntity, IEntityComponent * * ppComponent)
+   {
+      return (*m_factoryFn)(pTiXmlElement, pEntity, ppComponent);
+   }
+
+private:
+   tEntityComponentFactoryFn m_factoryFn;
+};
+
+static tResult RegisterOldStyleComponentFactory(const tChar * pszComponent,
+                                                tEntityComponentFactoryFn pfnFactory)
+{
+   if (pszComponent == NULL || pfnFactory == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<IEntityComponentFactory> pFactory(new cOldStyleFactoryWrapper(pfnFactory));
+   if (!pFactory)
+   {
+      return E_FAIL;
+   }
+
+   UseGlobal(EntityComponentRegistry);
+   return pEntityComponentRegistry->RegisterComponentFactory(pszComponent, pFactory);
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // CLASS: cEntityPositionComponent
 //
 
@@ -496,11 +541,10 @@ tResult EntityBrainComponentFactory(const TiXmlElement * pTiXmlElement,
 
 void RegisterBuiltInComponents()
 {
-   UseGlobal(EntityComponentRegistry);
-   Verify(pEntityComponentRegistry->RegisterComponentFactory(_T("position"), EntityPositionComponentFactory) == S_OK);
-   Verify(pEntityComponentRegistry->RegisterComponentFactory(_T("render"), EntityRenderComponentFactory) == S_OK);
-   Verify(pEntityComponentRegistry->RegisterComponentFactory(_T("spawns"), EntitySpawnComponentFactory) == S_OK);
-   Verify(pEntityComponentRegistry->RegisterComponentFactory(_T("brain"), EntityBrainComponentFactory) == S_OK);
+   Verify(RegisterOldStyleComponentFactory(_T("position"), EntityPositionComponentFactory) == S_OK);
+   Verify(RegisterOldStyleComponentFactory(_T("render"), EntityRenderComponentFactory) == S_OK);
+   Verify(RegisterOldStyleComponentFactory(_T("spawns"), EntitySpawnComponentFactory) == S_OK);
+   Verify(RegisterOldStyleComponentFactory(_T("brain"), EntityBrainComponentFactory) == S_OK);
 }
 
 

@@ -147,17 +147,12 @@ interface IEntityComponentFactory : IUnknown
 // INTERFACE: IEntityComponentRegistry
 //
 
-typedef tResult (* tEntityComponentFactoryFn)(const TiXmlElement * pTiXmlElement,
-                                              IEntity * pEntity,
-                                              IEntityComponent * * ppComponent);
-
 interface IEntityComponentRegistry : IUnknown
 {
    virtual tResult RegisterComponentFactory(const tChar * pszComponent,
                                             IEntityComponentFactory * pFactory) = 0;
-   virtual tResult RegisterComponentFactory(const tChar * pszComponent,
-                                            tEntityComponentFactoryFn pfnFactory) = 0;
    virtual tResult RevokeComponentFactory(const tChar * pszComponent) = 0;
+
    virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement, IEntity * pEntity,
                                    IEntityComponent * * ppComponent) = 0;
 };

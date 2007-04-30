@@ -15,24 +15,6 @@
 #endif
 
 
-class cEntityComponentFactory : public cComObject<IMPLEMENTS(IEntityComponentFactory)>
-{
-public:
-   cEntityComponentFactory(tEntityComponentFactoryFn factoryFn)
-      : m_factoryFn(factoryFn)
-   {
-   }
-
-   virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement, IEntity * pEntity, IEntityComponent * * ppComponent)
-   {
-      return (*m_factoryFn)(pTiXmlElement, pEntity, ppComponent);
-   }
-
-private:
-   tEntityComponentFactoryFn m_factoryFn;
-};
-
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cEntityComponentRegistry
@@ -53,9 +35,11 @@ public:
 
    virtual tResult RegisterComponentFactory(const tChar * pszComponent,
                                             IEntityComponentFactory * pFactory);
-   virtual tResult RegisterComponentFactory(const tChar * pszComponent,
-                                            tEntityComponentFactoryFn pfnFactory);
    virtual tResult RevokeComponentFactory(const tChar * pszComponent);
+
+   tResult CreateComponent(const tChar * pszComponent, const TiXmlElement * pTiXmlElement,
+      IEntity * pEntity, IEntityComponent * * ppComponent);
+
    virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement, IEntity * pEntity,
                                    IEntityComponent * * ppComponent);
 

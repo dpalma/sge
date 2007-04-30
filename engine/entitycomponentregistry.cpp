@@ -84,25 +84,6 @@ tResult cEntityComponentRegistry::RegisterComponentFactory(const tChar * pszComp
 
 ///////////////////////////////////////
 
-tResult cEntityComponentRegistry::RegisterComponentFactory(const tChar * pszComponent,
-                                                           tEntityComponentFactoryFn pfnFactory)
-{
-   if (pszComponent == NULL || pfnFactory == NULL)
-   {
-      return E_POINTER;
-   }
-
-   cAutoIPtr<IEntityComponentFactory> pFactory(new cEntityComponentFactory(pfnFactory));
-   if (!pFactory)
-   {
-      return E_FAIL;
-   }
-
-   return RegisterComponentFactory(pszComponent, pFactory);
-}
-
-///////////////////////////////////////
-
 tResult cEntityComponentRegistry::RevokeComponentFactory(const tChar * pszComponent)
 {
    if (pszComponent == NULL)
@@ -121,10 +102,32 @@ tResult cEntityComponentRegistry::RevokeComponentFactory(const tChar * pszCompon
 
 ///////////////////////////////////////
 
+tResult cEntityComponentRegistry::CreateComponent(const tChar * pszComponent,
+                                                  const TiXmlElement * pTiXmlElement,
+                                                  IEntity * pEntity,
+                                                  IEntityComponent * * ppComponent)
+{
+   if (pszComponent == NULL || pTiXmlElement == NULL || pEntity == NULL || ppComponent == NULL)
+   {
+      return E_POINTER;
+   }
+
+   tComponentFactoryMap::iterator f = m_componentFactoryMap.find(pszComponent);
+   if (f == m_componentFactoryMap.end())
+   {
+      return E_FAIL;
+   }
+
+   IEntityComponentFactory * pFactory = f->second;
+   return pFactory->CreateComponent(pTiXmlElement, pEntity, ppComponent);
+}
+
+///////////////////////////////////////
+
 tResult cEntityComponentRegistry::CreateComponent(const TiXmlElement * pTiXmlElement,
                                                   IEntity * pEntity, IEntityComponent * * ppComponent)
 {
-   if (pTiXmlElement == NULL || pEntity == NULL || ppComponent == NULL)
+   if (pTiXmlElement == NULL)
    {
       return E_POINTER;
    }
@@ -136,14 +139,7 @@ tResult cEntityComponentRegistry::CreateComponent(const TiXmlElement * pTiXmlEle
    const char * pszComponent = pTiXmlElement->Value();
 #endif
 
-   tComponentFactoryMap::iterator f = m_componentFactoryMap.find(pszComponent);
-   if (f != m_componentFactoryMap.end())
-   {
-      IEntityComponentFactory * pFactory = f->second;
-      return pFactory->CreateComponent(pTiXmlElement, pEntity, ppComponent);
-   }
-
-   return E_FAIL;
+   return CreateComponent(pszComponent, pTiXmlElement, pEntity, ppComponent);
 }
 
 ///////////////////////////////////////
@@ -164,22 +160,26 @@ tResult EntityComponentRegistryCreate()
 
 class cTestEntityComponent : public cComObject<IMPLEMENTS(IEntityComponent)> {};
 
-static tResult TestEntityComponentFactory(const TiXmlElement * pTiXmlElement,
-                                          IEntity * pEntity,
-                                          IEntityComponent * * ppComponent)
+class cTestEntityComponentFactory : public cComObject<IMPLEMENTS(IEntityComponentFactory)>
 {
-   *ppComponent = new cTestEntityComponent;
-   return S_OK;
-}
+public:
+   tResult CreateComponent(const TiXmlElement *, IEntity *, IEntityComponent * * ppComponent)
+   {
+      *ppComponent = new cTestEntityComponent;
+      return S_OK;
+   }
+};
 
 TEST(EntityComponentBasics)
 {
    cAutoIPtr<IEntityComponentRegistry> pECR(static_cast<IEntityComponentRegistry*>(new cEntityComponentRegistry));
 
+   cAutoIPtr<IEntityComponentFactory> pECF(static_cast<IEntityComponentFactory*>(new cTestEntityComponentFactory));
+
    const tChar testComponentName[] = _T("TestComponent");
 
    CHECK_EQUAL(S_FALSE, pECR->RevokeComponentFactory(testComponentName));
-   CHECK_EQUAL(S_OK, pECR->RegisterComponentFactory(testComponentName, TestEntityComponentFactory));
+   CHECK_EQUAL(S_OK, pECR->RegisterComponentFactory(testComponentName, pECF));
    CHECK_EQUAL(S_OK, pECR->RevokeComponentFactory(testComponentName));
 }
 
