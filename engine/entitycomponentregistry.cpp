@@ -158,19 +158,22 @@ tResult EntityComponentRegistryCreate()
 
 #ifdef HAVE_UNITTESTPP
 
-class cTestEntityComponent : public cComObject<IMPLEMENTS(IEntityComponent)> {};
-
-class cTestEntityComponentFactory : public cComObject<IMPLEMENTS(IEntityComponentFactory)>
+namespace
 {
-public:
-   tResult CreateComponent(const TiXmlElement *, IEntity *, IEntityComponent * * ppComponent)
-   {
-      *ppComponent = new cTestEntityComponent;
-      return S_OK;
-   }
-};
+   class cTestEntityComponent : public cComObject<IMPLEMENTS(IEntityComponent)> {};
 
-TEST(EntityComponentBasics)
+   class cTestEntityComponentFactory : public cComObject<IMPLEMENTS(IEntityComponentFactory)>
+   {
+   public:
+      tResult CreateComponent(const TiXmlElement *, IEntity *, IEntityComponent * * ppComponent)
+      {
+         *ppComponent = new cTestEntityComponent;
+         return S_OK;
+      }
+   };
+}
+
+TEST(EntityComponentRegistryBasics)
 {
    cAutoIPtr<IEntityComponentRegistry> pECR(static_cast<IEntityComponentRegistry*>(new cEntityComponentRegistry));
 

@@ -8,6 +8,8 @@
 
 #include "tech/techstring.h"
 
+#include <map>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -32,9 +34,12 @@ public:
    virtual tResult GetComponent(eEntityComponentType ect, IEntityComponent * * ppComponent);
 
 private:
+   void RemoveAllComponents();
+
    cStr m_typeName;
    tEntityId m_id;
-   cAutoIPtr<IEntityComponent> m_components[kMaxEntityComponentTypes];
+   typedef std::map<eEntityComponentType, IEntityComponent*> tEntityComponentMap;
+   tEntityComponentMap m_entityComponentMap;
 };
 
 

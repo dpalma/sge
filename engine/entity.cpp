@@ -5,10 +5,9 @@
 
 #include "entity.h"
 
-#include "tech/color.h"
-#include "tech/globalobj.h"
-#include "tech/ray.h"
-#include "tech/resourceapi.h"
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
+#endif
 
 #include "tech/dbgalloc.h" // must be last header
 
@@ -49,6 +48,7 @@ cEntity::cEntity(const tChar * pszTypeName, tEntityId id)
 
 cEntity::~cEntity()
 {
+   RemoveAllComponents();
 }
 
 ///////////////////////////////////////
@@ -79,8 +79,12 @@ tResult cEntity::SetComponent(eEntityComponentType ect, IEntityComponent * pComp
    {
       return E_POINTER;
    }
-   SafeRelease(m_components[ect]);
-   m_components[ect] = CTAddRef(pComponent);
+   tEntityComponentMap::iterator iter = m_entityComponentMap.find(ect);
+   if (iter != m_entityComponentMap.end())
+   {
+      SafeRelease(m_entityComponentMap[ect]);
+   }
+   m_entityComponentMap[ect] = CTAddRef(pComponent);
    return S_OK;
 }
 
@@ -93,8 +97,51 @@ tResult cEntity::GetComponent(eEntityComponentType ect, IEntityComponent * * ppC
    {
       return E_POINTER;
    }
-   return m_components[ect].GetPointer(ppComponent);
+   tEntityComponentMap::iterator iter = m_entityComponentMap.find(ect);
+   if (iter == m_entityComponentMap.end())
+   {
+      return S_FALSE;
+   }
+   *ppComponent = CTAddRef(iter->second);
+   return S_OK;
 }
 
+///////////////////////////////////////
+
+void cEntity::RemoveAllComponents()
+{
+   tEntityComponentMap::iterator iter = m_entityComponentMap.begin(), end = m_entityComponentMap.end();
+   for (; iter != end; ++iter)
+   {
+      SafeRelease(iter->second);
+   }
+   m_entityComponentMap.clear();
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_UNITTESTPP
+
+namespace
+{
+   class cTestEntityComponent : public cComObject<IMPLEMENTS(IEntityComponent)> {};
+}
+
+TEST(EntityComponentBasics)
+{
+   cAutoIPtr<IEntity> pTestEntity(static_cast<IEntity*>(new cEntity(_T("TestEntity"), 0)));
+
+   cAutoIPtr<IEntityComponent> pTestComponent(static_cast<IEntityComponent*>(new cTestEntityComponent));
+
+   cAutoIPtr<IEntityComponent> pGetComponent;
+
+   CHECK_EQUAL(S_FALSE, pTestEntity->GetComponent(kECT_Custom1, &pGetComponent));
+   CHECK_EQUAL(S_OK, pTestEntity->SetComponent(kECT_Custom1, pTestComponent));
+   CHECK_EQUAL(S_OK, pTestEntity->GetComponent(kECT_Custom1, &pGetComponent));
+   CHECK(CTIsSameObject(pTestComponent, pGetComponent));
+}
+
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////
