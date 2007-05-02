@@ -201,6 +201,18 @@ interface IEntity : IUnknown
       return result;
    }
 
+   template <class INTRFC>
+   tResult GetComponent(REFGUID iid, INTRFC * * ppComponent)
+   {
+      cAutoIPtr<IEntityComponent> pComponent;
+      tResult result = GetComponent(INTRFC::CID, &pComponent);
+      if (result == S_OK)
+      {
+         return pComponent->QueryInterface(iid, reinterpret_cast<void**>(ppComponent));
+      }
+      return result;
+   }
+
    virtual tResult RemoveComponent(tEntityComponentID cid) = 0;
 
    virtual tResult EnumComponents(REFGUID iid, IEnumEntityComponents * * ppEnum) = 0;

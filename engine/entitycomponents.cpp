@@ -510,7 +510,7 @@ tResult cEntityBrainComponent::Create(IEntity * pEntity, IEntityBrainComponent *
 
    {
       cAutoIPtr<IEntityPositionComponent> pPosition;
-      if (pEntity->GetComponent(IEntityPositionComponent::CID, IID_IEntityPositionComponent, &pPosition) == S_OK)
+      if (pEntity->GetComponent(IID_IEntityPositionComponent, &pPosition) == S_OK)
       {
          cAutoIPtr<IAIAgentLocationProvider> pLocationProvider;
          if (pPosition->QueryInterface(IID_IAIAgentLocationProvider, (void**)&pLocationProvider) == S_OK)
@@ -522,7 +522,7 @@ tResult cEntityBrainComponent::Create(IEntity * pEntity, IEntityBrainComponent *
 
    {
       cAutoIPtr<IEntityRenderComponent> pRender;
-      if (pEntity->GetComponent(IEntityRenderComponent::CID, IID_IEntityRenderComponent, &pRender) == S_OK)
+      if (pEntity->GetComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
       {
          cAutoIPtr<IAIAgentAnimationProvider> pAnimationProvider;
          if (pRender->QueryInterface(IID_IAIAgentAnimationProvider, (void**)&pAnimationProvider) == S_OK)

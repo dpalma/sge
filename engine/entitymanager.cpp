@@ -112,7 +112,7 @@ tResult cEntityManager::SpawnEntity(const tChar * pszEntity, const tVec3 & posit
    if (pEntityFactory->CreateEntity(pszEntity, &pEntity) == S_OK)
    {
       cAutoIPtr<IEntityPositionComponent> pPosition;
-      if (pEntity->GetComponent(IEntityPositionComponent::CID, IID_IEntityPositionComponent, (void**)&pPosition) == S_OK)
+      if (pEntity->GetComponent(IID_IEntityPositionComponent, &pPosition) == S_OK)
       {
          pPosition->SetPosition(position);
       }
@@ -149,8 +149,8 @@ tResult cEntityManager::AddEntity(IEntity * pEntity)
 tResult cEntityManager::RemoveEntity(tEntityId entityId)
 {
    bool bFound = false;
-   tEntityList::iterator iter = m_entities.begin();
-   for (; iter != m_entities.end(); iter++)
+   tEntityList::iterator iter = m_entities.begin(), end = m_entities.end();
+   for (; iter != end; ++iter)
    {
       cAutoIPtr<IEntity> pEntity(CTAddRef(*iter));
 
@@ -188,8 +188,8 @@ tResult cEntityManager::RemoveEntity(IEntity * pEntity)
    }
 
    bool bFound = false;
-   tEntityList::iterator iter = m_entities.begin();
-   for (; iter != m_entities.end(); iter++)
+   tEntityList::iterator iter = m_entities.begin(), end = m_entities.end();
+   for (; iter != end; ++iter)
    {
       if (CTIsSameObject(pEntity, *iter))
       {
@@ -219,8 +219,8 @@ tResult cEntityManager::RemoveEntity(IEntity * pEntity)
 
 void cEntityManager::RemoveAll()
 {
-   tEntityList::iterator iter = m_entities.begin();
-   for (; iter != m_entities.end(); iter++)
+   tEntityList::iterator iter = m_entities.begin(), end = m_entities.end();
+   for (; iter != end; ++iter)
    {
       RevokeEntityUpdatables(*iter);
       (*iter)->Release();
@@ -240,11 +240,11 @@ void cEntityManager::RenderAll()
       cAutoIPtr<IEntity> pEntity(CTAddRef(*iter));
 
       cAutoIPtr<IEntityRenderComponent> pRender;
-      if (pEntity->GetComponent(IEntityRenderComponent::CID, IID_IEntityRenderComponent, &pRender) == S_OK)
+      if (pEntity->GetComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
       {
          bool bPopMatrix = false;
          cAutoIPtr<IEntityPositionComponent> pPosition;
-         if (pEntity->GetComponent(IEntityPositionComponent::CID, IID_IEntityPositionComponent, &pPosition) == S_OK)
+         if (pEntity->GetComponent(IID_IEntityPositionComponent, &pPosition) == S_OK)
          {
             pRenderer->PushMatrix(pPosition->GetWorldTransform().m);
             bPopMatrix = true;
@@ -266,19 +266,19 @@ void cEntityManager::RenderAll()
 
 tResult cEntityManager::RayCast(const cRay & ray, IEntity * * ppEntity) const
 {
-   tEntityList::const_iterator iter = m_entities.begin();
-   for (; iter != m_entities.end(); iter++)
+   tEntityList::const_iterator iter = m_entities.begin(), end = m_entities.end();
+   for (; iter != end; ++iter)
    {
       cAutoIPtr<IEntity> pEntity(CTAddRef(*iter));
 
       cAutoIPtr<IEntityPositionComponent> pPosition;
-      if (pEntity->GetComponent(IEntityPositionComponent::CID, IID_IEntityPositionComponent, &pPosition) == S_OK)
+      if (pEntity->GetComponent(IID_IEntityPositionComponent, &pPosition) == S_OK)
       {
          tVec3 position;
          if (pPosition->GetPosition(&position) == S_OK)
          {
             cAutoIPtr<IEntityRenderComponent> pRender;
-            if (pEntity->GetComponent(IEntityRenderComponent::CID, IID_IEntityRenderComponent, &pRender) == S_OK)
+            if (pEntity->GetComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
             {
                tAxisAlignedBox bbox;
                if (pRender->GetBoundingBox(&bbox) == S_OK)
@@ -333,19 +333,19 @@ tResult cEntityManager::Select(IEntity * pEntity)
 tResult cEntityManager::SelectBoxed(const tAxisAlignedBox & box)
 {
    int nSelected = 0;
-   tEntityList::const_iterator iter = m_entities.begin();
-   for (; iter != m_entities.end(); iter++)
+   tEntityList::const_iterator iter = m_entities.begin(), end = m_entities.end();
+   for (; iter != end; ++iter)
    {
       cAutoIPtr<IEntity> pEntity(CTAddRef(*iter));
 
       cAutoIPtr<IEntityPositionComponent> pPosition;
-      if (pEntity->GetComponent(IEntityPositionComponent::CID, IID_IEntityPositionComponent, &pPosition) == S_OK)
+      if (pEntity->GetComponent(IID_IEntityPositionComponent, &pPosition) == S_OK)
       {
          tVec3 position;
          if (pPosition->GetPosition(&position) == S_OK)
          {
             cAutoIPtr<IEntityRenderComponent> pRender;
-            if (pEntity->GetComponent(IEntityRenderComponent::CID, IID_IEntityRenderComponent, &pRender) == S_OK)
+            if (pEntity->GetComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
             {
                tAxisAlignedBox bbox;
                if (pRender->GetBoundingBox(&bbox) == S_OK)
@@ -525,11 +525,11 @@ tResult cEntityManager::Save(IWriter * pWriter)
    {
       return E_FAIL;
    }
-   tEntityList::iterator iter = m_entities.begin();
-   for (; iter != m_entities.end(); iter++)
+   tEntityList::iterator iter = m_entities.begin(), end = m_entities.end();
+   for (; iter != end; ++iter)
    {
       cAutoIPtr<IEntityPositionComponent> pPosition;
-      if ((*iter)->GetComponent(IEntityPositionComponent::CID, IID_IEntityPositionComponent, &pPosition) != S_OK)
+      if ((*iter)->GetComponent(IID_IEntityPositionComponent, &pPosition) != S_OK)
       {
          continue;
       }
