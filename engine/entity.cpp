@@ -89,32 +89,30 @@ tEntityId cEntity::GetId() const
 
 ///////////////////////////////////////
 
-tResult cEntity::SetComponent(eEntityComponentType ect, IEntityComponent * pComponent)
+tResult cEntity::SetComponent(tEntityComponentID cid, IEntityComponent * pComponent)
 {
-   Assert(static_cast<int>(ect) < kMaxEntityComponentTypes);
    if (pComponent == NULL)
    {
       return E_POINTER;
    }
-   tEntityComponentMap::iterator iter = m_entityComponentMap.find(ect);
+   tEntityComponentMap::iterator iter = m_entityComponentMap.find(cid);
    if (iter != m_entityComponentMap.end())
    {
-      SafeRelease(m_entityComponentMap[ect]);
+      iter->second->Release();
    }
-   m_entityComponentMap[ect] = CTAddRef(pComponent);
+   m_entityComponentMap[cid] = CTAddRef(pComponent);
    return S_OK;
 }
 
 ///////////////////////////////////////
 
-tResult cEntity::GetComponent(eEntityComponentType ect, IEntityComponent * * ppComponent)
+tResult cEntity::GetComponent(tEntityComponentID cid, IEntityComponent * * ppComponent)
 {
-   Assert(static_cast<int>(ect) < kMaxEntityComponentTypes);
    if (ppComponent == NULL)
    {
       return E_POINTER;
    }
-   tEntityComponentMap::iterator iter = m_entityComponentMap.find(ect);
+   tEntityComponentMap::iterator iter = m_entityComponentMap.find(cid);
    if (iter == m_entityComponentMap.end())
    {
       return S_FALSE;
@@ -125,9 +123,9 @@ tResult cEntity::GetComponent(eEntityComponentType ect, IEntityComponent * * ppC
 
 ///////////////////////////////////////
 
-tResult cEntity::RemoveComponent(eEntityComponentType ect)
+tResult cEntity::RemoveComponent(tEntityComponentID cid)
 {
-   tEntityComponentMap::iterator iter = m_entityComponentMap.find(ect);
+   tEntityComponentMap::iterator iter = m_entityComponentMap.find(cid);
    if (iter == m_entityComponentMap.end())
    {
       return S_FALSE;
@@ -181,10 +179,12 @@ namespace
    GUID IID_IEntityTestComponent1 =
    { 0x4b665744, 0xae4, 0x4907, { 0xa4, 0xcc, 0xd6, 0xbf, 0xcd, 0x56, 0xdf, 0x46 } };
    interface IEntityTestComponent1 : IEntityComponent {};
+   const tEntityComponentID IEntityTestComponent1_CID = GenerateEntityComponentID(_T("TestComponent1"));
 
    GUID IID_IEntityTestComponent2 = 
    { 0x20dfe10e, 0xc1f6, 0x4c1d, { 0x83, 0x53, 0x57, 0xd8, 0xad, 0xba, 0x27, 0xc0 } };
    interface IEntityTestComponent2 : IEntityComponent {};
+   const tEntityComponentID IEntityTestComponent2_CID = GenerateEntityComponentID(_T("TestComponent2"));
 
    class cTestEntityComponent1 : public cComObject<IMPLEMENTS(IEntityTestComponent1)> {};
    class cTestEntityComponent2 : public cComObject<IMPLEMENTS(IEntityTestComponent2)> {};
@@ -198,9 +198,9 @@ TEST(EntityComponentBasics)
 
    cAutoIPtr<IEntityComponent> pGetComponent;
 
-   CHECK_EQUAL(S_FALSE, pTestEntity->GetComponent(kECT_Custom1, &pGetComponent));
-   CHECK_EQUAL(S_OK, pTestEntity->SetComponent(kECT_Custom1, pTestComponent));
-   CHECK_EQUAL(S_OK, pTestEntity->GetComponent(kECT_Custom1, &pGetComponent));
+   CHECK_EQUAL(S_FALSE, pTestEntity->GetComponent(IEntityTestComponent1_CID, &pGetComponent));
+   CHECK_EQUAL(S_OK, pTestEntity->SetComponent(IEntityTestComponent1_CID, pTestComponent));
+   CHECK_EQUAL(S_OK, pTestEntity->GetComponent(IEntityTestComponent1_CID, &pGetComponent));
    CHECK(CTIsSameObject(pTestComponent, pGetComponent));
 }
 
@@ -210,9 +210,9 @@ TEST(RemoveEntityComponent)
 
    cAutoIPtr<IEntityComponent> pTestComponent(static_cast<IEntityComponent*>(new cTestEntityComponent1));
 
-   CHECK_EQUAL(S_OK, pTestEntity->SetComponent(kECT_Custom1, pTestComponent));
-   CHECK_EQUAL(S_FALSE, pTestEntity->RemoveComponent(kECT_Custom2));
-   CHECK_EQUAL(S_OK, pTestEntity->RemoveComponent(kECT_Custom1));
+   CHECK_EQUAL(S_OK, pTestEntity->SetComponent(IEntityTestComponent1_CID, pTestComponent));
+   CHECK_EQUAL(S_FALSE, pTestEntity->RemoveComponent(IEntityTestComponent2_CID));
+   CHECK_EQUAL(S_OK, pTestEntity->RemoveComponent(IEntityTestComponent1_CID));
 }
 
 TEST(EntityComponentEnumeration)
@@ -222,8 +222,8 @@ TEST(EntityComponentEnumeration)
    cAutoIPtr<IEntityComponent> pTestComponent1(static_cast<IEntityComponent*>(new cTestEntityComponent1));
    cAutoIPtr<IEntityComponent> pTestComponent2(static_cast<IEntityComponent*>(new cTestEntityComponent2));
 
-   CHECK_EQUAL(S_OK, pTestEntity->SetComponent(kECT_Custom1, pTestComponent1));
-   CHECK_EQUAL(S_OK, pTestEntity->SetComponent(kECT_Custom2, pTestComponent2));
+   CHECK_EQUAL(S_OK, pTestEntity->SetComponent(IEntityTestComponent1_CID, pTestComponent1));
+   CHECK_EQUAL(S_OK, pTestEntity->SetComponent(IEntityTestComponent2_CID, pTestComponent2));
 
    {
       cAutoIPtr<IEnumEntityComponents> pEnum;

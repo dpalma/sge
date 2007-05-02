@@ -30,10 +30,10 @@ public:
 
    virtual tEntityId GetId() const;
 
-   virtual tResult SetComponent(eEntityComponentType ect, IEntityComponent * pComponent);
-   virtual tResult GetComponent(eEntityComponentType ect, IEntityComponent * * ppComponent);
+   virtual tResult SetComponent(tEntityComponentID cid, IEntityComponent * pComponent);
+   virtual tResult GetComponent(tEntityComponentID cid, IEntityComponent * * ppComponent);
 
-   virtual tResult RemoveComponent(eEntityComponentType ect);
+   virtual tResult RemoveComponent(tEntityComponentID cid);
 
    virtual tResult EnumComponents(REFGUID iid, IEnumEntityComponents * * ppEnum);
 
@@ -43,7 +43,7 @@ private:
    cStr m_typeName;
    tEntityId m_id;
 
-   typedef std::map<eEntityComponentType, IEntityComponent*> tEntityComponentMap;
+   typedef std::map<tEntityComponentID, IEntityComponent*> tEntityComponentMap;
    tEntityComponentMap m_entityComponentMap;
 };
 

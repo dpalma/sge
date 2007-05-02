@@ -44,20 +44,10 @@ typedef class cAxisAlignedBox<float> tAxisAlignedBox;
 
 
 ///////////////////////////////////////////////////////////////////////////////
-//
-// ENUM: eEntityComponentType
-//
 
-enum eEntityComponentType
-{
-   kECT_Position,
-   kECT_Render,
-   kECT_Spawn,             // for entities that spawn others
-   kECT_Brain,
-   kECT_Custom1,           // for use by application
-   kECT_Custom2,           // for use by application
-   kMaxEntityComponentTypes
-};
+DECLARE_HANDLE(tEntityComponentID);
+
+ENGINE_API tEntityComponentID GenerateEntityComponentID(const tChar * pszComponentName);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -91,6 +81,8 @@ interface IEnumEntityComponents : IUnknown
 
 interface IEntityPositionComponent : IEntityComponent
 {
+   ENGINE_API static const tEntityComponentID CID;
+
    virtual tResult SetPosition(const tVec3 & position) = 0;
    virtual tResult GetPosition(tVec3 * pPosition) const = 0;
 
@@ -114,6 +106,8 @@ enum eEntityRenderFlags
 
 interface IEntityRenderComponent : IEntityComponent
 {
+   ENGINE_API static const tEntityComponentID CID;
+
    virtual tResult GetBoundingBox(tAxisAlignedBox * pBBox) const = 0;
 
    virtual void Render(uint flags) = 0;
@@ -129,6 +123,8 @@ ENGINE_API tResult EntityCreateRenderComponent(const tChar * pszModel, IEntityRe
 
 interface IEntitySpawnComponent : IEntityComponent
 {
+   ENGINE_API static const tEntityComponentID CID;
+
    virtual uint GetMaxQueueSize() const = 0;
 
    virtual tResult SetRallyPoint(const tVec3 & rallyPoint) = 0;
@@ -143,6 +139,7 @@ interface IEntitySpawnComponent : IEntityComponent
 
 interface IEntityBrainComponent : IEntityComponent
 {
+   ENGINE_API static const tEntityComponentID CID;
 };
 
 
@@ -189,14 +186,14 @@ interface IEntity : IUnknown
 
    virtual tEntityId GetId() const = 0;
 
-   virtual tResult SetComponent(eEntityComponentType ect, IEntityComponent * pComponent) = 0;
-   virtual tResult GetComponent(eEntityComponentType ect, IEntityComponent * * ppComponent) = 0;
+   virtual tResult SetComponent(tEntityComponentID cid, IEntityComponent * pComponent) = 0;
+   virtual tResult GetComponent(tEntityComponentID cid, IEntityComponent * * ppComponent) = 0;
 
    template <class INTRFC>
-   tResult GetComponent(eEntityComponentType ect, REFGUID iid, INTRFC * * ppComponent)
+   tResult GetComponent(tEntityComponentID cid, REFGUID iid, INTRFC * * ppComponent)
    {
       cAutoIPtr<IEntityComponent> pComponent;
-      tResult result = GetComponent(ect, &pComponent);
+      tResult result = GetComponent(cid, &pComponent);
       if (result == S_OK)
       {
          return pComponent->QueryInterface(iid, reinterpret_cast<void**>(ppComponent));
@@ -204,7 +201,7 @@ interface IEntity : IUnknown
       return result;
    }
 
-   virtual tResult RemoveComponent(eEntityComponentType ect) = 0;
+   virtual tResult RemoveComponent(tEntityComponentID cid) = 0;
 
    virtual tResult EnumComponents(REFGUID iid, IEnumEntityComponents * * ppEnum) = 0;
 };

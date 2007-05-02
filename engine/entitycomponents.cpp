@@ -10,6 +10,7 @@
 #include "tech/globalobj.h"
 #include "tech/multivar.h"
 #include "tech/statemachinetem.h"
+#include "tech/techhash.h"
 
 #include <tinyxml.h>
 
@@ -21,6 +22,27 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #define IsFlagSet(f, b) (((f)&(b))==(b))
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+static const tChar g_entityPositionComponentName[] = _T("position");
+static const tChar g_entityRenderComponentName[] = _T("render");
+static const tChar g_entitySpawnComponentName[] = _T("spawns");
+static const tChar g_entityBrainComponentName[] = _T("brain");
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+tEntityComponentID GenerateEntityComponentID(const tChar * pszComponentName)
+{
+   Assert(pszComponentName != NULL);
+   if (pszComponentName == NULL)
+   {
+      return 0;
+   }
+   return reinterpret_cast<tEntityComponentID>(Hash(pszComponentName, _tcslen(pszComponentName) * sizeof(tChar)));
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -72,6 +94,10 @@ static tResult RegisterOldStyleComponentFactory(const tChar * pszComponent,
 //
 // CLASS: cEntityPositionComponent
 //
+
+///////////////////////////////////////
+
+const tEntityComponentID IEntityPositionComponent::CID = GenerateEntityComponentID(g_entityPositionComponentName);
 
 ///////////////////////////////////////
 
@@ -176,7 +202,7 @@ tResult EntityPositionComponentFactory(const TiXmlElement * pTiXmlElement,
       return E_POINTER;
    }
 
-   if (_stricmp(pTiXmlElement->Value(), "position") != 0)
+   if (_stricmp(pTiXmlElement->Value(), g_entityPositionComponentName) != 0)
    {
       return E_INVALIDARG;
    }
@@ -187,7 +213,7 @@ tResult EntityPositionComponentFactory(const TiXmlElement * pTiXmlElement,
       return E_OUTOFMEMORY;
    }
 
-   if (pEntity->SetComponent(kECT_Position, static_cast<IEntityComponent*>(pPosition)) != S_OK)
+   if (pEntity->SetComponent(IEntityPositionComponent::CID, static_cast<IEntityComponent*>(pPosition)) != S_OK)
    {
       return E_FAIL;
    }
@@ -201,6 +227,10 @@ tResult EntityPositionComponentFactory(const TiXmlElement * pTiXmlElement,
 //
 // CLASS: cEntityRenderComponent
 //
+
+///////////////////////////////////////
+
+const tEntityComponentID IEntityRenderComponent::CID = GenerateEntityComponentID(g_entityRenderComponentName);
 
 ///////////////////////////////////////
 
@@ -312,7 +342,7 @@ tResult EntityRenderComponentFactory(const TiXmlElement * pTiXmlElement,
       return E_POINTER;
    }
 
-   if (_stricmp(pTiXmlElement->Value(), "render") != 0)
+   if (_stricmp(pTiXmlElement->Value(), g_entityRenderComponentName) != 0)
    {
       return E_INVALIDARG;
    }
@@ -335,7 +365,7 @@ tResult EntityRenderComponentFactory(const TiXmlElement * pTiXmlElement,
       return E_OUTOFMEMORY;
    }
 
-   if (pEntity->SetComponent(kECT_Render, static_cast<IEntityComponent*>(pRender)) != S_OK)
+   if (pEntity->SetComponent(IEntityRenderComponent::CID, static_cast<IEntityComponent*>(pRender)) != S_OK)
    {
       return E_FAIL;
    }
@@ -349,6 +379,10 @@ tResult EntityRenderComponentFactory(const TiXmlElement * pTiXmlElement,
 //
 // CLASS: cEntitySpawnComponent
 //
+
+///////////////////////////////////////
+
+const tEntityComponentID IEntitySpawnComponent::CID = GenerateEntityComponentID(g_entitySpawnComponentName);
 
 ///////////////////////////////////////
 
@@ -402,7 +436,7 @@ tResult EntitySpawnComponentFactory(const TiXmlElement * pTiXmlElement,
       return E_POINTER;
    }
 
-   if (_stricmp(pTiXmlElement->Value(), "spawns") != 0)
+   if (_stricmp(pTiXmlElement->Value(), g_entitySpawnComponentName) != 0)
    {
       return E_INVALIDARG;
    }
@@ -419,7 +453,7 @@ tResult EntitySpawnComponentFactory(const TiXmlElement * pTiXmlElement,
       return E_OUTOFMEMORY;
    }
 
-   if (pEntity->SetComponent(kECT_Spawn, static_cast<IEntityComponent*>(pSpawnComponent)) != S_OK)
+   if (pEntity->SetComponent(IEntitySpawnComponent::CID, static_cast<IEntityComponent*>(pSpawnComponent)) != S_OK)
    {
       return E_FAIL;
    }
@@ -433,6 +467,10 @@ tResult EntitySpawnComponentFactory(const TiXmlElement * pTiXmlElement,
 //
 // CLASS: cEntityBrainComponent
 //
+
+///////////////////////////////////////
+
+const tEntityComponentID IEntityBrainComponent::CID = GenerateEntityComponentID(g_entityBrainComponentName);
 
 ///////////////////////////////////////
 
@@ -472,7 +510,7 @@ tResult cEntityBrainComponent::Create(IEntity * pEntity, IEntityBrainComponent *
 
    {
       cAutoIPtr<IEntityPositionComponent> pPosition;
-      if (pEntity->GetComponent(kECT_Position, IID_IEntityPositionComponent, &pPosition) == S_OK)
+      if (pEntity->GetComponent(IEntityPositionComponent::CID, IID_IEntityPositionComponent, &pPosition) == S_OK)
       {
          cAutoIPtr<IAIAgentLocationProvider> pLocationProvider;
          if (pPosition->QueryInterface(IID_IAIAgentLocationProvider, (void**)&pLocationProvider) == S_OK)
@@ -484,7 +522,7 @@ tResult cEntityBrainComponent::Create(IEntity * pEntity, IEntityBrainComponent *
 
    {
       cAutoIPtr<IEntityRenderComponent> pRender;
-      if (pEntity->GetComponent(kECT_Render, IID_IEntityRenderComponent, &pRender) == S_OK)
+      if (pEntity->GetComponent(IEntityRenderComponent::CID, IID_IEntityRenderComponent, &pRender) == S_OK)
       {
          cAutoIPtr<IAIAgentAnimationProvider> pAnimationProvider;
          if (pRender->QueryInterface(IID_IAIAgentAnimationProvider, (void**)&pAnimationProvider) == S_OK)
@@ -515,7 +553,7 @@ tResult EntityBrainComponentFactory(const TiXmlElement * pTiXmlElement,
       return E_POINTER;
    }
 
-   if (_stricmp(pTiXmlElement->Value(), "brain") != 0)
+   if (_stricmp(pTiXmlElement->Value(), g_entityBrainComponentName) != 0)
    {
       return E_INVALIDARG;
    }
@@ -527,7 +565,7 @@ tResult EntityBrainComponentFactory(const TiXmlElement * pTiXmlElement,
       return result;
    }
 
-   if (pEntity->SetComponent(kECT_Brain, static_cast<IEntityComponent*>(pBrainComponent)) != S_OK)
+   if (pEntity->SetComponent(IEntityBrainComponent::CID, static_cast<IEntityComponent*>(pBrainComponent)) != S_OK)
    {
       return E_FAIL;
    }
@@ -541,10 +579,10 @@ tResult EntityBrainComponentFactory(const TiXmlElement * pTiXmlElement,
 
 void RegisterBuiltInComponents()
 {
-   Verify(RegisterOldStyleComponentFactory(_T("position"), EntityPositionComponentFactory) == S_OK);
-   Verify(RegisterOldStyleComponentFactory(_T("render"), EntityRenderComponentFactory) == S_OK);
-   Verify(RegisterOldStyleComponentFactory(_T("spawns"), EntitySpawnComponentFactory) == S_OK);
-   Verify(RegisterOldStyleComponentFactory(_T("brain"), EntityBrainComponentFactory) == S_OK);
+   Verify(RegisterOldStyleComponentFactory(g_entityPositionComponentName, EntityPositionComponentFactory) == S_OK);
+   Verify(RegisterOldStyleComponentFactory(g_entityRenderComponentName, EntityRenderComponentFactory) == S_OK);
+   Verify(RegisterOldStyleComponentFactory(g_entitySpawnComponentName, EntitySpawnComponentFactory) == S_OK);
+   Verify(RegisterOldStyleComponentFactory(g_entityBrainComponentName, EntityBrainComponentFactory) == S_OK);
 }
 
 

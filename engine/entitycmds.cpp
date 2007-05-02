@@ -47,7 +47,7 @@ tResult EntityCommandSpawn(IEntity * pEntity, const cMultiVar * pArgs, uint nArg
    }
 
    cAutoIPtr<IEntitySpawnComponent> pSpawnComponent;
-   if (pEntity->GetComponent(kECT_Spawn, IID_IEntitySpawnComponent, &pSpawnComponent) == S_OK)
+   if (pEntity->GetComponent(IEntitySpawnComponent::CID, IID_IEntitySpawnComponent, &pSpawnComponent) == S_OK)
    {
       tVec3 rallyPoint;
       if (pSpawnComponent->GetRallyPoint(&rallyPoint) == S_OK)
@@ -208,7 +208,7 @@ tResult cSetRallyPointMode::OnTerrainClick(const tVec3 & location)
    LocalMsg3("Set rally point to (%f, %f, %f)\n", location.x, location.y, location.z);
 
    cAutoIPtr<IEntitySpawnComponent> pSpawnComponent;
-   if (AccessEntity()->GetComponent(kECT_Spawn, IID_IEntitySpawnComponent, &pSpawnComponent) == S_OK)
+   if (AccessEntity()->GetComponent(IEntitySpawnComponent::CID, IID_IEntitySpawnComponent, &pSpawnComponent) == S_OK)
    {
       pSpawnComponent->SetRallyPoint(location);
       return S_OK;
