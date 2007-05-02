@@ -56,6 +56,30 @@ tResult cEntityFactory::Term()
 
 ///////////////////////////////////////
 
+tResult cEntityFactory::CreateEntity(IEntity * * ppEntity)
+{
+   if (ppEntity == NULL)
+   {
+      return E_POINTER;
+   }
+
+   uint oldNextId = m_nextId;
+   uint entityId = ++m_nextId;
+
+   tResult result = E_FAIL;
+   cAutoIPtr<IEntity> pEntity;
+   if ((result = EntityCreate(_T(""), entityId, &pEntity)) != S_OK)
+   {
+      m_nextId = oldNextId;
+      return result;
+   }
+
+   *ppEntity = CTAddRef(pEntity);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
 tResult cEntityFactory::CreateEntity(const tChar * pszEntityType, IEntity * * ppEntity)
 {
    if (pszEntityType == NULL || ppEntity == NULL)

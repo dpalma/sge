@@ -30,6 +30,7 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
+   virtual tResult CreateEntity(IEntity * * ppEntity);
    virtual tResult CreateEntity(const tChar * pszEntityType, IEntity * * ppEntity);
 
 private:

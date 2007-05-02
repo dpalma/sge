@@ -107,7 +107,7 @@ tResult cEntityComponentRegistry::CreateComponent(const tChar * pszComponent,
                                                   IEntity * pEntity,
                                                   IEntityComponent * * ppComponent)
 {
-   if (pszComponent == NULL || pTiXmlElement == NULL || pEntity == NULL || ppComponent == NULL)
+   if (pszComponent == NULL || pEntity == NULL || ppComponent == NULL)
    {
       return E_POINTER;
    }
@@ -127,11 +127,6 @@ tResult cEntityComponentRegistry::CreateComponent(const tChar * pszComponent,
 tResult cEntityComponentRegistry::CreateComponent(const TiXmlElement * pTiXmlElement,
                                                   IEntity * pEntity, IEntityComponent * * ppComponent)
 {
-   if (pTiXmlElement == NULL)
-   {
-      return E_POINTER;
-   }
-
 #ifdef _UNICODE
    cMultiVar temp(pTiXmlElement->Value());
    const wchar_t * pszComponent = temp.ToWideString();

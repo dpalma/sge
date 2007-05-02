@@ -291,6 +291,8 @@ ENGINE_API tResult EntityCommandUICreate();
 
 interface IEntityFactory : IUnknown
 {
+   virtual tResult CreateEntity(IEntity * * ppEntity) = 0;
+
    virtual tResult CreateEntity(const tChar * pszEntityType, IEntity * * ppEntity) = 0;
 };
 
