@@ -21,6 +21,7 @@
 F_DECLARE_INTERFACE_GUID(IEntity, "85E6F9DB-639F-411d-B365-86A8FBD1ACBF");
 F_DECLARE_INTERFACE_GUID(IUpdatable, "0A85E22A-F905-458c-B96B-E0EBB4FECE0B");
 F_DECLARE_INTERFACE_GUID(IEntityComponent, "D1A48ABA-7DB7-4fb7-96E3-72F79DFABA99");
+F_DECLARE_INTERFACE_GUID(IEnumEntityComponents, "8E7028A3-ADEA-4d4c-8A92-65AFD3417555");
 F_DECLARE_INTERFACE_GUID(IEntityComponentFactory, "6AA1EDA8-EEA0-404c-B92D-5275F8CF75D6");
 F_DECLARE_INTERFACE_GUID(IEntityComponentRegistry, "B0263197-201A-4ca4-8AD6-896F03CDDD19");
 F_DECLARE_INTERFACE_GUID(IEntityPositionComponent, "BA4B742C-8D6F-494a-827B-25F8A3B4801F");
@@ -66,6 +67,20 @@ enum eEntityComponentType
 
 interface IEntityComponent : IUnknown
 {
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEnumEntityComponents
+//
+
+interface IEnumEntityComponents : IUnknown
+{
+   virtual tResult Next(ulong count, IEntityComponent * * ppComponents, ulong * pnComponents) = 0;
+   virtual tResult Skip(ulong count) = 0;
+   virtual tResult Reset() = 0;
+   virtual tResult Clone(IEnumEntityComponents * * ppEnum) = 0;
 };
 
 
@@ -188,6 +203,10 @@ interface IEntity : IUnknown
       }
       return result;
    }
+
+   virtual tResult RemoveComponent(eEntityComponentType ect) = 0;
+
+   virtual tResult EnumComponents(REFGUID iid, IEnumEntityComponents * * ppEnum) = 0;
 };
 
 

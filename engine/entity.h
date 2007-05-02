@@ -33,11 +33,16 @@ public:
    virtual tResult SetComponent(eEntityComponentType ect, IEntityComponent * pComponent);
    virtual tResult GetComponent(eEntityComponentType ect, IEntityComponent * * ppComponent);
 
+   virtual tResult RemoveComponent(eEntityComponentType ect);
+
+   virtual tResult EnumComponents(REFGUID iid, IEnumEntityComponents * * ppEnum);
+
 private:
    void RemoveAllComponents();
 
    cStr m_typeName;
    tEntityId m_id;
+
    typedef std::map<eEntityComponentType, IEntityComponent*> tEntityComponentMap;
    tEntityComponentMap m_entityComponentMap;
 };
