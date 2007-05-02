@@ -452,13 +452,26 @@ void cEntityManager::RegisterEntityUpdatables(IEntity * pEntity)
       return;
    }
 
-   for (int i = 0; i < kMaxEntityComponentTypes; ++i)
+   cAutoIPtr<IEnumEntityComponents> pEnum;
+   if (pEntity->EnumComponents(IID_IUpdatable, &pEnum) == S_OK)
    {
-      cAutoIPtr<IUpdatable> pUpdatableComponent;
-      if (pEntity->GetComponent(static_cast<eEntityComponentType>(i),
-         IID_IUpdatable, &pUpdatableComponent) == S_OK)
+      IEntityComponent * pComponents[32];
+      ulong count = 0;
+
+      while (SUCCEEDED(pEnum->Next(_countof(pComponents), &pComponents[0], &count)) && (count > 0))
       {
-         m_simClient.AddUpdatable(pUpdatableComponent);
+         for (ulong i = 0; i < count; i++)
+         {
+            cAutoIPtr<IUpdatable> pUpdatable;
+            if (pComponents[i]->QueryInterface(IID_IUpdatable, (void**)&pUpdatable) == S_OK)
+            {
+               m_simClient.AddUpdatable(pUpdatable);
+            }
+
+            SafeRelease(pComponents[i]);
+         }
+
+         count = 0;
       }
    }
 }
@@ -472,13 +485,26 @@ void cEntityManager::RevokeEntityUpdatables(IEntity * pEntity)
       return;
    }
 
-   for (int i = 0; i < kMaxEntityComponentTypes; ++i)
+   cAutoIPtr<IEnumEntityComponents> pEnum;
+   if (pEntity->EnumComponents(IID_IUpdatable, &pEnum) == S_OK)
    {
-      cAutoIPtr<IUpdatable> pUpdatableComponent;
-      if (pEntity->GetComponent(static_cast<eEntityComponentType>(i),
-         IID_IUpdatable, &pUpdatableComponent) == S_OK)
+      IEntityComponent * pComponents[32];
+      ulong count = 0;
+
+      while (SUCCEEDED(pEnum->Next(_countof(pComponents), &pComponents[0], &count)) && (count > 0))
       {
-         m_simClient.RemoveUpdatable(pUpdatableComponent);
+         for (ulong i = 0; i < count; i++)
+         {
+            cAutoIPtr<IUpdatable> pUpdatable;
+            if (pComponents[i]->QueryInterface(IID_IUpdatable, (void**)&pUpdatable) == S_OK)
+            {
+               m_simClient.RemoveUpdatable(pUpdatable);
+            }
+
+            SafeRelease(pComponents[i]);
+         }
+
+         count = 0;
       }
    }
 }
