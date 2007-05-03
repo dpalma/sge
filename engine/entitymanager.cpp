@@ -25,11 +25,16 @@
 
 #include <tinyxml.h>
 
+#include <boost/bind.hpp>
+
 #include <algorithm>
 
 #include "tech/dbgalloc.h" // must be last header
 
 #pragma warning(disable:4355) // 'this' : used in base member initializer list
+
+using namespace std;
+using namespace boost;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -315,7 +320,7 @@ tResult cEntityManager::Select(IEntity * pEntity)
       return E_POINTER;
    }
 
-   std::pair<tEntitySet::iterator, bool> result = m_selected.insert(pEntity);
+   pair<tEntitySet::iterator, bool> result = m_selected.insert(pEntity);
    if (result.second)
    {
       pEntity->AddRef();
@@ -379,7 +384,7 @@ tResult cEntityManager::DeselectAll()
    {
       return S_FALSE;
    }
-   std::for_each(m_selected.begin(), m_selected.end(), CTInterfaceMethod(&IEntity::Release));
+   for_each(m_selected.begin(), m_selected.end(), CTInterfaceMethod(&IEntity::Release));
    m_selected.clear();
    ForEachConnection(&IEntityManagerListener::OnEntitySelectionChange);
    return S_OK;
@@ -401,7 +406,7 @@ tResult cEntityManager::SetSelected(IEnumEntities * pEnum)
       return E_POINTER;
    }
 
-   std::for_each(m_selected.begin(), m_selected.end(), CTInterfaceMethod(&IEntity::Release));
+   for_each(m_selected.begin(), m_selected.end(), CTInterfaceMethod(&IEntity::Release));
    m_selected.clear();
 
    IEntity * pEntities[32];
@@ -411,7 +416,7 @@ tResult cEntityManager::SetSelected(IEnumEntities * pEnum)
    {
       for (ulong i = 0; i < count; i++)
       {
-         std::pair<tEntitySet::iterator, bool> result = m_selected.insert(pEntities[i]);
+         pair<tEntitySet::iterator, bool> result = m_selected.insert(pEntities[i]);
          if (result.second)
          {
             pEntities[i]->AddRef();
@@ -614,11 +619,7 @@ cEntityManager::cSimClient::cSimClient()
 tResult cEntityManager::cSimClient::Execute(double time)
 {
    double elapsed = fabs(time - m_lastTime);
-   tUpdatableList::iterator iter = m_updatables.begin(), end = m_updatables.end();
-   for (; iter != end; ++iter)
-   {
-      (*iter)->Update(elapsed);
-   }
+   for_each(m_updatables.begin(), m_updatables.end(), bind(&IUpdatable::Update, _1, elapsed));
    m_lastTime = time;
    return S_OK;
 }
@@ -641,7 +642,7 @@ tResult cEntityManager::cSimClient::RemoveUpdatable(IUpdatable * pUpdatable)
 
 void cEntityManager::cSimClient::RemoveAll()
 {
-   std::for_each(m_updatables.begin(), m_updatables.end(), CTInterfaceMethod(&IUnknown::Release));
+   for_each(m_updatables.begin(), m_updatables.end(), CTInterfaceMethod(&IUnknown::Release));
    m_updatables.clear();
 }
 

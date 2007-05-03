@@ -204,13 +204,7 @@ interface IEntity : IUnknown
    template <class INTRFC>
    tResult GetComponent(REFGUID iid, INTRFC * * ppComponent)
    {
-      cAutoIPtr<IEntityComponent> pComponent;
-      tResult result = GetComponent(INTRFC::CID, &pComponent);
-      if (result == S_OK)
-      {
-         return pComponent->QueryInterface(iid, reinterpret_cast<void**>(ppComponent));
-      }
-      return result;
+      return GetComponent(INTRFC::CID, iid, ppComponent);
    }
 
    virtual tResult RemoveComponent(tEntityComponentID cid) = 0;
