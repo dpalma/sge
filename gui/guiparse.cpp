@@ -8,14 +8,19 @@
 
 #include "gui/guistyleapi.h"
 
-#include "tech/token.h"
-
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
 #endif
 
+#include <boost/lexical_cast.hpp>
+#include <boost/tokenizer.hpp>
+
+#include <vector>
+
 #include "tech/dbgalloc.h" // must be last header
 
+using namespace boost;
+using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -229,29 +234,46 @@ tResult GUIParseColor(const tChar * pszColor, tGUIColor * pColor)
       sNamedColor(kValueColorWhite,       GUIStandardColors::White),
    };
 
-   cTokenizer<float> tok;
-   int tokResult = tok.Tokenize(pszColor);
-   if (tokResult == 3)
+   vector<float> floats;
+
+   try
    {
-      if ((tok.m_tokens[0] > 1) && (tok.m_tokens[1] > 1) && (tok.m_tokens[2] > 1))
+      cStr color(pszColor);
+      typedef tokenizer<char_separator<tChar> > tokenizer;
+      static const char_separator<tChar> sep(_T("(),"));
+      tokenizer tokens(color, sep);
+      tokenizer::iterator iter = tokens.begin(), end = tokens.end();
+      for (; iter != end; ++iter)
       {
-         *pColor = tGUIColor(tok.m_tokens[0]/255.0f, tok.m_tokens[1]/255.0f, tok.m_tokens[2]/255.0f);
+         float f = lexical_cast<float>(*iter);
+         floats.push_back(f);
+      }
+   }
+   catch (const bad_lexical_cast &)
+   {
+   }
+
+   if (floats.size() == 3)
+   {
+      if ((floats[0] > 1) && (floats[1] > 1) && (floats[2] > 1))
+      {
+         *pColor = tGUIColor(floats[0]/255.0f, floats[1]/255.0f, floats[2]/255.0f);
       }
       else
       {
-         *pColor = tGUIColor(tok.m_tokens[0], tok.m_tokens[1], tok.m_tokens[2]);
+         *pColor = tGUIColor(floats[0], floats[1], floats[2]);
       }
       return S_OK;
    }
-   else if (tokResult == 4)
+   else if (floats.size() == 4)
    {
-      if ((tok.m_tokens[0] > 1) && (tok.m_tokens[1] > 1) && (tok.m_tokens[2] > 1) && (tok.m_tokens[3] > 1))
+      if ((floats[0] > 1) && (floats[1] > 1) && (floats[2] > 1) && (floats[3] > 1))
       {
-         *pColor = tGUIColor(tok.m_tokens[0]/255.0f, tok.m_tokens[1]/255.0f, tok.m_tokens[2]/255.0f, tok.m_tokens[3]/255.0f);
+         *pColor = tGUIColor(floats[0]/255.0f, floats[1]/255.0f, floats[2]/255.0f, floats[3]/255.0f);
       }
       else
       {
-         *pColor = tGUIColor(tok.m_tokens[0], tok.m_tokens[1], tok.m_tokens[2], tok.m_tokens[3]);
+         *pColor = tGUIColor(floats[0], floats[1], floats[2], floats[3]);
       }
       return S_OK;
    }
@@ -358,24 +380,24 @@ TEST(GUIParseFontSize)
    CHECK(GUIParseStyleFontSize(_T("test"), &size, NULL) == E_POINTER);
 
    CHECK(GUIParseStyleFontSize("xx-small", &size, &type) == S_OK);
-   CHECK_EQUAL(size, kGUIFontXXSmall);
-   CHECK_EQUAL(type, kGUIFontSizeAbsolute);
+   CHECK_EQUAL(kGUIFontXXSmall, size);
+   CHECK_EQUAL(kGUIFontSizeAbsolute, type);
 
    CHECK(GUIParseStyleFontSize("larger", &size, &type) == S_OK);
-   CHECK_EQUAL(size, kGUIFontSizeLarger);
-   CHECK_EQUAL(type, kGUIFontSizeRelative);
+   CHECK_EQUAL(kGUIFontSizeLarger, size);
+   CHECK_EQUAL(kGUIFontSizeRelative, type);
 
    CHECK(GUIParseStyleFontSize("78%", &size, &type) == S_OK);
-   CHECK_EQUAL(size, 78);
-   CHECK_EQUAL(type, kGUIFontSizePercent);
+   CHECK_EQUAL(78, size);
+   CHECK_EQUAL(kGUIFontSizePercent, type);
 
    CHECK(GUIParseStyleFontSize("14pt", &size, &type) == S_OK);
-   CHECK_EQUAL(size, 14);
-   CHECK_EQUAL(type, kGUIFontSizePoints);
+   CHECK_EQUAL(14, size);
+   CHECK_EQUAL(kGUIFontSizePoints, type);
 
    CHECK(GUIParseStyleFontSize("9mm", &size, &type) == S_OK);
-   CHECK_EQUAL(size, 9);
-   CHECK_EQUAL(type, kGUIFontSizeMillimeters);
+   CHECK_EQUAL(9, size);
+   CHECK_EQUAL(kGUIFontSizeMillimeters, type);
 }
 
 ///////////////////////////////////////
@@ -405,6 +427,8 @@ TEST(GUIParseColor)
    CHECK(color == GUIStandardColors::LightGray);
    CHECK(GUIParseColor("white", &color) == S_OK);
    CHECK(color == GUIStandardColors::White);
+   CHECK_EQUAL(S_OK, GUIParseColor("1,0,0", &color));
+   CHECK(color == GUIStandardColors::Red);
 }
 
 ///////////////////////////////////////
