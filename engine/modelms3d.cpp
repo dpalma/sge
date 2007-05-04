@@ -18,6 +18,9 @@
 #include "tech/techmath.h"
 #include "tech/token.h"
 
+#define BOOST_MEM_FN_ENABLE_STDCALL
+#include <boost/mem_fn.hpp>
+
 #include <algorithm>
 #include <cfloat>
 #include <map>
@@ -25,6 +28,7 @@
 
 #include "tech/dbgalloc.h" // must be last header
 
+using namespace boost;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -674,7 +678,7 @@ void * ModelMs3dLoad(IReader * pReader)
             }
          }
 
-         std::for_each(interpolators.begin(), interpolators.end(), CTInterfaceMethod(&IUnknown::Release));
+         std::for_each(interpolators.begin(), interpolators.end(), mem_fn(&IUnknown::Release));
       }
    }
 

@@ -7,6 +7,9 @@
 #include <vector>
 #include <algorithm>
 
+#define BOOST_MEM_FN_ENABLE_STDCALL
+#include <boost/mem_fn.hpp>
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -74,7 +77,7 @@ public:
 protected:
    void DisconnectAll()
    {
-      std::for_each(m_sinks.begin(), m_sinks.end(), CTInterfaceMethod(&SINKINTRFC::Release));
+      std::for_each(m_sinks.begin(), m_sinks.end(), boost::mem_fn(&SINKINTRFC::Release));
       m_sinks.clear();
    }
 

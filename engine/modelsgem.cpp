@@ -12,10 +12,15 @@
 #include "tech/readwriteapi.h"
 #include "tech/readwriteutils.h"
 
+#define BOOST_MEM_FN_ENABLE_STDCALL
+#include <boost/mem_fn.hpp>
+
 #include <algorithm>
 
 #include "tech/dbgalloc.h" // must be last header
 
+using namespace boost;
+using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -59,7 +64,7 @@ void * ModelSgemLoad(IReader * pReader)
 
    //////////////////////////////
 
-   cModelChunk< std::vector<sModelVertex> > verticesChunk;
+   cModelChunk< vector<sModelVertex> > verticesChunk;
    if (pReader->Read(&verticesChunk) != S_OK
       || verticesChunk.GetChunkId() != MODEL_VERTEX_ARRAY_CHUNK)
    {
@@ -69,7 +74,7 @@ void * ModelSgemLoad(IReader * pReader)
 
    //////////////////////////////
 
-   cModelChunk< std::vector<uint16> > indicesChunk;
+   cModelChunk< vector<uint16> > indicesChunk;
    if (pReader->Read(&indicesChunk) != S_OK
       || indicesChunk.GetChunkId() != MODEL_INDEX16_ARRAY_CHUNK)
    {
@@ -79,7 +84,7 @@ void * ModelSgemLoad(IReader * pReader)
 
    //////////////////////////////
 
-   cModelChunk< std::vector<sModelMesh> > meshesChunk;
+   cModelChunk< vector<sModelMesh> > meshesChunk;
    if (pReader->Read(&meshesChunk) != S_OK
       || meshesChunk.GetChunkId() != MODEL_MESH_ARRAY_CHUNK)
    {
@@ -89,7 +94,7 @@ void * ModelSgemLoad(IReader * pReader)
 
    //////////////////////////////
 
-   cModelChunk< std::vector<sModelMaterial> > materialsChunk;
+   cModelChunk< vector<sModelMaterial> > materialsChunk;
    if (pReader->Read(&materialsChunk) != S_OK
       || materialsChunk.GetChunkId() != MODEL_MATERIAL_ARRAY_CHUNK)
    {
@@ -101,7 +106,7 @@ void * ModelSgemLoad(IReader * pReader)
 
    //////////////////////////////
 
-   cModelChunk< cModelChunk< std::vector<sModelJoint> > > skeletonChunk;
+   cModelChunk< cModelChunk< vector<sModelJoint> > > skeletonChunk;
 
    if (pReader->Read(&skeletonChunk) != S_OK
       || skeletonChunk.GetChunkId() != MODEL_SKELETON_CHUNK
@@ -111,7 +116,7 @@ void * ModelSgemLoad(IReader * pReader)
       return NULL;
    }
 
-   const std::vector<sModelJoint> & joints = skeletonChunk.GetChunkData().GetChunkData();
+   const vector<sModelJoint> & joints = skeletonChunk.GetChunkData().GetChunkData();
 
    LocalMsg1("%d Joints\n", joints.size());
 
@@ -147,19 +152,19 @@ void * ModelSgemLoad(IReader * pReader)
 
          eModelAnimationType animType = animTypes[intAnimType];
 
-         std::vector< std::vector<sModelKeyFrame> > animKeyFrameVectors;
+         vector< vector<sModelKeyFrame> > animKeyFrameVectors;
          if (pReader->Read(&animKeyFrameVectors) != S_OK)
          {
             return NULL;
          }
 
-         std::vector<IModelKeyFrameInterpolator*> interpolators;
+         vector<IModelKeyFrameInterpolator*> interpolators;
 
-         std::vector< std::vector<sModelKeyFrame> >::const_iterator iter = animKeyFrameVectors.begin();
-         std::vector< std::vector<sModelKeyFrame> >::const_iterator end = animKeyFrameVectors.end();
+         vector< vector<sModelKeyFrame> >::const_iterator iter = animKeyFrameVectors.begin();
+         vector< vector<sModelKeyFrame> >::const_iterator end = animKeyFrameVectors.end();
          for (; iter != end; ++iter)
          {
-            const std::vector<sModelKeyFrame> & keyFrames = *iter;
+            const vector<sModelKeyFrame> & keyFrames = *iter;
 
             cAutoIPtr<IModelKeyFrameInterpolator> pInterp;
             if (ModelKeyFrameInterpolatorCreate(&keyFrames[0], keyFrames.size(), &pInterp) == S_OK)
@@ -176,7 +181,7 @@ void * ModelSgemLoad(IReader * pReader)
                pSkeleton->AddAnimation(animType, pAnim);
             }
 
-            std::for_each(interpolators.begin(), interpolators.end(), CTInterfaceMethod(&IUnknown::Release));
+            for_each(interpolators.begin(), interpolators.end(), mem_fn(&IUnknown::Release));
          }
       }
       else

@@ -341,50 +341,6 @@ cComAggregableObject<INTRFC, PIID, UNKNOWN>::~cComAggregableObject()
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// cStdcallMethod
-//
-// Functor class for use with STL algorithms. For example,
-//    std::for_each(objects.begin(), objects.end(), CTInterfaceMethod(&IUnknown::Release));
-
-template <typename RETURN, typename INTRFC>
-class cStdcallMethod
-{
-   typedef RETURN (STDMETHODCALLTYPE INTRFC::*tMethod)();
-public:
-   explicit cStdcallMethod(tMethod pfnMethod);
-   RETURN operator()(INTRFC * pInterface);
-private:
-   tMethod m_pfnMethod;
-};
-
-///////////////////////////////////////
-
-template <typename RETURN, typename INTRFC>
-cStdcallMethod<RETURN, INTRFC>::cStdcallMethod(tMethod pfnMethod)
- : m_pfnMethod(pfnMethod)
-{
-}
-
-///////////////////////////////////////
-
-template <typename RETURN, typename INTRFC>
-RETURN cStdcallMethod<RETURN, INTRFC>::operator()(INTRFC * pInterface)
-{
-   return (pInterface->*m_pfnMethod)();
-}
-
-///////////////////////////////////////
-
-template <typename RETURN, typename INTRFC>
-inline cStdcallMethod<RETURN, INTRFC>
-   CTInterfaceMethod(RETURN (STDMETHODCALLTYPE INTRFC::*pfnMethod)())
-{
-   return cStdcallMethod<RETURN, INTRFC>(pfnMethod);
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-//
 // CLASS: cAutoIPtr
 //
 

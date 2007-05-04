@@ -7,7 +7,13 @@
 
 #include "tech/connptimpl.h"
 
+#define BOOST_MEM_FN_ENABLE_STDCALL
+#include <boost/mem_fn.hpp>
+
 #include "tech/dbgalloc.h" // must be last header
+
+using namespace boost;
+using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -68,7 +74,7 @@ tResult cSim::Init()
 
 tResult cSim::Term()
 {
-   std::for_each(m_simClients.begin(), m_simClients.end(), CTInterfaceMethod(&ISimClient::Release));
+   for_each(m_simClients.begin(), m_simClients.end(), mem_fn(&ISimClient::Release));
    m_simClients.clear();
 
    UseGlobal(Scheduler);

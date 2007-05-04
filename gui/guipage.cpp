@@ -17,11 +17,16 @@
 
 #include <tinyxml.h>
 
+#define BOOST_MEM_FN_ENABLE_STDCALL
+#include <boost/mem_fn.hpp>
+
 #include <stack>
 #include <queue>
 
 #include "tech/dbgalloc.h" // must be last header
 
+using namespace boost;
+using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -82,7 +87,7 @@ public:
    virtual void OnCreateElement(const TiXmlElement * pXmlElement, IGUIElement * pParent, IGUIElement * pElement);
 
 private:
-   std::list<IGUIStyleElement*> m_styleElements;
+   list<IGUIStyleElement*> m_styleElements;
 };
 
 ///////////////////////////////////////
@@ -95,7 +100,7 @@ cGUIPageCreateFactoryListener::cGUIPageCreateFactoryListener()
 
 cGUIPageCreateFactoryListener::~cGUIPageCreateFactoryListener()
 {
-   std::for_each(m_styleElements.begin(), m_styleElements.end(), CTInterfaceMethod(&IGUIStyleElement::Release));
+   for_each(m_styleElements.begin(), m_styleElements.end(), mem_fn(&IGUIStyleElement::Release));
    m_styleElements.clear();
 }
 
@@ -174,7 +179,7 @@ struct sRenderLoopStackElement
    tGUIPoint base;
 };
 
-typedef std::stack<sRenderLoopStackElement> tRenderLoopStack;
+typedef stack<sRenderLoopStackElement> tRenderLoopStack;
 
 inline void PushChildElement(tRenderLoopStack * pStack,
                              IGUIElement * pChild,
@@ -332,8 +337,8 @@ cGUIPage::cGUIPage(const tGUIElementList * pElements, cGUINotifyListeners * pNot
    if (pElements != NULL)
    {
       m_elements.resize(pElements->size());
-      std::copy(pElements->begin(), pElements->end(), m_elements.begin());
-      std::for_each(m_elements.begin(), m_elements.end(), CTInterfaceMethod(&IGUIElement::AddRef));
+      copy(pElements->begin(), pElements->end(), m_elements.begin());
+      for_each(m_elements.begin(), m_elements.end(), mem_fn(&IGUIElement::AddRef));
 
       RequestLayout(NULL, kGUILayoutDefault);
    }
@@ -494,7 +499,7 @@ tResult cGUIPage::GetElement(const tChar * pszId, IGUIElement * * ppElement)
 void cGUIPage::RequestLayout(IGUIElement * pRequester, uint options)
 {
    // TODO: Eliminate redundant requests
-   m_layoutRequests.push_back(std::make_pair(CTAddRef(pRequester), options));
+   m_layoutRequests.push_back(make_pair(CTAddRef(pRequester), options));
 }
 
 ///////////////////////////////////////
@@ -595,12 +600,12 @@ tResult cGUIPage::GetHitElement(const tScreenPoint & point, IGUIElement * * ppEl
       return E_POINTER;
    }
 
-   std::list<IGUIElement*> hitElements;
+   list<IGUIElement*> hitElements;
    if (GetHitElements(point, &hitElements) == S_OK)
    {
       Assert(!hitElements.empty());
       *ppElement = CTAddRef(hitElements.front());
-      std::for_each(hitElements.begin(), hitElements.end(), CTInterfaceMethod(&IGUIElement::Release));
+      for_each(hitElements.begin(), hitElements.end(), mem_fn(&IGUIElement::Release));
       return S_OK;
    }
 
@@ -660,7 +665,7 @@ tResult cGUIPage::GetHitElements(const tScreenPoint & point, tGUIElementList * p
 
 void cGUIPage::ClearElements()
 {
-   std::for_each(m_elements.begin(), m_elements.end(), CTInterfaceMethod(&IGUIElement::Release));
+   for_each(m_elements.begin(), m_elements.end(), mem_fn(&IGUIElement::Release));
    m_elements.clear();
 }
 
@@ -718,7 +723,7 @@ static tResult RunScriptHelper(IGUIElement * pElement)
 
 void cGUIPage::RunScripts()
 {
-   std::for_each(BeginElements(), EndElements(), RunScriptHelper);
+   for_each(BeginElements(), EndElements(), RunScriptHelper);
 }
 
 

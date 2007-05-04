@@ -11,6 +11,9 @@
 #include "tech/filespec.h"
 #include "tech/readwriteapi.h"
 
+#define BOOST_MEM_FN_ENABLE_STDCALL
+#include <boost/mem_fn.hpp>
+
 #include <cstdio>
 #include <vector>
 #include <algorithm>
@@ -18,6 +21,7 @@
 
 #include "tech/dbgalloc.h" // must be last header
 
+using namespace boost;
 using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -85,7 +89,7 @@ tResult cResourceManager::Term()
 {
    UnloadAll();
 
-   for_each(m_stores.begin(), m_stores.end(), CTInterfaceMethod(&IResourceStore::Release));
+   for_each(m_stores.begin(), m_stores.end(), mem_fn(&IResourceStore::Release));
    m_stores.clear();
 
    return S_OK;

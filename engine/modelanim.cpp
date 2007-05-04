@@ -9,11 +9,15 @@
 #include "tech/matrix3.h"
 #include "tech/matrix4.h"
 
+#define BOOST_MEM_FN_ENABLE_STDCALL
+#include <boost/mem_fn.hpp>
+
 #include <algorithm>
 #include <cfloat>
 
 #include "tech/dbgalloc.h" // must be last header
 
+using namespace boost;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -205,7 +209,7 @@ cModelAnimation::cModelAnimation(IModelKeyFrameInterpolator * * pInterpolators,
 
 cModelAnimation::~cModelAnimation()
 {
-   std::for_each(m_interpolators.begin(), m_interpolators.end(), CTInterfaceMethod(&IUnknown::Release));
+   std::for_each(m_interpolators.begin(), m_interpolators.end(), mem_fn(&IUnknown::Release));
    m_interpolators.clear();
 }
 

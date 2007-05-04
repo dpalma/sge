@@ -23,6 +23,9 @@
 
 #include <tinyxml.h>
 
+#define BOOST_MEM_FN_ENABLE_STDCALL
+#include <boost/mem_fn.hpp>
+
 #include "tech/dbgalloc.h" // must be last header
 
 // TODO: The xml resource format can probably move into tech
@@ -31,6 +34,9 @@
 #endif
 
 #pragma warning(disable:4355) // 'this' : used in base member initializer list
+
+using namespace boost;
+using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -245,7 +251,7 @@ tResult cGUIContext::Init()
 
 tResult cGUIContext::Term()
 {
-   std::for_each(m_eventListeners.begin(), m_eventListeners.end(), CTInterfaceMethod(&IGUIEventListener::Release));
+   for_each(m_eventListeners.begin(), m_eventListeners.end(), mem_fn(&IGUIEventListener::Release));
    m_eventListeners.clear();
 
    for (int i = 0; i < _countof(m_pagePlanes); i++)
@@ -906,7 +912,7 @@ void cGUIContext::RenderDebugInfo()
             rect.left -= lineHeight;
          }
 
-         std::for_each(hitElements.begin(), hitElements.end(), CTInterfaceMethod(&IGUIElement::Release));
+         for_each(hitElements.begin(), hitElements.end(), mem_fn(&IGUIElement::Release));
       }
    }
 }

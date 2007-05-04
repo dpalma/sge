@@ -13,10 +13,18 @@
 #include "UnitTest++.h"
 #endif
 
+#define BOOST_MEM_FN_ENABLE_STDCALL
+#include <boost/mem_fn.hpp>
+
 #include <vector>
 #include <algorithm>
 
 #include "tech/dbgalloc.h" // must be last header
+
+using namespace boost;
+using namespace std;
+
+///////////////////////////////////////////////////////////////////////////////
 
 LOG_DEFINE_CHANNEL(GlobalObjReg);
 
@@ -129,7 +137,7 @@ private:
    typedef cHashTable<const GUID *, IUnknown *> tObjMap;
    tObjMap m_objMap;
 
-   typedef std::vector<const GUID *> tInitOrder;
+   typedef vector<const GUID *> tInitOrder;
    tInitOrder m_initOrder;
 };
 
@@ -206,7 +214,7 @@ tResult cGlobalObjectRegistry::InitAll()
    // This set keeps track of the identity IUnknown* pointers of the objects
    // whose Init() method has been called to avoid call Init() more than once
    // on the same object.
-   std::set<IUnknown*> initialized;
+   set<IUnknown*> initialized;
 
    tResult result = S_OK;
 
@@ -253,7 +261,7 @@ tResult cGlobalObjectRegistry::InitAll()
       }
    }
 
-   std::for_each(initialized.begin(), initialized.end(), CTInterfaceMethod(&IUnknown::Release));
+   for_each(initialized.begin(), initialized.end(), mem_fn(&IUnknown::Release));
 
    return result;
 }
@@ -264,7 +272,7 @@ void cGlobalObjectRegistry::TermAll()
 {
    Assert(m_objMap.size() == m_initOrder.size());
 
-   std::set<IUnknown*> termed;
+   set<IUnknown*> termed;
 
    // Terminate in reverse order
    tInitOrder::reverse_iterator iter;
@@ -299,7 +307,7 @@ void cGlobalObjectRegistry::TermAll()
       }
    }
 
-   std::for_each(termed.begin(), termed.end(), CTInterfaceMethod(&IUnknown::Release));
+   for_each(termed.begin(), termed.end(), mem_fn(&IUnknown::Release));
 
    // Release references in m_objMap (order doesn't matter here)
    tObjMap::iterator oiter;

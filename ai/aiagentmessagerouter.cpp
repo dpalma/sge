@@ -9,7 +9,13 @@
 #include "UnitTest++.h"
 #endif
 
+#define BOOST_MEM_FN_ENABLE_STDCALL
+#include <boost/mem_fn.hpp>
+
 #include "tech/dbgalloc.h" // must be last header
+
+using namespace boost;
+using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -100,7 +106,7 @@ void cAIAgentMessageRouter::ClearMessages()
 {
    for (int i = 0; i < _countof(m_msgQueue); ++i)
    {
-      std::for_each(m_msgQueue[i].begin(), m_msgQueue[i].end(), CTInterfaceMethod(&IAIAgentMessage::Release));
+      for_each(m_msgQueue[i].begin(), m_msgQueue[i].end(), mem_fn(&IAIAgentMessage::Release));
       m_msgQueue[i].clear();
    }
 
@@ -166,7 +172,7 @@ tResult cAIAgentMessageRouter::RegisterAgent(IAIAgent * pAgent)
       return E_FAIL;
    }
 
-   m_agentMap.insert(std::make_pair(id, CTAddRef(pAgent)));
+   m_agentMap.insert(make_pair(id, CTAddRef(pAgent)));
    return S_OK;
 }
 
@@ -332,13 +338,13 @@ public:
 
    virtual tResult HandleMessage(IAIAgentMessage * pMsg) { m_msgs.push_back(CTAddRef(pMsg)); return S_OK; }
 
-   std::deque<IAIAgentMessage *>::iterator GetFirstMessage() { return m_msgs.begin(); }
-   std::deque<IAIAgentMessage *>::iterator GetLastMessage() { return m_msgs.end(); }
-   void ClearMessages() { std::for_each(m_msgs.begin(), m_msgs.end(), CTInterfaceMethod(&IAIAgentMessage::Release)), m_msgs.clear(); }
+   deque<IAIAgentMessage *>::iterator GetFirstMessage() { return m_msgs.begin(); }
+   deque<IAIAgentMessage *>::iterator GetLastMessage() { return m_msgs.end(); }
+   void ClearMessages() { for_each(m_msgs.begin(), m_msgs.end(), mem_fn(&IAIAgentMessage::Release)), m_msgs.clear(); }
 
 private:
    tAIAgentID m_id;
-   std::deque<IAIAgentMessage *> m_msgs;
+   deque<IAIAgentMessage *> m_msgs;
 };
 
 TEST_FIXTURE(cAIAgentMessageRouterTests, ProperAgentMessageOrder)
@@ -378,7 +384,7 @@ TEST_FIXTURE(cAIAgentMessageRouterTests, ProperAgentMessageOrder)
 
    m_pMsgRouter->PumpMessages(maxTime);
 
-   std::deque<IAIAgentMessage *>::iterator iter = pAgent->GetFirstMessage(), end = pAgent->GetLastMessage();
+   deque<IAIAgentMessage *>::iterator iter = pAgent->GetFirstMessage(), end = pAgent->GetLastMessage();
    for (double index = 1; iter != end; ++iter, ++index)
    {
       CHECK(index == (*iter)->GetDeliveryTime());

@@ -14,10 +14,14 @@
 #include "UnitTest++.h"
 #endif
 
+#define BOOST_MEM_FN_ENABLE_STDCALL
+#include <boost/mem_fn.hpp>
+
 #include <algorithm>
 
 #include "tech/dbgalloc.h" // must be last header
 
+using namespace boost;
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -36,7 +40,7 @@ cAIAgent::cAIAgent(tAIAgentID id, IUnknown * pUnkOuter)
 
 cAIAgent::~cAIAgent()
 {
-   std::for_each(m_behaviorStack.begin(), m_behaviorStack.end(), CTInterfaceMethod(&IAIAgentBehavior::Release));
+   std::for_each(m_behaviorStack.begin(), m_behaviorStack.end(), mem_fn(&IAIAgentBehavior::Release));
    m_behaviorStack.clear();
 }
 

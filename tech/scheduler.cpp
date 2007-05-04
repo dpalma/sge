@@ -7,11 +7,17 @@
 
 #include "tech/techtime.h"
 
+#define BOOST_MEM_FN_ENABLE_STDCALL
+#include <boost/mem_fn.hpp>
+
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
 #endif
 
 #include "tech/dbgalloc.h" // must be last header
+
+using namespace boost;
+using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -111,7 +117,7 @@ tResult cScheduler::Init()
 tResult cScheduler::Term()
 {
    {
-      std::for_each(m_renderTaskQueue.begin(), m_renderTaskQueue.end(), CTInterfaceMethod(&ITask::Release));
+      for_each(m_renderTaskQueue.begin(), m_renderTaskQueue.end(), mem_fn(&ITask::Release));
       m_renderTaskQueue.clear();
    }
 
@@ -187,7 +193,7 @@ tResult cScheduler::RemoveRenderTask(ITask * pTask)
       return E_FAIL;
    }
 
-   std::deque<ITask *>::iterator iter = m_renderTaskQueue.begin(), end = m_renderTaskQueue.end();
+   deque<ITask *>::iterator iter = m_renderTaskQueue.begin(), end = m_renderTaskQueue.end();
    for (; iter != end; ++iter)
    {
       if (CTIsSameObject(pTask, *iter))
@@ -396,7 +402,7 @@ void cScheduler::NextFrame()
    // Run render tasks
    {
       ++m_lockRenderTaskQueue;
-      std::deque<ITask *>::iterator iter = m_renderTaskQueue.begin(), end = m_renderTaskQueue.end();
+      deque<ITask *>::iterator iter = m_renderTaskQueue.begin(), end = m_renderTaskQueue.end();
       for (; iter != end; ++iter)
       {
          if ((*iter)->Execute(m_clock.GetFrameCount()) != S_OK)

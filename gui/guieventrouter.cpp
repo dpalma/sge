@@ -20,10 +20,15 @@ LOG_DEFINE_CHANNEL(GUIEventRouter);
 
 #include "UnitTest++.h"
 
+#define BOOST_MEM_FN_ENABLE_STDCALL
+#include <boost/mem_fn.hpp>
+
 #include "tech/dbgalloc.h" // must be last header
 
+using namespace boost;
+using namespace std;
 
-typedef std::list<IGUIEventListener *> tGUIEventListenerList;
+typedef list<IGUIEventListener *> tGUIEventListenerList;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -113,10 +118,10 @@ public:
    virtual tResult OnEvent(IGUIEvent * pEvent);
    uint GetEventCount() const { return m_events.size(); }
    IGUIEvent * AccessEvent(uint index) { return (index < m_events.size()) ? m_events[index] : NULL; }
-   std::vector<IGUIEvent *>::const_iterator GetFirstEvent() const { return m_events.begin(); }
-   std::vector<IGUIEvent *>::const_iterator GetLastEvent() const { return m_events.end(); }
+   vector<IGUIEvent *>::const_iterator GetFirstEvent() const { return m_events.begin(); }
+   vector<IGUIEvent *>::const_iterator GetLastEvent() const { return m_events.end(); }
 private:
-   typedef std::vector<IGUIEvent *> tGUIEventVector;
+   typedef vector<IGUIEvent *> tGUIEventVector;
    tGUIEventVector m_events;
 };
 
@@ -130,7 +135,7 @@ cGUIEventCollector::cGUIEventCollector()
 
 cGUIEventCollector::~cGUIEventCollector()
 {
-   std::for_each(m_events.begin(), m_events.end(), CTInterfaceMethod(&IGUIEvent::Release));
+   for_each(m_events.begin(), m_events.end(), mem_fn(&IGUIEvent::Release));
    m_events.clear();
 }
 
@@ -253,7 +258,7 @@ cGUIEventRouterFixture::~cGUIEventRouterFixture()
 {
    Verify(RemoveEventListener(static_cast<IGUIEventListener*>(&m_eventCollector)) == S_OK);
 
-   std::for_each(m_eventListeners.begin(), m_eventListeners.end(), CTInterfaceMethod(&IGUIEventListener::Release));
+   for_each(m_eventListeners.begin(), m_eventListeners.end(), mem_fn(&IGUIEventListener::Release));
    m_eventListeners.clear();
 }
 

@@ -25,7 +25,9 @@
 
 #include <tinyxml.h>
 
+#define BOOST_MEM_FN_ENABLE_STDCALL
 #include <boost/bind.hpp>
+#include <boost/mem_fn.hpp>
 
 #include <algorithm>
 
@@ -384,7 +386,7 @@ tResult cEntityManager::DeselectAll()
    {
       return S_FALSE;
    }
-   for_each(m_selected.begin(), m_selected.end(), CTInterfaceMethod(&IEntity::Release));
+   for_each(m_selected.begin(), m_selected.end(), mem_fn(&IEntity::Release));
    m_selected.clear();
    ForEachConnection(&IEntityManagerListener::OnEntitySelectionChange);
    return S_OK;
@@ -406,7 +408,7 @@ tResult cEntityManager::SetSelected(IEnumEntities * pEnum)
       return E_POINTER;
    }
 
-   for_each(m_selected.begin(), m_selected.end(), CTInterfaceMethod(&IEntity::Release));
+   for_each(m_selected.begin(), m_selected.end(), mem_fn(&IEntity::Release));
    m_selected.clear();
 
    IEntity * pEntities[32];
@@ -642,7 +644,7 @@ tResult cEntityManager::cSimClient::RemoveUpdatable(IUpdatable * pUpdatable)
 
 void cEntityManager::cSimClient::RemoveAll()
 {
-   for_each(m_updatables.begin(), m_updatables.end(), CTInterfaceMethod(&IUnknown::Release));
+   for_each(m_updatables.begin(), m_updatables.end(), mem_fn(&IUnknown::Release));
    m_updatables.clear();
 }
 
