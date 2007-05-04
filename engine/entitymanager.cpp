@@ -195,22 +195,17 @@ tResult cEntityManager::RemoveEntity(IEntity * pEntity)
    }
 
    bool bFound = false;
-   tEntityList::iterator iter = m_entities.begin(), end = m_entities.end();
-   for (; iter != end; ++iter)
+   tEntityList::iterator f = find_if(m_entities.begin(), m_entities.end(), bind1st(ptr_fun(CTIsSameObject), pEntity));
+   if (f != m_entities.end())
    {
-      if (CTIsSameObject(pEntity, *iter))
-      {
-         bFound = true;
+      bFound = true;
 
-         RevokeEntityUpdatables(*iter);
+      RevokeEntityUpdatables(*f);
 
-         (*iter)->Release();
-         m_entities.erase(iter);
+      (*f)->Release();
+      m_entities.erase(f);
 
-         // TODO: return entity's id to a pool?
-
-         break;
-      }
+      // TODO: return entity's id to a pool?
    }
 
    size_t nErasedFromSelected = m_selected.erase(pEntity);
