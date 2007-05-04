@@ -9,11 +9,18 @@
 #include "guistrings.h"
 
 #include "tech/globalobj.h"
-#include "tech/token.h"
 
 #include <tinyxml.h>
 
+#include <boost/lexical_cast.hpp>
+#include <boost/tokenizer.hpp>
+
+#include <vector>
+
 #include "tech/dbgalloc.h" // must be last header
+
+using namespace boost;
+using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -522,10 +529,28 @@ tResult GUIScrollBarElementCreateFromXml(const TiXmlElement * pXmlElement,
          const char * pszAttrib = NULL;
          if ((pszAttrib = pXmlElement->Attribute(kAttribRange)) != NULL)
          {
-            cTokenizer<int> tok;
-            if (tok.Tokenize(pszAttrib) == 2)
+            try
             {
-               pScrollBar->SetRange(tok.m_tokens[0], tok.m_tokens[1]);
+               vector<int> ints;
+
+               cStr attrib(pszAttrib);
+               typedef tokenizer<char_separator<tChar> > tokenizer;
+               static const char_separator<tChar> sep(_T("(),"));
+               tokenizer tokens(attrib, sep);
+               tokenizer::iterator iter = tokens.begin(), end = tokens.end();
+               for (; iter != end; ++iter)
+               {
+                  int i = lexical_cast<int>(*iter);
+                  ints.push_back(i);
+               }
+
+               if (ints.size() == 2)
+               {
+                  pScrollBar->SetRange(ints[0], ints[1]);
+               }
+            }
+            catch (const bad_lexical_cast &)
+            {
             }
          }
 
