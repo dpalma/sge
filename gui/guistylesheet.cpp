@@ -12,7 +12,6 @@
 
 #include "tech/globalobj.h"
 #include "tech/resourceapi.h"
-#include "tech/token.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -20,11 +19,16 @@
 
 #include <tinyxml.h>
 
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/tokenizer.hpp>
+
 #include <cstring>
 #include <locale>
 
 #include "tech/dbgalloc.h" // must be last header
 
+using namespace boost;
+using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -139,14 +143,20 @@ tResult cGUIStyleSheet::AddRule(const tChar * pszSelector, IGUIStyle * pStyle)
       return E_POINTER;
    }
 
-   cTokenizer<cStr> strTok;
-   int nAdded = 0, n = strTok.Tokenize(pszSelector);
+   int nAdded = 0;
 
-   std::vector<cStr>::const_iterator iter = strTok.m_tokens.begin();
-   for (; iter != strTok.m_tokens.end(); iter++)
+   cStr selector(pszSelector);
+   typedef tokenizer<char_separator<tChar> > tokenizer;
+   static const char_separator<tChar> sep(_T(","));
+   tokenizer tokens(selector, sep);
+   tokenizer::iterator iter = tokens.begin(), end = tokens.end();
+   for (; iter != end; ++iter)
    {
+      cStr s(*iter);
+      trim(s);
+
       cStr type, cls;
-      ParseSelector(iter->c_str(), &type, &cls);
+      ParseSelector(s.c_str(), &type, &cls);
 
       if (!type.empty() && cls.empty())
       {
@@ -166,7 +176,6 @@ tResult cGUIStyleSheet::AddRule(const tChar * pszSelector, IGUIStyle * pStyle)
          nAdded += 1;
       }
    }
-
 
    return (nAdded > 0) ? S_OK : S_FALSE;
 }
