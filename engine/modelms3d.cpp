@@ -16,19 +16,24 @@
 #include "tech/globalobj.h"
 #include "tech/filespec.h"
 #include "tech/techmath.h"
-#include "tech/token.h"
 
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
+#endif
+
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/lexical_cast.hpp>
 #define BOOST_MEM_FN_ENABLE_STDCALL
 #include <boost/mem_fn.hpp>
+#include <boost/tokenizer.hpp>
 
-#include <algorithm>
-#include <cfloat>
 #include <map>
-#include <stack>
+#include <vector>
 
 #include "tech/dbgalloc.h" // must be last header
 
 using namespace boost;
+using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -46,64 +51,75 @@ LOG_DEFINE_CHANNEL(ModelMs3d);
 
 ////////////////////////////////////////////////////////////////////////////////
 
+static bool AnimTypeFromString(const cStr & animTypeStr, eModelAnimationType * pAnimType)
+{
+   static const struct
+   {
+      eModelAnimationType type;
+      const tChar * pszType;
+   }
+   animTypes[] =
+   {
+      { kMAT_Walk, _T("walk") },
+      { kMAT_Run, _T("run") },
+      { kMAT_Death, _T("death") },
+      { kMAT_Attack, _T("attack") },
+      { kMAT_Damage, _T("damage") },
+      { kMAT_Idle, _T("idle") },
+   };
+
+   for (int j = 0; j < _countof(animTypes); j++)
+   {
+      if (animTypeStr.compare(animTypes[j].pszType) == 0)
+      {
+         *pAnimType = animTypes[j].type;
+         return true;
+      }
+   }
+
+   return false;
+}
+
 template <typename CONTAINER>
 void ParseAnimDescs(const tChar * pszAnimString, CONTAINER * pContainer)
 {
-   cTokenizer<cStr> strTok;
-   if (strTok.Tokenize(pszAnimString, _T("\n")) > 0)
+   cStr animString(pszAnimString);
+   typedef tokenizer<char_separator<tChar> > tokenizer;
+   const char_separator<tChar> newlineSep(_T("\n"));
+   tokenizer animTokens(animString, newlineSep);
+   tokenizer::iterator iter = animTokens.begin(), end = animTokens.end();
+   for (; iter != end; ++iter)
    {
-      std::vector<cStr> & animStrings = strTok.m_tokens;
+      cStr animString(*iter);
+      trim(animString);
 
-      std::vector<cStr>::iterator iter = animStrings.begin();
-      for (; iter != animStrings.end(); iter++)
+      vector<cStr> fields;
+
+      const char_separator<tChar> commaSep(_T(","));
+      tokenizer fieldTokens(animString, commaSep);
+      tokenizer::iterator iter2 = fieldTokens.begin(), end2 = fieldTokens.end();
+      for (; iter2 != end2; ++iter2)
       {
-         cStr & animString = *iter;
+         fields.push_back(*iter2);
+      }
 
-         TrimLeadingSpace(&animString);
-         TrimTrailingSpace(&animString);
-
-         cTokenizer<cStr> strTok2;
-         if (strTok2.Tokenize(iter->c_str()) == 3)
+      if (fields.size() == 3)
+      {
+         sModelAnimationDesc animDesc;
+         if (AnimTypeFromString(fields[2], &animDesc.type))
          {
-            std::vector<cStr> & temp = strTok2.m_tokens;
-
-            static const struct
+            try
             {
-               eModelAnimationType type;
-               const char * pszType;
-            }
-            animTypes[] =
-            {
-               { kMAT_Walk, "walk" },
-               { kMAT_Run, "run" },
-               { kMAT_Death, "death" },
-               { kMAT_Attack, "attack" },
-               { kMAT_Damage, "damage" },
-               { kMAT_Idle, "idle" },
-            };
-
-            const cStr & animType = temp[2];
-
-            for (int j = 0; j < _countof(animTypes); j++)
-            {
-               if (animType.compare(animTypes[j].pszType) == 0)
+               animDesc.start = lexical_cast<uint>(fields[0]);
+               animDesc.end = lexical_cast<uint>(fields[1]);
+               animDesc.fps = 0;
+               if (animDesc.start > 0 || animDesc.end > 0)
                {
-                  sModelAnimationDesc animDesc;
-                  animDesc.type = animTypes[j].type;
-#ifdef __GNUC__
-                  animDesc.start = strtol(temp[0].c_str(), NULL, 10);
-                  animDesc.end = strtol(temp[1].c_str(), NULL, 10);
-#else
-                  animDesc.start = _ttoi(temp[0].c_str());
-                  animDesc.end = _ttoi(temp[1].c_str());
-#endif
-                  animDesc.fps = 0;
-                  if (animDesc.start > 0 || animDesc.end > 0)
-                  {
-                     pContainer->push_back(animDesc);
-                  }
-                  break;
+                  pContainer->push_back(animDesc);
                }
+            }
+            catch (const bad_lexical_cast &)
+            {
             }
          }
       }
@@ -175,7 +191,7 @@ void * ModelMs3dLoad(IReader * pReader)
 
    LocalMsg1("%d Vertices\n", nVertices);
 
-   std::vector<ms3d_vertex_t> ms3dVerts(nVertices);
+   vector<ms3d_vertex_t> ms3dVerts(nVertices);
    if (pReader->Read(&ms3dVerts[0], nVertices * sizeof(ms3d_vertex_t)) != S_OK)
    {
       return NULL;
@@ -193,7 +209,7 @@ void * ModelMs3dLoad(IReader * pReader)
 
    LocalMsg1("%d Triangles\n", nTriangles);
 
-   std::vector<ms3d_triangle_t> tris(nTriangles);
+   vector<ms3d_triangle_t> tris(nTriangles);
    if (pReader->Read(&tris[0], nTriangles * sizeof(ms3d_triangle_t)) != S_OK)
    {
       return NULL;
@@ -205,15 +221,15 @@ void * ModelMs3dLoad(IReader * pReader)
 
    // TODO: clean up this vertex mapping code !!!!!!!
 
-   std::vector<sModelVertex> vertices;
+   vector<sModelVertex> vertices;
    vertices.resize(nVertices);
 
    cMs3dVertexMapper vertexMapper(ms3dVerts);
 
-   typedef std::multimap<uint, uint> tVertexMap;
+   typedef multimap<uint, uint> tVertexMap;
    tVertexMap vertexMap;
 
-   std::vector<ms3d_triangle_t>::const_iterator iter;
+   vector<ms3d_triangle_t>::const_iterator iter;
    for (iter = tris.begin(); iter != tris.end(); iter++)
    {
       for (int k = 0; k < 3; k++)
@@ -232,7 +248,7 @@ void * ModelMs3dLoad(IReader * pReader)
             vertices[index].normal = iter->vertexNormals[k];
             vertices[index].pos = ms3dVerts[index].vertex;
             vertices[index].bone = ms3dVerts[index].boneId;
-            vertexMap.insert(std::make_pair(index,index));
+            vertexMap.insert(make_pair(index,index));
          }
          else
          {
@@ -282,7 +298,7 @@ void * ModelMs3dLoad(IReader * pReader)
                   // Not mapped and no usable vertex already in the array
                   // so create a new one.
                   vertices.push_back(vert);
-                  vertexMap.insert(std::make_pair(index,vertices.size()-1));
+                  vertexMap.insert(make_pair(index,vertices.size()-1));
                }
             }
          }
@@ -315,14 +331,14 @@ void * ModelMs3dLoad(IReader * pReader)
    //////////////////////////////
    // Prepare the groups for the model
 
-   std::vector<sModelMesh> meshes2(nGroups);
-   std::vector<uint16> indices;
+   vector<sModelMesh> meshes2(nGroups);
+   vector<uint16> indices;
 
    for (i = 0; i < nGroups; i++)
    {
       const cMs3dGroup & group = groups[i];
 
-      std::vector<uint16> mappedIndices;
+      vector<uint16> mappedIndices;
       for (uint j = 0; j < group.GetNumTriangles(); j++)
       {
          const ms3d_triangle_t & tri = tris[group.GetTriangle(j)];
@@ -353,7 +369,7 @@ void * ModelMs3dLoad(IReader * pReader)
 
    LocalMsg1("%d Materials\n", nMaterials);
 
-   std::vector<sModelMaterial> materials(nMaterials);
+   vector<sModelMaterial> materials(nMaterials);
 
    if (nMaterials > 0)
    {
@@ -403,14 +419,14 @@ void * ModelMs3dLoad(IReader * pReader)
 
    LocalMsg1("%d Joints\n", nJoints);
 
-   std::vector<sModelJoint> joints(nJoints);
-   std::vector< std::vector<sModelKeyFrame> > jointKeyFrames(nJoints);
+   vector<sModelJoint> joints(nJoints);
+   vector< vector<sModelKeyFrame> > jointKeyFrames(nJoints);
 
    if (nJoints > 0)
    {
-      std::vector<cMs3dJoint> ms3dJoints(nJoints);
+      vector<cMs3dJoint> ms3dJoints(nJoints);
 
-      std::map<cStr, int> jointNameMap;
+      map<cStr, int> jointNameMap;
 
       for (i = 0; i < nJoints; i++)
       {
@@ -419,11 +435,11 @@ void * ModelMs3dLoad(IReader * pReader)
             return NULL;
          }
 
-         jointNameMap.insert(std::make_pair(ms3dJoints[i].GetName(), i));
+         jointNameMap.insert(make_pair(ms3dJoints[i].GetName(), i));
       }
 
-      std::vector<cMs3dJoint>::iterator iter = ms3dJoints.begin();
-      std::vector<cMs3dJoint>::iterator end = ms3dJoints.end();
+      vector<cMs3dJoint>::iterator iter = ms3dJoints.begin();
+      vector<cMs3dJoint>::iterator end = ms3dJoints.end();
       for (i = 0; iter != end; iter++, i++)
       {
          LocalMsg1("Joint %d\n", i);
@@ -432,7 +448,7 @@ void * ModelMs3dLoad(IReader * pReader)
 
          if (strlen(iter->GetParentName()) > 0)
          {
-            std::map<cStr, int>::iterator found = jointNameMap.find(iter->GetParentName());
+            map<cStr, int>::iterator found = jointNameMap.find(iter->GetParentName());
             if (found != jointNameMap.end())
             {
                parentIndex = found->second;
@@ -442,10 +458,10 @@ void * ModelMs3dLoad(IReader * pReader)
          AssertMsg(iter->GetKeyFramesRot().size() == iter->GetKeyFramesTrans().size(),
             _T("Should have been rejected by cMs3dJoint reader"));
 
-         std::vector<sModelKeyFrame> keyFrames(iter->GetKeyFramesRot().size());
+         vector<sModelKeyFrame> keyFrames(iter->GetKeyFramesRot().size());
 
-         const std::vector<ms3d_keyframe_rot_t> & keyFramesRot = iter->GetKeyFramesRot();
-         const std::vector<ms3d_keyframe_pos_t> & keyFramesTrans = iter->GetKeyFramesTrans();
+         const vector<ms3d_keyframe_rot_t> & keyFramesRot = iter->GetKeyFramesRot();
+         const vector<ms3d_keyframe_pos_t> & keyFramesTrans = iter->GetKeyFramesTrans();
          for (uint j = 0; j < keyFrames.size(); j++)
          {
             if (keyFramesRot[j].time != keyFramesTrans[j].time)
@@ -463,7 +479,7 @@ void * ModelMs3dLoad(IReader * pReader)
          }
 
          jointKeyFrames[i].resize(keyFrames.size());
-         std::copy(keyFrames.begin(), keyFrames.end(), jointKeyFrames[i].begin());
+         copy(keyFrames.begin(), keyFrames.end(), jointKeyFrames[i].begin());
 
          joints[i].localTranslation = tVec3(iter->GetPosition());
          joints[i].localRotation = QuatFromEulerAngles(tVec3(iter->GetRotation()));
@@ -473,7 +489,7 @@ void * ModelMs3dLoad(IReader * pReader)
 
    {
       int iRootJoint = -1;
-      std::vector<sModelJoint>::const_iterator iter = joints.begin();
+      vector<sModelJoint>::const_iterator iter = joints.begin();
       for (int i = 0; iter != joints.end(); iter++, i++)
       {
          if (iter->parentIndex < 0)
@@ -501,7 +517,7 @@ void * ModelMs3dLoad(IReader * pReader)
    //////////////////////////////
    // Read the comments, if present (MilkShape versions 1.7+)
 
-   std::vector<sModelAnimationDesc> animDescs;
+   vector<sModelAnimationDesc> animDescs;
 
    int subVersion = 0;
    if (pReader->Read(&subVersion, sizeof(subVersion)) == S_OK
@@ -608,7 +624,7 @@ void * ModelMs3dLoad(IReader * pReader)
    {
       LocalMsg1("%d Animation Sequences\n", animDescs.size());
 
-      std::vector<sModelAnimationDesc>::const_iterator iter, end;
+      vector<sModelAnimationDesc>::const_iterator iter, end;
       for (iter = animDescs.begin(), end = animDescs.end(); iter != end; iter++)
       {
          const sModelAnimationDesc & animDesc = *iter;
@@ -626,15 +642,15 @@ void * ModelMs3dLoad(IReader * pReader)
          LocalMsg3("%s: %d, %d\n", animTypes[animDesc.type], animDesc.start, animDesc.end);
 
          bool bError = false;
-         std::vector<IModelKeyFrameInterpolator*> interpolators;
+         vector<IModelKeyFrameInterpolator*> interpolators;
          for (uint i = 0; i < jointKeyFrames.size(); i++)
          {
-            const std::vector<sModelKeyFrame> & keyFrames = jointKeyFrames[i];
+            const vector<sModelKeyFrame> & keyFrames = jointKeyFrames[i];
 
             LocalMsg2("Joint %d KeyFrames (size = %d)\n", i, keyFrames.size());
 
             int iStart = -1, iEnd = -1;
-            std::vector<sModelKeyFrame>::const_iterator kfIter = keyFrames.begin();
+            vector<sModelKeyFrame>::const_iterator kfIter = keyFrames.begin();
             for (int iKeyFrame = 0; kfIter != keyFrames.end(); iKeyFrame++, kfIter++)
             {
                uint frame = FloatToInt(static_cast<float>(kfIter->time) * animationFPS);
@@ -678,7 +694,7 @@ void * ModelMs3dLoad(IReader * pReader)
             }
          }
 
-         std::for_each(interpolators.begin(), interpolators.end(), mem_fn(&IUnknown::Release));
+         for_each(interpolators.begin(), interpolators.end(), mem_fn(&IUnknown::Release));
       }
    }
 
@@ -720,5 +736,39 @@ tResult ModelMs3dResourceRegister()
    UseGlobal(ResourceManager);
    return pResourceManager->RegisterFormat(kRT_Model, _T("ms3d"), ModelMs3dLoad, NULL, ModelMs3dUnload);
 }
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_UNITTESTPP
+
+TEST(ParseAnimDescs)
+{
+   static const tChar animDescTest[] =
+   {
+      _T("2,20,walk\n")
+      _T("22,36,walk\n")
+      _T("38,47,damage\n")
+      _T("48,57,damage\n")
+      _T("59,75,death\n")
+      _T("91,103,death\n")
+      _T("106,115,attack\n")
+      _T("117,128,attack\n")
+      _T("129,136,attack\n")
+      _T("137,169,idle\n")
+      _T("170,200,idle\n")
+   };
+
+   vector<sModelAnimationDesc> animDescs;
+   ParseAnimDescs(animDescTest, &animDescs);
+
+   CHECK_EQUAL(11, animDescs.size());
+
+   CHECK_EQUAL(kMAT_Death, animDescs[4].type);
+   CHECK_EQUAL(59, animDescs[4].start);
+   CHECK_EQUAL(75, animDescs[4].end);
+}
+
+#endif // HAVE_UNITTESTPP
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -6,9 +6,12 @@
 #include "tech/readwriteapi.h"
 #include "tech/resourceapi.h"
 #include "tech/globalobj.h"
-#include "tech/token.h"
+
+#include <boost/tokenizer.hpp>
 
 #include "tech/dbgalloc.h" // must be last header
+
+using namespace boost;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -129,12 +132,18 @@ TECH_API tResult TextFormatRegister(const tChar * pszExtensions)
    }
 
    int nRegistered = 0;
+   int nExtensions = 0;
 
-   cTokenizer<cStr> extensions;
-   int nExtensions = extensions.Tokenize(pszExtensions, _T(","));
-   for (int i = 0; i < nExtensions; i++)
+   cStr extensions(pszExtensions);
+   typedef tokenizer<char_separator<tChar> > tokenizer;
+   char_separator<tChar> sep(_T(","));
+   tokenizer tokens(extensions, sep);
+   tokenizer::iterator iter = tokens.begin(), end = tokens.end();
+   for (; iter != end; ++iter)
    {
-      const tChar * pszExtension = extensions.m_tokens[i].c_str();
+      const tChar * pszExtension = iter->c_str();
+
+      nExtensions++;
 
 #if _MSC_VER > 1200
       if (pResourceManager->RegisterFormat(kRT_AsciiText, pszExtension, TextLoad<char>, NULL, TextUnload<char>) == S_OK
