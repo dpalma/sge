@@ -655,4 +655,28 @@ tResult EntityManagerCreate()
    return RegisterGlobalObject(IID_IEntityManager, p);
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_UNITTESTPP
+
+TEST(RemoveSelectedEntity)
+{
+   cAutoIPtr<cEntityManager> pEntityManager(new cEntityManager);
+
+   cAutoIPtr<IEntity> pEntity;
+
+   UseGlobal(EntityFactory);
+   CHECK_EQUAL(S_OK, pEntityFactory->CreateEntity(&pEntity));
+
+   CHECK_EQUAL(S_OK, pEntityManager->AddEntity(pEntity));
+   CHECK_EQUAL(S_OK, pEntityManager->Select(pEntity));
+   CHECK_EQUAL(S_FALSE, pEntityManager->Select(pEntity));
+   CHECK_EQUAL(1, pEntityManager->GetSelectedCount());
+   CHECK_EQUAL(S_OK, pEntityManager->RemoveEntity(pEntity));
+   CHECK_EQUAL(0, pEntityManager->GetSelectedCount());
+}
+
+#endif // HAVE_UNITTESTPP
+
 ///////////////////////////////////////////////////////////////////////////////
