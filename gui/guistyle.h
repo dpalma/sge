@@ -14,6 +14,8 @@
 #pragma once
 #endif
 
+F_DECLARE_INTERFACE(IRenderFontFactory);
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIStyle
@@ -73,7 +75,8 @@ public:
    virtual tResult SetFontOutline(bool b);
 
    virtual tResult GetFont(IRenderFont * * ppFont);
-
+   tResult GetFont(IRenderFontFactory * pFontFactory, IRenderFont * * ppFont);
+   
    virtual tResult GetPlacement(uint * pPlacement) const;
    virtual tResult SetPlacement(uint placement);
 

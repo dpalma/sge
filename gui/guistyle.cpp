@@ -13,16 +13,19 @@
 #include "render/renderfontapi.h"
 
 #include "tech/globalobj.h"
-#include "tech/token.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
 #endif
 
+#include <boost/tokenizer.hpp>
+
 #include <cstring>
 #include <locale>
 
 #include "tech/dbgalloc.h" // must be last header
+
+using namespace boost;
 
 static const uint kInvalidUint = ~0u;
 
@@ -31,33 +34,11 @@ static const tChar kStyleAttribNameValueSep = _T(':');
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static tResult GUIStyleFontDesc(IGUIStyle * pStyle, cStr * pFontName, int * pPointSize, uint * pFlags)
+static tResult GUIStyleRenderFontFlags(IGUIStyle * pStyle, uint * pFlags)
 {
-   if (pStyle == NULL || pFontName == NULL || pPointSize == NULL || pFlags == NULL)
+   if (pStyle == NULL || pFlags == NULL)
    {
       return E_POINTER;
-   }
-
-   if (pStyle->GetFontName(pFontName) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   int size;
-   uint sizeType;
-   if (pStyle->GetFontSize(&size, &sizeType) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   if (sizeType == kGUIFontSizePoints)
-   {
-      *pPointSize = size;
-   }
-   else
-   {
-      // TODO: convert to points
-      return E_INVALIDARG;
    }
 
    uint flags = kRFF_None;
@@ -95,6 +76,33 @@ static tResult GUIStyleFontDesc(IGUIStyle * pStyle, cStr * pFontName, int * pPoi
    }
 
    *pFlags = flags;
+
+   return S_OK;
+}
+
+static tResult GUIStyleFontPointSize(IGUIStyle * pStyle, int * pPointSize)
+{
+   if (pStyle == NULL || pPointSize == NULL)
+   {
+      return E_POINTER;
+   }
+
+   int size;
+   uint sizeType;
+   if (pStyle->GetFontSize(&size, &sizeType) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   if (sizeType == kGUIFontSizePoints)
+   {
+      *pPointSize = size;
+   }
+   else
+   {
+      // TODO: convert to points
+      return E_INVALIDARG;
+   }
 
    return S_OK;
 }
@@ -408,7 +416,9 @@ tResult cGUIStyle::SetForegroundColor(const tGUIColor & foreground)
 tResult cGUIStyle::GetTextAlignment(uint * pTextAlignment)
 {
    if (pTextAlignment == NULL)
+   {
       return E_POINTER;
+   }
    *pTextAlignment = m_textAlignment;
    return S_OK;
 }
@@ -612,46 +622,54 @@ tResult cGUIStyle::SetFontOutline(bool b)
 
 tResult cGUIStyle::GetFont(IRenderFont * * ppFont)
 {
-   if (ppFont == NULL)
-   {
-      return E_POINTER;
-   }
-
    if (!!m_pCachedFont)
    {
       return m_pCachedFont.GetPointer(ppFont);
    }
 
-   tGUIString fontFamily;
-   if (GetFontName(&fontFamily) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   cTokenizer<cStr> tok;
-   if (tok.Tokenize(fontFamily.c_str(), _T(",")) <= 0)
-   {
-      return E_FAIL;
-   }
-
-   cStr fontName;
-   int pointSize = 0;
-   uint flags = kRFF_None;
-   if (GUIStyleFontDesc(static_cast<IGUIStyle*>(this), &fontName, &pointSize, &flags) != S_OK)
-   {
-      return E_FAIL;
-   }
-
-   UseGlobal(RenderFontFactory);
-
    Assert(!m_pCachedFont);
 
-   for (uint i = 0; i < tok.m_tokens.size(); i++)
+   UseGlobal(RenderFontFactory);
+   if (GetFont(pRenderFontFactory, &m_pCachedFont) == S_OK)
    {
-      fontName = tok.m_tokens[i];
-      if (pRenderFontFactory->CreateFont(fontName.c_str(), pointSize, flags, &m_pCachedFont) == S_OK)
+      return m_pCachedFont.GetPointer(ppFont);
+   }
+
+   return E_FAIL;
+}
+
+///////////////////////////////////////
+
+tResult cGUIStyle::GetFont(IRenderFontFactory * pFontFactory, IRenderFont * * ppFont)
+{
+   if (pFontFactory == NULL || ppFont == NULL)
+   {
+      return E_POINTER;
+   }
+
+   int pointSize = 0;
+   uint flags = kRFF_None;
+   if (GUIStyleFontPointSize(static_cast<IGUIStyle*>(this), &pointSize) != S_OK
+      || GUIStyleRenderFontFlags(static_cast<IGUIStyle*>(this), &flags) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   tGUIString fontName;
+   if (GetFontName(&fontName) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   typedef tokenizer<char_separator<tChar> > tokenizer;
+   const char_separator<tChar> sep(_T(","));
+   tokenizer tokens(fontName, sep);
+   tokenizer::iterator iter = tokens.begin(), end = tokens.end();
+   for (; iter != end; ++iter)
+   {
+      if (pFontFactory->CreateFont(iter->c_str(), pointSize, flags, ppFont) == S_OK)
       {
-         return m_pCachedFont.GetPointer(ppFont);
+         return S_OK;
       }
    }
 

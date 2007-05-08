@@ -755,10 +755,6 @@
 				RelativePath="..\..\tech\threadcaller.cpp"
 				>
 			</File>
-			<File
-				RelativePath="..\..\tech\token.cpp"
-				>
-			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -1030,10 +1026,6 @@
 			</File>
 			<File
 				RelativePath="..\..\api\tech\threadcallapi.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\api\tech\token.h"
 				>
 			</File>
 			<File
