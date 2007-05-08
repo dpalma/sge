@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "rendererdx.h"
-#include "render/renderfontapi.h"
 
 #include "platform/sys.h"
 
@@ -740,32 +739,6 @@ tResult cRendererDX::RenderIndexed(ePrimitiveType primitive, const void * pIndic
 
 ////////////////////////////////////////
 
-#undef CreateFont
-tResult cRendererDX::CreateFont(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont)
-{
-   uint h = Hash(pszFont, _tcslen(pszFont) * sizeof(tChar));
-   h = hash(reinterpret_cast<byte *>(&fontPointSize), sizeof(fontPointSize), h);
-   h = hash(reinterpret_cast<byte *>(&flags), sizeof(flags), h);
-
-   tFontMap::iterator f = m_fontMap.find(h);
-   if (f != m_fontMap.end())
-   {
-      *ppFont = CTAddRef(f->second);
-      return S_OK;
-   }
-
-   tResult result = RenderFontCreateD3DX(pszFont, fontPointSize, flags, m_pD3dDevice, ppFont);
-
-   if (result == S_OK)
-   {
-      m_fontMap[h] = CTAddRef(*ppFont);
-   }
-
-   return result;
-}
-
-////////////////////////////////////////
-
 tResult cRendererDX::Begin2D(int width, int height)
 {
    if (!m_pStateBlock)
@@ -873,6 +846,32 @@ void cRendererDX::PopScissorRect()
 
 ////////////////////////////////////////
 
+#undef CreateFont
+tResult cRendererDX::CreateFont(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont)
+{
+   uint h = Hash(pszFont, _tcslen(pszFont) * sizeof(tChar));
+   h = hash(reinterpret_cast<byte *>(&fontPointSize), sizeof(fontPointSize), h);
+   h = hash(reinterpret_cast<byte *>(&flags), sizeof(flags), h);
+
+   tFontMap::iterator f = m_fontMap.find(h);
+   if (f != m_fontMap.end())
+   {
+      *ppFont = CTAddRef(f->second);
+      return S_OK;
+   }
+
+   tResult result = RenderFontCreateD3DX(pszFont, fontPointSize, flags, m_pD3dDevice, ppFont);
+
+   if (result == S_OK)
+   {
+      m_fontMap[h] = CTAddRef(*ppFont);
+   }
+
+   return result;
+}
+
+////////////////////////////////////////
+
 #ifdef HAVE_CG
 void cRendererDX::CgErrorHandler(CGcontext cgContext, CGerror cgError, void * pData)
 {
@@ -893,12 +892,17 @@ void cRendererDX::CgErrorHandler(CGcontext cgContext, CGerror cgError, void * pD
 
 tResult RendererCreate()
 {
-   cAutoIPtr<IRenderer> p(static_cast<IRenderer*>(new cRendererDX));
-   if (!p)
+   cAutoIPtr<IRenderer> pRenderer(static_cast<IRenderer*>(new cRendererDX));
+   if (!pRenderer)
    {
       return E_OUTOFMEMORY;
    }
-   return RegisterGlobalObject(IID_IRenderer, p);
+   if (RegisterGlobalObject(IID_IRenderer, pRenderer) != S_OK
+      || RegisterGlobalObject(IID_IRenderFontFactory, pRenderer) != S_OK)
+   {
+      return E_FAIL;
+   }
+   return S_OK;
 }
 
 

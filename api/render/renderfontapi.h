@@ -13,7 +13,8 @@
 #pragma once
 #endif
 
-F_DECLARE_INTERFACE(IRenderFont);
+F_DECLARE_INTERFACE_GUID(IRenderFont, "D82266F8-FD93-49f7-904B-74D7AF37DA24");
+F_DECLARE_INTERFACE_GUID(IRenderFontFactory, "747C41BD-488B-4349-95C9-78342D132976");
 
 enum
 {
@@ -53,6 +54,18 @@ interface IRenderFont : IUnknown
    virtual tResult RenderText(const tChar * pszText, int textLength, tRecti * pRect,
                               uint flags, const float color[4]) const = 0;
 };
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IRenderFontFactory
+//
+
+interface IRenderFontFactory : IUnknown
+{
+   virtual tResult CreateFont(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont) = 0;
+};
+
 
 ///////////////////////////////////////////////////////////////////////////////
 

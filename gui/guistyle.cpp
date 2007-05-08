@@ -642,14 +642,14 @@ tResult cGUIStyle::GetFont(IRenderFont * * ppFont)
       return E_FAIL;
    }
 
-   UseGlobal(Renderer);
+   UseGlobal(RenderFontFactory);
 
    Assert(!m_pCachedFont);
 
    for (uint i = 0; i < tok.m_tokens.size(); i++)
    {
       fontName = tok.m_tokens[i];
-      if (pRenderer->CreateFont(fontName.c_str(), pointSize, flags, &m_pCachedFont) == S_OK)
+      if (pRenderFontFactory->CreateFont(fontName.c_str(), pointSize, flags, &m_pCachedFont) == S_OK)
       {
          return m_pCachedFont.GetPointer(ppFont);
       }

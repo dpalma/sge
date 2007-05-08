@@ -4,7 +4,6 @@
 #include "stdhdr.h"
 
 #include "renderergl.h"
-#include "render/renderfontapi.h"
 
 #include "platform/sys.h"
 
@@ -894,36 +893,6 @@ tResult cRendererGL::RenderIndexed(ePrimitiveType primitive, const void * pIndic
 
 ////////////////////////////////////////
 
-#undef CreateFont
-tResult cRendererGL::CreateFont(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont)
-{
-   uint h = Hash(pszFont, _tcslen(pszFont) * sizeof(tChar));
-   h = hash(reinterpret_cast<byte *>(&fontPointSize), sizeof(fontPointSize), h);
-   h = hash(reinterpret_cast<byte *>(&flags), sizeof(flags), h);
-
-   tFontMap::iterator f = m_fontMap.find(h);
-   if (f != m_fontMap.end())
-   {
-      *ppFont = CTAddRef(f->second);
-      return S_OK;
-   }
-
-   tResult result = RenderFontCreateFTGL(pszFont, fontPointSize, flags, ppFont);
-   if (result != S_OK)
-   {
-      result = RenderFontCreateGL(pszFont, fontPointSize, flags, ppFont);
-   }
-
-   if (result == S_OK)
-   {
-      m_fontMap[h] = CTAddRef(*ppFont);
-   }
-
-   return result;
-}
-
-////////////////////////////////////////
-
 tResult cRendererGL::Begin2D(int width, int height)
 {
    glPushAttrib(GL_ENABLE_BIT | GL_CURRENT_BIT);
@@ -1025,6 +994,36 @@ void cRendererGL::PopScissorRect()
 
 ////////////////////////////////////////
 
+#undef CreateFont
+tResult cRendererGL::CreateFont(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont)
+{
+   uint h = Hash(pszFont, _tcslen(pszFont) * sizeof(tChar));
+   h = hash(reinterpret_cast<byte *>(&fontPointSize), sizeof(fontPointSize), h);
+   h = hash(reinterpret_cast<byte *>(&flags), sizeof(flags), h);
+
+   tFontMap::iterator f = m_fontMap.find(h);
+   if (f != m_fontMap.end())
+   {
+      *ppFont = CTAddRef(f->second);
+      return S_OK;
+   }
+
+   tResult result = RenderFontCreateFTGL(pszFont, fontPointSize, flags, ppFont);
+   if (result != S_OK)
+   {
+      result = RenderFontCreateGL(pszFont, fontPointSize, flags, ppFont);
+   }
+
+   if (result == S_OK)
+   {
+      m_fontMap[h] = CTAddRef(*ppFont);
+   }
+
+   return result;
+}
+
+////////////////////////////////////////
+
 #ifdef HAVE_CG
 void cRendererGL::CgErrorHandler(CGcontext cgContext, CGerror cgError, void * pData)
 {
@@ -1053,12 +1052,17 @@ void cRendererGL::CgErrorHandler(CGcontext cgContext, CGerror cgError, void * pD
 
 tResult RendererCreate()
 {
-   cAutoIPtr<IRenderer> p(static_cast<IRenderer*>(new cRendererGL));
-   if (!p)
+   cAutoIPtr<IRenderer> pRenderer(static_cast<IRenderer*>(new cRendererGL));
+   if (!pRenderer)
    {
       return E_OUTOFMEMORY;
    }
-   return RegisterGlobalObject(IID_IRenderer, p);
+   if (RegisterGlobalObject(IID_IRenderer, pRenderer) != S_OK
+      || RegisterGlobalObject(IID_IRenderFontFactory, pRenderer) != S_OK)
+   {
+      return E_FAIL;
+   }
+   return S_OK;
 }
 
 

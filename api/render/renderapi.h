@@ -27,7 +27,6 @@ F_DECLARE_INTERFACE(IImage);
 F_DECLARE_INTERFACE(IRenderer);
 F_DECLARE_INTERFACE_GUID(IRenderTarget, "B962C170-8A3A-409e-8031-04CD3E7C44AD");
 F_DECLARE_INTERFACE_GUID(IRenderCamera, "5065B828-D331-478f-ABA2-8AB171418499");
-F_DECLARE_INTERFACE(IRenderFont);
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -131,8 +130,6 @@ interface IRenderer : IUnknown
 
    virtual tResult Render(ePrimitiveType primitive, uint startIndex, uint nIndices) = 0;
    virtual tResult RenderIndexed(ePrimitiveType primitive, const void * pIndices, uint nIndices) = 0;
-
-   virtual tResult CreateFont(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont) = 0;
 
    virtual tResult Begin2D(int width, int height) = 0;
    virtual tResult End2D() = 0;

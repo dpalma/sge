@@ -5,6 +5,7 @@
 #define INCLUDED_RENDERERGL_H
 
 #include "render/renderapi.h"
+#include "render/renderfontapi.h"
 
 #include "tech/globalobjdef.h"
 
@@ -27,7 +28,9 @@ typedef unsigned int GLenum;
 // CLASS: cRendererGL
 //
 
-class cRendererGL : public cComObject2<IMPLEMENTS(IRenderer), IMPLEMENTS(IGlobalObject)>
+class cRendererGL : public cComObject3<IMPLEMENTS(IRenderer),
+                                       IMPLEMENTS(IRenderFontFactory),
+                                       IMPLEMENTS(IGlobalObject)>
 {
    enum
    {
@@ -72,8 +75,6 @@ public:
    virtual tResult Render(ePrimitiveType primitive, uint startIndex, uint nIndices);
    virtual tResult RenderIndexed(ePrimitiveType primitive, const void * pIndices, uint nIndices);
 
-   virtual tResult CreateFont(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont);
-
    virtual tResult Begin2D(int width, int height);
    virtual tResult End2D();
 
@@ -85,6 +86,8 @@ public:
 
    virtual void PushScissorRect(const tRecti & rect);
    virtual void PopScissorRect();
+
+   virtual tResult CreateFont(const tChar * pszFont, int fontPointSize, uint flags, IRenderFont * * ppFont);
 
 private:
 #ifdef HAVE_CG

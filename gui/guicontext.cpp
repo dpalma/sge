@@ -12,7 +12,6 @@
 #include "platform/sys.h"
 #include "platform/keys.h"
 
-#include "render/renderapi.h"
 #include "render/renderfontapi.h"
 
 #include "tech/configapi.h"
@@ -746,8 +745,8 @@ tResult cGUIContext::GetDefaultFont(IRenderFont * * ppFont)
       int flags = kRFF_None;
       ConfigGet("default_font_flags", &flags);
 
-      UseGlobal(Renderer);
-      if (pRenderer->CreateFont(fontName.c_str(), pointSize, flags, &m_pDefaultFont) != S_OK)
+      UseGlobal(RenderFontFactory);
+      if (pRenderFontFactory->CreateFont(fontName.c_str(), pointSize, flags, &m_pDefaultFont) != S_OK)
       {
          return E_FAIL;
       }
