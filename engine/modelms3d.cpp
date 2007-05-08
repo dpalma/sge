@@ -21,12 +21,10 @@
 #include "UnitTest++.h"
 #endif
 
-#include <boost/algorithm/string/trim.hpp>
-#include <boost/lexical_cast.hpp>
 #define BOOST_MEM_FN_ENABLE_STDCALL
 #include <boost/mem_fn.hpp>
-#include <boost/tokenizer.hpp>
 
+#include <algorithm>
 #include <map>
 #include <vector>
 
@@ -48,83 +46,6 @@ LOG_DEFINE_CHANNEL(ModelMs3d);
 #define LocalMsgIf1(cond,msg,a)        DebugMsgIfEx1(ModelMs3d,(cond),msg,(a))
 #define LocalMsgIf2(cond,msg,a,b)      DebugMsgIfEx2(ModelMs3d,(cond),msg,(a),(b))
 #define LocalMsgIf3(cond,msg,a,b,c)    DebugMsgIfEx3(ModelMs3d,(cond),msg,(a),(b),(c))
-
-////////////////////////////////////////////////////////////////////////////////
-
-static bool AnimTypeFromString(const cStr & animTypeStr, eModelAnimationType * pAnimType)
-{
-   static const struct
-   {
-      eModelAnimationType type;
-      const tChar * pszType;
-   }
-   animTypes[] =
-   {
-      { kMAT_Walk, _T("walk") },
-      { kMAT_Run, _T("run") },
-      { kMAT_Death, _T("death") },
-      { kMAT_Attack, _T("attack") },
-      { kMAT_Damage, _T("damage") },
-      { kMAT_Idle, _T("idle") },
-   };
-
-   for (int j = 0; j < _countof(animTypes); j++)
-   {
-      if (animTypeStr.compare(animTypes[j].pszType) == 0)
-      {
-         *pAnimType = animTypes[j].type;
-         return true;
-      }
-   }
-
-   return false;
-}
-
-template <typename CONTAINER>
-void ParseAnimDescs(const tChar * pszAnimString, CONTAINER * pContainer)
-{
-   cStr animString(pszAnimString);
-   typedef tokenizer<char_separator<tChar> > tokenizer;
-   const char_separator<tChar> newlineSep(_T("\n"));
-   tokenizer animTokens(animString, newlineSep);
-   tokenizer::iterator iter = animTokens.begin(), end = animTokens.end();
-   for (; iter != end; ++iter)
-   {
-      cStr animString(*iter);
-      trim(animString);
-
-      vector<cStr> fields;
-
-      const char_separator<tChar> commaSep(_T(","));
-      tokenizer fieldTokens(animString, commaSep);
-      tokenizer::iterator iter2 = fieldTokens.begin(), end2 = fieldTokens.end();
-      for (; iter2 != end2; ++iter2)
-      {
-         fields.push_back(*iter2);
-      }
-
-      if (fields.size() == 3)
-      {
-         sModelAnimationDesc animDesc;
-         if (AnimTypeFromString(fields[2], &animDesc.type))
-         {
-            try
-            {
-               animDesc.start = lexical_cast<uint>(fields[0]);
-               animDesc.end = lexical_cast<uint>(fields[1]);
-               animDesc.fps = 0;
-               if (animDesc.start > 0 || animDesc.end > 0)
-               {
-                  pContainer->push_back(animDesc);
-               }
-            }
-            catch (const bad_lexical_cast &)
-            {
-            }
-         }
-      }
-   }
-}
 
 static bool ModelVertsEqual(const sModelVertex & vert1, const sModelVertex & vert2)
 {

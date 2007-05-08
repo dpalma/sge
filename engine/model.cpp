@@ -5,9 +5,16 @@
 
 #include "model.h"
 
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/lexical_cast.hpp>
+#include <boost/tokenizer.hpp>
+
 #include <iterator>
 
 #include "tech/dbgalloc.h" // must be last header
+
+using namespace boost;
+using namespace std;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -18,6 +25,90 @@ LOG_DEFINE_CHANNEL(Model);
 #define LocalMsg1(msg,a)         DebugMsgEx3(Model,msg,(a))
 #define LocalMsg2(msg,a,b)       DebugMsgEx4(Model,msg,(a),(b))
 #define LocalMsg3(msg,a,b,c)     DebugMsgEx5(Model,msg,(a),(b),(c))
+
+
+////////////////////////////////////////////////////////////////////////////////
+
+tResult AnimTypeFromString(const tChar * pszAnimTypeStr, eModelAnimationType * pAnimType)
+{
+   if (pszAnimTypeStr == NULL || pAnimType == NULL)
+   {
+      return E_POINTER;
+   }
+
+   static const struct
+   {
+      eModelAnimationType type;
+      const tChar * pszType;
+   }
+   animTypes[] =
+   {
+      { kMAT_Walk, _T("walk") },
+      { kMAT_Run, _T("run") },
+      { kMAT_Death, _T("death") },
+      { kMAT_Attack, _T("attack") },
+      { kMAT_Damage, _T("damage") },
+      { kMAT_Idle, _T("idle") },
+   };
+
+   cStr animTypeStr(pszAnimTypeStr);
+
+   for (int j = 0; j < _countof(animTypes); j++)
+   {
+      if (animTypeStr.compare(animTypes[j].pszType) == 0)
+      {
+         *pAnimType = animTypes[j].type;
+         return S_OK;
+      }
+   }
+
+   return S_FALSE;
+}
+
+void ParseAnimDescs(const tChar * pszAnimString, vector<sModelAnimationDesc> * pAnimationDescs)
+{
+   cStr animString(pszAnimString);
+   typedef tokenizer<char_separator<tChar> > tokenizer;
+   const char_separator<tChar> newlineSep(_T("\n"));
+   tokenizer animTokens(animString, newlineSep);
+   tokenizer::iterator iter = animTokens.begin(), end = animTokens.end();
+   for (; iter != end; ++iter)
+   {
+      cStr animString(*iter);
+      trim(animString);
+
+      vector<cStr> fields;
+
+      const char_separator<tChar> commaSep(_T(","));
+      tokenizer fieldTokens(animString, commaSep);
+      tokenizer::iterator iter2 = fieldTokens.begin(), end2 = fieldTokens.end();
+      for (; iter2 != end2; ++iter2)
+      {
+         fields.push_back(*iter2);
+      }
+
+      if (fields.size() == 3)
+      {
+         sModelAnimationDesc animDesc;
+         if (AnimTypeFromString(fields[2].c_str(), &animDesc.type) == S_OK)
+         {
+            try
+            {
+               animDesc.start = lexical_cast<uint>(fields[0]);
+               animDesc.end = lexical_cast<uint>(fields[1]);
+               animDesc.fps = 0;
+               if (animDesc.start > 0 || animDesc.end > 0)
+               {
+                  pAnimationDescs->push_back(animDesc);
+               }
+            }
+            catch (const bad_lexical_cast &)
+            {
+            }
+         }
+      }
+   }
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -34,8 +125,8 @@ cModel::cModel()
 ///////////////////////////////////////
 
 cModel::cModel(tModelVertices::const_iterator firstVert, tModelVertices::const_iterator lastVert,
-               std::vector<uint16>::const_iterator firstIndex, std::vector<uint16>::const_iterator lastIndex,
-               std::vector<sModelMesh>::const_iterator firstMesh, std::vector<sModelMesh>::const_iterator lastMesh,
+               vector<uint16>::const_iterator firstIndex, vector<uint16>::const_iterator lastIndex,
+               vector<sModelMesh>::const_iterator firstMesh, vector<sModelMesh>::const_iterator lastMesh,
                tModelMaterials::const_iterator firstMaterial, tModelMaterials::const_iterator lastMaterial,
                IModelSkeleton * pSkeleton)
  : m_vertices(firstVert, lastVert)
@@ -55,8 +146,8 @@ cModel::~cModel()
 ///////////////////////////////////////
 
 tResult cModel::Create(const tModelVertices & verts,
-                       const std::vector<uint16> & indices,
-                       const std::vector<sModelMesh> & meshes,
+                       const vector<uint16> & indices,
+                       const vector<sModelMesh> & meshes,
                        const tModelMaterials & materials,
                        IModelSkeleton * pSkeleton,
                        IModel * * ppModel)
@@ -85,8 +176,8 @@ tResult cModel::Create(const tModelVertices & verts,
 ///////////////////////////////////////
 
 tResult cModel::Create(tModelVertices::const_iterator firstVert, tModelVertices::const_iterator lastVert,
-                       std::vector<uint16>::const_iterator firstIndex, std::vector<uint16>::const_iterator lastIndex,
-                       std::vector<sModelMesh>::const_iterator firstMesh, std::vector<sModelMesh>::const_iterator lastMesh,
+                       vector<uint16>::const_iterator firstIndex, vector<uint16>::const_iterator lastIndex,
+                       vector<sModelMesh>::const_iterator firstMesh, vector<sModelMesh>::const_iterator lastMesh,
                        tModelMaterials::const_iterator firstMaterial, tModelMaterials::const_iterator lastMaterial,
                        IModelSkeleton * pSkeleton, IModel * * ppModel)
 {
@@ -243,7 +334,7 @@ void cModel::PreApplyJoints()
       return;
    }
 
-   std::vector<tMatrix34> bindMatrices(nJoints);
+   vector<tMatrix34> bindMatrices(nJoints);
    m_pSkeleton->GetBindMatrices(bindMatrices.size(), &bindMatrices[0]);
 
    for (tModelVertices::iterator iter = m_vertices.begin(); iter != m_vertices.end(); iter++)

@@ -27,66 +27,6 @@
 
 
 /////////////////////////////////////////////////////////////////////////////
-
-static void ParseAnimDescs(const char * pszString, std::vector<sModelAnimationDesc> * pAnimDescs)
-{
-   if (pszString != NULL && strlen(pszString) > 0)
-   {
-      cTokenizer<std::string, std::vector<std::string>, char> strTok;
-      if (strTok.Tokenize(pszString, "\n") > 0)
-      {
-         std::vector<std::string>::iterator iter = strTok.m_tokens.begin(), end = strTok.m_tokens.end();
-         for (; iter != end; ++iter)
-         {
-            std::string & animString = *iter;
-
-            TrimLeadingSpace(&animString);
-            TrimTrailingSpace(&animString);
-
-            static const struct
-            {
-               eModelAnimationType type;
-               const char * pszType;
-            }
-            animTypes[] =
-            {
-               { kMAT_Walk, "walk" },
-               { kMAT_Run, "run" },
-               { kMAT_Death, "death" },
-               { kMAT_Attack, "attack" },
-               { kMAT_Damage, "damage" },
-               { kMAT_Idle, "idle" },
-            };
-
-            cTokenizer<std::string, std::vector<std::string>, char> strTok2;
-            if (strTok2.Tokenize(iter->c_str()) == 3)
-            {
-               const std::string & animType = strTok2.m_tokens[2];
-
-               for (int j = 0; j < _countof(animTypes); j++)
-               {
-                  if (animType.compare(animTypes[j].pszType) == 0)
-                  {
-                     sModelAnimationDesc animDesc;
-                     animDesc.type = animTypes[j].type;
-                     animDesc.start = atoi(strTok2.m_tokens[0].c_str());
-                     animDesc.end = atoi(strTok2.m_tokens[1].c_str());
-                     animDesc.fps = 0;
-                     if (animDesc.start > 0 || animDesc.end > 0)
-                     {
-                        pAnimDescs->push_back(animDesc);
-                     }
-                     break;
-                  }
-               }
-            }
-         }
-      }
-   }
-}
-
-
-/////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cExportAnimation
 //

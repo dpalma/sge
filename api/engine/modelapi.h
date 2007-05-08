@@ -61,6 +61,9 @@ struct sModelAnimationDesc
    uint start, end, fps;
 };
 
+ENGINE_API tResult AnimTypeFromString(const tChar * pszAnimTypeStr, eModelAnimationType * pAnimType);
+ENGINE_API void ParseAnimDescs(const tChar * pszAnimString, std::vector<sModelAnimationDesc> * pAnimationDescs);
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // 
