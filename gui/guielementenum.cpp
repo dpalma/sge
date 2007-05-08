@@ -7,6 +7,8 @@
 
 #include "gui/guiapi.h"
 
+#include "tech/comenum.h"
+
 #include "tech/dbgalloc.h" // must be last header
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -853,6 +853,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\api\tech\comenumutil.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\api\tech\comtools.h"
 				>
 			</File>

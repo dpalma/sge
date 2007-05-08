@@ -13,6 +13,7 @@
 
 #include "script/scriptapi.h"
 
+#include "tech/comenumutil.h"
 #include "tech/globalobj.h"
 
 #include <tinyxml.h>
@@ -714,7 +715,7 @@ static tResult RunScriptHelper(IGUIElement * pElement)
          cAutoIPtr<IGUIElementEnum> pEnum;
          if (pContainer->EnumChildren(&pEnum) == S_OK)
          {
-            ForEach(pEnum, RunScriptHelper);
+            ForEach<IGUIElementEnum, IGUIElement>(pEnum, RunScriptHelper);
          }
       }
    }
