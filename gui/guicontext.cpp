@@ -250,13 +250,12 @@ tResult cGUIContext::Init()
 
 tResult cGUIContext::Term()
 {
-   for_each(m_eventListeners.begin(), m_eventListeners.end(), mem_fn(&IGUIEventListener::Release));
-   m_eventListeners.clear();
+   DisconnectAll();
 
-   for (int i = 0; i < _countof(m_pagePlanes); i++)
+   for (int i = 0; i < _countof(m_pagePlanes); ++i)
    {
-      tGUIPageList::iterator iter = m_pagePlanes[i].begin();
-      for (; iter != m_pagePlanes[i].end(); iter++)
+      tGUIPageList::iterator iter = m_pagePlanes[i].begin(), end = m_pagePlanes[i].end();
+      for (; iter != end; ++iter)
       {
          delete *iter;
       }
@@ -760,22 +759,21 @@ tResult cGUIContext::GetDefaultFont(IRenderFont * * ppFont)
 
 tResult cGUIContext::AddEventListener(IGUIEventListener * pListener)
 {
-   return add_interface(m_eventListeners, pListener) ? S_OK : E_FAIL;
+   return Connect(pListener);
 }
 
 ///////////////////////////////////////
 
 tResult cGUIContext::RemoveEventListener(IGUIEventListener * pListener)
 {
-   return remove_interface(m_eventListeners, pListener) ? S_OK : E_FAIL;
+   return Disconnect(pListener);
 }
 
 ///////////////////////////////////////
 
 bool cGUIContext::NotifyListeners(IGUIEvent * pEvent)
 {
-   tGUIEventListenerList::iterator iter = m_eventListeners.begin();
-   tGUIEventListenerList::iterator end = m_eventListeners.end();
+   tSinksIterator iter = BeginSinks(), end = EndSinks();
    for (; iter != end; ++iter)
    {
       if ((*iter)->OnEvent(pEvent) != S_OK)

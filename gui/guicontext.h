@@ -10,6 +10,7 @@
 
 #include "platform/inputapi.h"
 #include "script/scriptapi.h"
+#include "tech/connptimpl.h"
 #include "tech/globalobjdef.h"
 
 #include <list>
@@ -24,14 +25,12 @@
 
 class cGUIPage;
 
-typedef std::list<IGUIEventListener *> tGUIEventListenerList;
-
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cGUIContext
 //
 
-class cGUIContext : public cComObject3<IMPLEMENTS(IGUIContext), IMPLEMENTS(IGlobalObject), IMPLEMENTS(IScriptable)>
+class cGUIContext : public cComObject3<IMPLEMENTSCP(IGUIContext, IGUIEventListener), IMPLEMENTS(IGlobalObject), IMPLEMENTS(IScriptable)>
                   , public cGUINotifyListeners
 {
    enum eGUIPagePlane
@@ -126,8 +125,6 @@ private:
    tGUIPageList m_pagePlanes[3];
 
    cAutoIPtr<IRenderFont> m_pDefaultFont;
-
-   tGUIEventListenerList m_eventListeners;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -164,7 +164,9 @@ protected:
 // CLASS: cGUIEventRouterFixture
 //
 
-class cGUIEventRouterFixture : public cComObject<cGUIContainerBase<IGUIContainerElement>, &IID_IGUIContainerElement>,
+class cGUIEventRouterFixture : public cComObject<cConnectionPoint<cGUIContainerBase<IGUIContainerElement>,
+                                                                  IGUIEventListener>,
+                                                 &IID_IGUIContainerElement>,
                                public cGUIEventRouter<cGUIEventRouterFixture>
 {
    // Prevent heap-based objects
@@ -240,9 +242,6 @@ public:
    };
 
    cStackGUIEventCollector m_eventCollector;
-
-private:
-   tGUIEventListenerList m_eventListeners;
 };
 
 ////////////////////////////////////////
@@ -258,8 +257,7 @@ cGUIEventRouterFixture::~cGUIEventRouterFixture()
 {
    Verify(RemoveEventListener(static_cast<IGUIEventListener*>(&m_eventCollector)) == S_OK);
 
-   for_each(m_eventListeners.begin(), m_eventListeners.end(), mem_fn(&IGUIEventListener::Release));
-   m_eventListeners.clear();
+   DisconnectAll();
 }
 
 ////////////////////////////////////////
@@ -282,8 +280,7 @@ tResult cGUIEventRouterFixture::GetHitElement(const tScreenPoint & point, IGUIEl
 
 bool cGUIEventRouterFixture::NotifyListeners(IGUIEvent * pEvent)
 {
-   tGUIEventListenerList::iterator iter = m_eventListeners.begin();
-   tGUIEventListenerList::iterator end = m_eventListeners.end();
+   tSinksIterator iter = BeginSinks(), end = EndSinks();
    for (; iter != end; ++iter)
    {
       if ((*iter)->OnEvent(pEvent) != S_OK)
@@ -298,14 +295,14 @@ bool cGUIEventRouterFixture::NotifyListeners(IGUIEvent * pEvent)
 
 tResult cGUIEventRouterFixture::AddEventListener(IGUIEventListener * pListener)
 {
-   return add_interface(m_eventListeners, pListener) ? S_OK : E_FAIL;
+   return Connect(pListener);
 }
 
 ///////////////////////////////////////
 
 tResult cGUIEventRouterFixture::RemoveEventListener(IGUIEventListener * pListener)
 {
-   return remove_interface(m_eventListeners, pListener) ? S_OK : E_FAIL;
+   return Disconnect(pListener);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
