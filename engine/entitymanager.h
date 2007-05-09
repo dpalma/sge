@@ -30,6 +30,8 @@ typedef std::list<IUpdatable *> tUpdatableList;
 
 typedef std::list<IEntity *> tEntityList;
 
+typedef cComObject<cComEnum<IEnumEntities, &IID_IEnumEntities, IEntity*, CopyInterface<IEntity>, tEntityList>, &IID_IEnumEntities> tEntityListEnum;
+
 ////////////////////////////////////////////////////////////////////////////////
 
 typedef std::set<IEntity *, cCTLessInterface> tEntitySet;

@@ -305,7 +305,38 @@ tResult cEntityManager::RayCast(const cRay & ray, IEntity * * ppEntity) const
 
 tResult cEntityManager::BoxCast(const tAxisAlignedBox & box, IEnumEntities * * ppEnum) const
 {
-   return E_NOTIMPL;
+   tEntityList boxed;
+
+   tEntityList::const_iterator iter = m_entities.begin(), end = m_entities.end();
+   for (; iter != end; ++iter)
+   {
+      cAutoIPtr<IEntity> pEntity(CTAddRef(*iter));
+
+      cAutoIPtr<IEntityPositionComponent> pPosition;
+      if (pEntity->GetComponent(IID_IEntityPositionComponent, &pPosition) == S_OK)
+      {
+         tVec3 position;
+         if (pPosition->GetPosition(&position) == S_OK)
+         {
+            cAutoIPtr<IEntityRenderComponent> pRender;
+            if (pEntity->GetComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
+            {
+               tAxisAlignedBox bbox;
+               if (pRender->GetBoundingBox(&bbox) == S_OK)
+               {
+                  bbox.Offset(position);
+                  if (bbox.Intersects(box))
+                  {
+                     // Don't AddRef--it will be done in tEntityListEnum::Create
+                     boxed.push_back(pEntity);
+                  }
+               }
+            }
+         }
+      }
+   }
+
+   return tEntityListEnum::Create(boxed, ppEnum);
 }
 
 ///////////////////////////////////////
@@ -334,43 +365,15 @@ tResult cEntityManager::Select(IEntity * pEntity)
 
 tResult cEntityManager::SelectBoxed(const tAxisAlignedBox & box)
 {
-   int nSelected = 0;
-   tEntityList::const_iterator iter = m_entities.begin(), end = m_entities.end();
-   for (; iter != end; ++iter)
+   cAutoIPtr<IEnumEntities> pEnum;
+   if (BoxCast(box, &pEnum) == S_OK)
    {
-      cAutoIPtr<IEntity> pEntity(CTAddRef(*iter));
-
-      cAutoIPtr<IEntityPositionComponent> pPosition;
-      if (pEntity->GetComponent(IID_IEntityPositionComponent, &pPosition) == S_OK)
-      {
-         tVec3 position;
-         if (pPosition->GetPosition(&position) == S_OK)
-         {
-            cAutoIPtr<IEntityRenderComponent> pRender;
-            if (pEntity->GetComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
-            {
-               tAxisAlignedBox bbox;
-               if (pRender->GetBoundingBox(&bbox) == S_OK)
-               {
-                  bbox.Offset(position);
-                  if (bbox.Intersects(box))
-                  {
-                     m_selected.insert(CTAddRef(pEntity));
-                     nSelected++;
-                  }
-               }
-            }
-         }
-      }
-   }
-
-   if (nSelected == 0)
-   {
-      return S_FALSE;
+      SetSelected(pEnum);
    }
 
    ForEachConnection(mem_fun(&IEntityManagerListener::OnEntitySelectionChange));
-   return S_OK;
+
+   return m_selected.empty() ? S_FALSE : S_OK;
 }
 
 ///////////////////////////////////////
