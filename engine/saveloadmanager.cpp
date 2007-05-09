@@ -9,9 +9,15 @@
 #include "tech/techhash.h"
 #include "tech/toposort.h"
 
+#include <boost/bind.hpp>
+
+#include <algorithm>
 #include <vector>
 
 #include "tech/dbgalloc.h" // must be last header
+
+using namespace boost;
+using namespace std;
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -471,7 +477,7 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
    pWriter = NULL;
 
    // Determine the save order
-   std::vector<const GUID *> saveOrder;
+   vector<const GUID *> saveOrder;
    cTopoSorter<tConstraintGraph::node_type> sorter(&saveOrder);
    m_saveOrderConstraintGraph.topological_sort(sorter);
    AssertMsg(saveOrder.size() == m_participantMap.size(), "Size mismatch after determining constrained save order");
@@ -487,11 +493,11 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
       return E_FAIL;
    }
 
-   ForEachConnection(&ISaveLoadListener::OnBeginSave);
+   ForEachConnection(mem_fun(&ISaveLoadListener::OnBeginSave));
 
-   std::vector<sFileEntry> entries;
+   vector<sFileEntry> entries;
 
-   std::vector<const GUID *>::iterator iter = saveOrder.begin();
+   vector<const GUID *>::iterator iter = saveOrder.begin();
    for (uint progress = 1; iter != saveOrder.end(); ++iter, ++progress)
    {
       cVersionedParticipant * pVP = NULL;
@@ -550,7 +556,7 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
          entries.push_back(entry);
       }
 
-      ForEachConnection(&ISaveLoadListener::OnSaveProgress, progress, saveOrder.size());
+      ForEachConnection(bind(&ISaveLoadListener::OnSaveProgress, _1, progress, saveOrder.size()));
    }
 
    ulong tableOffset = 0, tableLength = entries.size() * sizeof(sFileEntry);
@@ -564,7 +570,7 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
 
    // Write the entry table at the end
    {
-      std::vector<sFileEntry>::iterator iter = entries.begin();
+      vector<sFileEntry>::iterator iter = entries.begin();
       for (; iter != entries.end(); iter++)
       {
          if (pMD5Writer->Write(*iter) != S_OK)
@@ -575,7 +581,7 @@ tResult cSaveLoadManager::Save(IWriter * pWriter)
       }
    }
 
-   ForEachConnection(&ISaveLoadListener::OnEndSave);
+   ForEachConnection(mem_fun(&ISaveLoadListener::OnEndSave));
 
    sFileFooter footer = {0};
    footer.offset = tableOffset;
@@ -602,16 +608,16 @@ tResult cSaveLoadManager::Load(IReader * pReader)
    }
 
    // Read the entry table
-   std::vector<sFileEntry> entries;
+   vector<sFileEntry> entries;
    if (LoadEntryTable(pReader, &entries) != S_OK)
    {
       return E_FAIL;
    }
 
-   ForEachConnection(&ISaveLoadListener::OnBeginLoad);
+   ForEachConnection(mem_fun(&ISaveLoadListener::OnBeginLoad));
 
    // Read the individual entries
-   std::vector<sFileEntry>::iterator iter = entries.begin();
+   vector<sFileEntry>::iterator iter = entries.begin();
    for (uint progress = 1; iter != entries.end(); ++iter, ++progress)
    {
       const sFileEntry & entry = *iter;
@@ -656,10 +662,10 @@ tResult cSaveLoadManager::Load(IReader * pReader)
          }
       }
 
-      ForEachConnection(&ISaveLoadListener::OnLoadProgress, progress, entries.size());
+      ForEachConnection(bind(&ISaveLoadListener::OnLoadProgress, _1, progress, entries.size()));
    }
 
-   ForEachConnection(&ISaveLoadListener::OnEndLoad);
+   ForEachConnection(mem_fun(&ISaveLoadListener::OnEndLoad));
 
    return S_OK;
 }
@@ -674,7 +680,7 @@ tResult cSaveLoadManager::OpenSingleEntry(IReader * pReader, REFGUID id, IReader
    }
 
    // Read the entry table
-   std::vector<sFileEntry> entries;
+   vector<sFileEntry> entries;
    if (LoadEntryTable(pReader, &entries) != S_OK)
    {
       return E_FAIL;
@@ -686,7 +692,7 @@ tResult cSaveLoadManager::OpenSingleEntry(IReader * pReader, REFGUID id, IReader
       return E_FAIL;
    }
 
-   std::vector<sFileEntry>::const_iterator iter = entries.begin();
+   vector<sFileEntry>::const_iterator iter = entries.begin();
    for (; iter != entries.end(); iter++)
    {
       const sFileEntry & entry = *iter;
@@ -774,7 +780,7 @@ tResult cSaveLoadManager::RemoveSaveLoadListener(ISaveLoadListener * pListener)
 
 ///////////////////////////////////////
 
-tResult cSaveLoadManager::LoadEntryTable(IReader * pReader, std::vector<sFileEntry> * pEntries)
+tResult cSaveLoadManager::LoadEntryTable(IReader * pReader, vector<sFileEntry> * pEntries)
 {
    if (pReader == NULL || pEntries == NULL)
    {

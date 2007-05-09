@@ -11,13 +11,15 @@
 #include "tech/resourceapi.h"
 #include "tech/readwriteapi.h"
 #include "tech/readwriteutils.h"
-#include "tech/connptimpl.h"
+
+#include <tinyxml.h>
 
 #include <algorithm>
 #include <map>
-#include <tinyxml.h>
 
 #include "tech/dbgalloc.h" // must be last header
+
+using namespace std;
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -532,7 +534,7 @@ tResult cTerrainModel::Initialize(const cTerrainSettings & terrainSettings)
    }
 
    m_terrainSettings = terrainSettings;
-   NotifyListeners(&ITerrainModelListener::OnTerrainInitialize);
+   ForEachConnection(mem_fun(&ITerrainModelListener::OnTerrainInitialize));
    return S_OK;
 }
 
@@ -542,7 +544,7 @@ tResult cTerrainModel::Clear()
 {
    m_vertices.clear();
    m_quadTiles.clear();
-   NotifyListeners(&ITerrainModelListener::OnTerrainClear);
+   ForEachConnection(mem_fun(&ITerrainModelListener::OnTerrainClear));
    return S_OK;
 }
 
@@ -562,14 +564,14 @@ tResult cTerrainModel::GetTerrainSettings(cTerrainSettings * pTerrainSettings) c
 
 tResult cTerrainModel::AddTerrainModelListener(ITerrainModelListener * pListener)
 {
-   return add_interface(m_listeners, pListener) ? S_OK : E_FAIL;
+   return Connect(pListener);
 }
 
 ////////////////////////////////////////
 
 tResult cTerrainModel::RemoveTerrainModelListener(ITerrainModelListener * pListener)
 {
-   return remove_interface(m_listeners, pListener) ? S_OK : E_FAIL;
+   return Disconnect(pListener);
 }
 
 ////////////////////////////////////////
@@ -680,12 +682,7 @@ tResult cTerrainModel::ChangeVertexElevation(HTERRAINVERTEX hVertex, float elevD
 
    m_vertices[index].y += elevDelta;
 
-   tListeners::iterator iter = m_listeners.begin();
-   tListeners::iterator end = m_listeners.end();
-   for (; iter != end; iter++)
-   {
-      (*iter)->OnTerrainElevationChange(hVertex);
-   }
+   ForEachConnection(bind2nd(mem_fun(&ITerrainModelListener::OnTerrainElevationChange), hVertex));
 
    return S_OK;
 }
@@ -716,12 +713,7 @@ tResult cTerrainModel::SetVertexElevation(HTERRAINVERTEX hVertex, float elevatio
 
    m_vertices[index].y = elevation;
 
-   tListeners::iterator iter = m_listeners.begin();
-   tListeners::iterator end = m_listeners.end();
-   for (; iter != end; iter++)
-   {
-      (*iter)->OnTerrainElevationChange(hVertex);
-   }
+   ForEachConnection(bind2nd(mem_fun(&ITerrainModelListener::OnTerrainElevationChange), hVertex));
 
    return S_OK;
 }
@@ -767,8 +759,8 @@ tResult cTerrainModel::SetQuadTile(HTERRAINQUAD hQuad, uint tile)
       if (index < m_quadTiles.size())
       {
          {
-            tListeners::iterator iter = m_listeners.begin();
-            for (; iter != m_listeners.end(); iter++)
+            tSinksIterator iter = BeginSinks(), end = EndSinks();
+            for (; iter != end; ++iter)
             {
                if ((*iter)->OnTerrainTileChanging(hQuad, m_quadTiles[index], tile) == S_FALSE)
                {
@@ -781,13 +773,7 @@ tResult cTerrainModel::SetQuadTile(HTERRAINQUAD hQuad, uint tile)
 
          m_quadTiles[index] = tile;
 
-         {
-            tListeners::iterator iter = m_listeners.begin();
-            for (; iter != m_listeners.end(); iter++)
-            {
-               (*iter)->OnTerrainTileChanged(hQuad);
-            }
-         }
+         ForEachConnection(bind2nd(mem_fun(&ITerrainModelListener::OnTerrainTileChanged), hQuad));
 
          return S_OK;
       }
@@ -1003,7 +989,7 @@ tResult cTerrainModel::Load(IReader * pReader, int version)
       return E_FAIL;
    }
 
-   NotifyListeners(&ITerrainModelListener::OnTerrainInitialize);
+   ForEachConnection(mem_fun(&ITerrainModelListener::OnTerrainInitialize));
 
    return S_OK;
 }
@@ -1013,18 +999,6 @@ tResult cTerrainModel::Load(IReader * pReader, int version)
 void cTerrainModel::Reset()
 {
    Clear();
-}
-
-////////////////////////////////////////
-
-void cTerrainModel::NotifyListeners(void (ITerrainModelListener::*pfnListenerMethod)())
-{
-   tListeners::iterator iter = m_listeners.begin();
-   tListeners::iterator end = m_listeners.end();
-   for (; iter != end; iter++)
-   {
-      ((*iter)->*pfnListenerMethod)();
-   }
 }
 
 

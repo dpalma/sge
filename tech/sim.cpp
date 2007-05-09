@@ -5,8 +5,6 @@
 
 #include "sim.h"
 
-#include "tech/connptimpl.h"
-
 #define BOOST_MEM_FN_ENABLE_STDCALL
 #include <boost/mem_fn.hpp>
 
@@ -74,8 +72,7 @@ tResult cSim::Init()
 
 tResult cSim::Term()
 {
-   for_each(m_simClients.begin(), m_simClients.end(), mem_fn(&ISimClient::Release));
-   m_simClients.clear();
+   DisconnectAll();
 
    UseGlobal(Scheduler);
    pScheduler->RemoveFrameTask(static_cast<ITask*>(this));
@@ -155,7 +152,7 @@ tResult cSim::AddSimClient(ISimClient * pSimClient)
    {
       return E_FAIL;
    }
-   return add_interface(m_simClients, pSimClient) ? S_OK : S_FALSE;
+   return Connect(pSimClient);
 }
 
 ////////////////////////////////////////
@@ -170,7 +167,7 @@ tResult cSim::RemoveSimClient(ISimClient * pSimClient)
    {
       return E_FAIL;
    }
-   return remove_interface(m_simClients, pSimClient) ? S_OK : S_FALSE;
+   return Disconnect(pSimClient);
 }
 
 ////////////////////////////////////////
@@ -192,13 +189,13 @@ tResult cSim::Execute(double time)
       m_simTime += frameTime;
 
       ++m_lockSimClients;
-      tSimClientList::iterator iter = m_simClients.begin(), end = m_simClients.end();
+      tSinksIterator iter = BeginSinks(), end = EndSinks();
       for (; iter != end; ++iter)
       {
          cAutoIPtr<ISimClient> pSimClient(CTAddRef(*iter));
          if (pSimClient->Execute(m_simTime) != S_OK)
          {
-            iter = m_simClients.erase(iter);
+            iter = Disconnect(iter);
          }
       }
       --m_lockSimClients;

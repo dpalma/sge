@@ -4,11 +4,11 @@
 #ifndef INCLUDED_SIM_H
 #define INCLUDED_SIM_H
 
-#include "tech/globalobjdef.h"
-#include "tech/schedulerapi.h"
 #include "tech/simapi.h"
 
-#include <list>
+#include "tech/connptimpl.h"
+#include "tech/globalobjdef.h"
+#include "tech/schedulerapi.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -19,7 +19,7 @@
 // CLASS: cSim
 //
 
-class cSim : public cComObject3<IMPLEMENTS(ISim), IMPLEMENTS(ITask), IMPLEMENTS(IGlobalObject)>
+class cSim : public cComObject3<IMPLEMENTSCP(ISim, ISimClient), IMPLEMENTS(ITask), IMPLEMENTS(IGlobalObject)>
 {
 public:
 	cSim();
@@ -53,8 +53,6 @@ private:
    double m_simTime;
    double m_timeScale;
 
-   typedef std::list<ISimClient*> tSimClientList;
-   tSimClientList m_simClients;
    uint m_lockSimClients;
 };
 

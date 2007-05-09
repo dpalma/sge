@@ -321,7 +321,7 @@ tResult cEntityManager::Select(IEntity * pEntity)
    if (result.second)
    {
       pEntity->AddRef();
-      ForEachConnection(&IEntityManagerListener::OnEntitySelectionChange);
+      ForEachConnection(mem_fun(&IEntityManagerListener::OnEntitySelectionChange));
       return S_OK;
    }
    else
@@ -369,7 +369,7 @@ tResult cEntityManager::SelectBoxed(const tAxisAlignedBox & box)
       return S_FALSE;
    }
 
-   ForEachConnection(&IEntityManagerListener::OnEntitySelectionChange);
+   ForEachConnection(mem_fun(&IEntityManagerListener::OnEntitySelectionChange));
    return S_OK;
 }
 
@@ -383,7 +383,7 @@ tResult cEntityManager::DeselectAll()
    }
    for_each(m_selected.begin(), m_selected.end(), mem_fn(&IEntity::Release));
    m_selected.clear();
-   ForEachConnection(&IEntityManagerListener::OnEntitySelectionChange);
+   ForEachConnection(mem_fun(&IEntityManagerListener::OnEntitySelectionChange));
    return S_OK;
 }
 
@@ -425,7 +425,7 @@ tResult cEntityManager::SetSelected(IEnumEntities * pEnum)
       count = 0;
    }
 
-   ForEachConnection(&IEntityManagerListener::OnEntitySelectionChange);
+   ForEachConnection(mem_fun(&IEntityManagerListener::OnEntitySelectionChange));
 
    return S_OK;
 }

@@ -7,6 +7,7 @@
 #include "engine/terrainapi.h"
 #include "engine/saveloadapi.h"
 
+#include "tech/connptimpl.h"
 #include "tech/globalobjdef.h"
 
 #include <vector>
@@ -53,7 +54,7 @@ private:
 // CLASS: cTerrainModel
 //
 
-class cTerrainModel : public cComObject3<IMPLEMENTS(ITerrainModel),
+class cTerrainModel : public cComObject3<IMPLEMENTSCP(ITerrainModel, ITerrainModelListener),
                                          IMPLEMENTS(IGlobalObject),
                                          IMPLEMENTS(ISaveLoadParticipant)>
 {
@@ -101,11 +102,6 @@ public:
    virtual void Reset();
 
 private:
-   void NotifyListeners(void (ITerrainModelListener::*pfnListenerMethod)());
-
-   typedef std::vector<ITerrainModelListener *> tListeners;
-   tListeners m_listeners;
-
    cTerrainSettings m_terrainSettings;
 
    tVec3s m_vertices;
