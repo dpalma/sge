@@ -128,6 +128,25 @@ private:
 };
 
 
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEntityBoxSelectionIndicatorComponent
+//
+
+class cEntityBoxSelectionIndicatorComponent : public cComObject2<IMPLEMENTS(IEntityBoxSelectionIndicatorComponent),
+                                                                 IMPLEMENTS(IRenderable)>
+{
+public:
+   cEntityBoxSelectionIndicatorComponent(IModel * pBBoxModel);
+   ~cEntityBoxSelectionIndicatorComponent();
+
+   void Render();
+
+private:
+   cBasicModelRenderer m_bboxModel;
+};
+
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_ENTITYCOMPONENTS_H

@@ -20,6 +20,7 @@
 
 F_DECLARE_INTERFACE_GUID(IEntity, "85E6F9DB-639F-411d-B365-86A8FBD1ACBF");
 F_DECLARE_INTERFACE_GUID(IUpdatable, "0A85E22A-F905-458c-B96B-E0EBB4FECE0B");
+F_DECLARE_INTERFACE_GUID(IRenderable, "66714DBD-F802-4ade-B729-97CB59C4C02C");
 F_DECLARE_INTERFACE_GUID(IEntityComponent, "D1A48ABA-7DB7-4fb7-96E3-72F79DFABA99");
 F_DECLARE_INTERFACE_GUID(IEnumEntityComponents, "8E7028A3-ADEA-4d4c-8A92-65AFD3417555");
 F_DECLARE_INTERFACE_GUID(IEntityComponentFactory, "6AA1EDA8-EEA0-404c-B92D-5275F8CF75D6");
@@ -28,6 +29,7 @@ F_DECLARE_INTERFACE_GUID(IEntityPositionComponent, "BA4B742C-8D6F-494a-827B-25F8
 F_DECLARE_INTERFACE_GUID(IEntityRenderComponent, "AF68F8F0-EFA5-49c6-AA91-C4E21BAF6D14");
 F_DECLARE_INTERFACE_GUID(IEntitySpawnComponent, "612C76A2-151D-4322-9687-3374463BF7BA");
 F_DECLARE_INTERFACE_GUID(IEntityBrainComponent, "4E16D11A-08F2-4321-AA91-B670D068B505");
+F_DECLARE_INTERFACE_GUID(IEntityBoxSelectionIndicatorComponent, "B949EFB0-EB05-4dad-8F57-23BA76168DF1");
 F_DECLARE_INTERFACE_GUID(IEnumEntities, "FC22B764-3FBA-43da-97B0-56857D0A77E9");
 F_DECLARE_INTERFACE_GUID(IEntityCommandManager, "4A55B143-2588-4fad-828A-E0C6C6539284");
 F_DECLARE_INTERFACE_GUID(IEntityCommandUI, "06188D53-13DA-4e67-975B-A653460F8967");
@@ -148,6 +150,17 @@ interface IEntityBrainComponent : IEntityComponent
 
 ///////////////////////////////////////////////////////////////////////////////
 //
+// INTERFACE: IEntityBoxSelectionIndicatorComponent
+//
+
+interface IEntityBoxSelectionIndicatorComponent : IEntityComponent
+{
+   ENGINE_API static const tEntityComponentID CID;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
 // INTERFACE: IEntityComponentFactory
 //
 
@@ -224,6 +237,17 @@ interface IEntity : IUnknown
 interface IUpdatable : IUnknown
 {
    virtual void Update(double elapsedTime) = 0;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IRenderable
+//
+
+interface IRenderable : IUnknown
+{
+   virtual void Render() = 0;
 };
 
 

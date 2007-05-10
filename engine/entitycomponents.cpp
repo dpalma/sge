@@ -30,6 +30,7 @@ static const tChar g_entityPositionComponentName[] = _T("position");
 static const tChar g_entityRenderComponentName[] = _T("render");
 static const tChar g_entitySpawnComponentName[] = _T("spawns");
 static const tChar g_entityBrainComponentName[] = _T("brain");
+static const tChar g_entityBoxSelectionIndicatorComponentName[] = _T("boxselectionindicator");
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -583,6 +584,82 @@ tResult EntityBrainComponentFactory(const TiXmlElement * pTiXmlElement,
 
 
 ///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cEntityBoxSelectionIndicatorComponent
+//
+
+///////////////////////////////////////
+
+const tEntityComponentID IEntityBoxSelectionIndicatorComponent::CID =
+   GenerateEntityComponentID(g_entityBoxSelectionIndicatorComponentName);
+
+///////////////////////////////////////
+
+cEntityBoxSelectionIndicatorComponent::cEntityBoxSelectionIndicatorComponent(IModel * pBBoxModel)
+ : m_bboxModel(pBBoxModel)
+{
+}
+
+///////////////////////////////////////
+
+cEntityBoxSelectionIndicatorComponent::~cEntityBoxSelectionIndicatorComponent()
+{
+}
+
+///////////////////////////////////////
+
+void cEntityBoxSelectionIndicatorComponent::Render()
+{
+   m_bboxModel.Render();
+}
+
+///////////////////////////////////////
+
+tResult EntityBoxSelectionIndicatorComponentFactory(const TiXmlElement *,
+                                                    IEntity * pEntity,
+                                                    IEntityComponent * * ppComponent)
+{
+   if (pEntity == NULL || ppComponent == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<IModel> pBBoxModel;
+
+   cAutoIPtr<IEntityRenderComponent> pRender;
+   if (pEntity->GetComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
+   {
+      tAxisAlignedBox bbox;
+      if (pRender->GetBoundingBox(&bbox) == S_OK)
+      {
+         static const float color[] = { 1, 1, 0, 1 };
+         ModelCreateBox(bbox.GetMins(), bbox.GetMaxs(), color, &pBBoxModel);
+      }
+   }
+
+   if (!pBBoxModel)
+   {
+      return E_FAIL;
+   }
+
+   cAutoIPtr<IEntityComponent> pComponent(static_cast<IEntityComponent*>(
+      new cEntityBoxSelectionIndicatorComponent(pBBoxModel)));
+   if (!pComponent)
+   {
+      return E_OUTOFMEMORY;
+   }
+
+   if (pEntity->SetComponent(IEntityBoxSelectionIndicatorComponent::CID, pComponent) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   *ppComponent = CTAddRef(pComponent);
+   return S_OK;
+}
+
+
+///////////////////////////////////////////////////////////////////////////////
 
 void RegisterBuiltInComponents()
 {
@@ -590,6 +667,7 @@ void RegisterBuiltInComponents()
    Verify(RegisterOldStyleComponentFactory(g_entityRenderComponentName, EntityRenderComponentFactory) == S_OK);
    Verify(RegisterOldStyleComponentFactory(g_entitySpawnComponentName, EntitySpawnComponentFactory) == S_OK);
    Verify(RegisterOldStyleComponentFactory(g_entityBrainComponentName, EntityBrainComponentFactory) == S_OK);
+   Verify(RegisterOldStyleComponentFactory(g_entityBoxSelectionIndicatorComponentName, EntityBoxSelectionIndicatorComponentFactory) == S_OK);
 }
 
 
