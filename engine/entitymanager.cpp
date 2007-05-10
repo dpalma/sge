@@ -14,6 +14,7 @@
 #include "render/renderapi.h"
 
 #include "tech/color.h"
+#include "tech/comenumutil.h"
 #include "tech/multivar.h"
 #include "tech/ray.h"
 #include "tech/readwriteutils.h"
@@ -224,37 +225,54 @@ void cEntityManager::RemoveAll()
 
 ///////////////////////////////////////
 
-void cEntityManager::RenderAll()
+static void RenderRenderableComponent(IEntityComponent * pComponent)
 {
-   UseGlobal(EntitySelection);
+   cAutoIPtr<IRenderable> pRenderable;
+   if (pComponent->QueryInterface(IID_IRenderable, (void**)&pRenderable) == S_OK)
+   {
+      pRenderable->Render();
+   }
+}
+
+static void RenderEntity(IEntity * pEntity)
+{
    UseGlobal(Renderer);
 
-   tEntityList::iterator iter = m_entities.begin(), end = m_entities.end();
-   for (; iter != end; ++iter)
+   bool bPopMatrix = false;
+   cAutoIPtr<IEntityPositionComponent> pPosition;
+   if (pEntity->GetComponent(IID_IEntityPositionComponent, &pPosition) == S_OK)
    {
-      cAutoIPtr<IEntity> pEntity(CTAddRef(*iter));
+      pRenderer->PushMatrix(pPosition->GetWorldTransform().m);
+      bPopMatrix = true;
+   }
 
+   cAutoIPtr<IEnumEntityComponents> pEnum;
+   if (pEntity->EnumComponents(IID_IRenderable, &pEnum) == S_OK)
+   {
+      ForEach<IEnumEntityComponents, IEntityComponent>(pEnum, RenderRenderableComponent);
+   }
+
+   // TODO: this rendering of the selection box is temporary
+   UseGlobal(EntitySelection);
+   bool bSelected = (pEntitySelection->IsSelected(pEntity) == S_OK);
+   if (bSelected)
+   {
       cAutoIPtr<IEntityRenderComponent> pRender;
       if (pEntity->GetComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
       {
-         bool bPopMatrix = false;
-         cAutoIPtr<IEntityPositionComponent> pPosition;
-         if (pEntity->GetComponent(IID_IEntityPositionComponent, &pPosition) == S_OK)
-         {
-            pRenderer->PushMatrix(pPosition->GetWorldTransform().m);
-            bPopMatrix = true;
-         }
-
-         bool bSelected = (pEntitySelection->IsSelected(*iter) == S_OK);
-
-         pRender->Render(bSelected ? kERF_Selected : kERF_None);
-
-         if (bPopMatrix)
-         {
-            pRenderer->PopMatrix();
-         }
+         pRender->Render(kERF_Selected);
       }
    }
+
+   if (bPopMatrix)
+   {
+      pRenderer->PopMatrix();
+   }
+}
+
+void cEntityManager::RenderAll()
+{
+   for_each(m_entities.begin(), m_entities.end(), &RenderEntity);
 }
 
 ///////////////////////////////////////

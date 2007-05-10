@@ -62,13 +62,16 @@ private:
 // CLASS: cEntityRenderComponent
 //
 
-class cEntityRenderComponent : public cComObject3<IMPLEMENTS(IEntityRenderComponent),
+class cEntityRenderComponent : public cComObject4<IMPLEMENTS(IEntityRenderComponent),
+                                                  IMPLEMENTS(IRenderable),
                                                   IMPLEMENTS(IUpdatable),
                                                   IMPLEMENTS(IAIAgentAnimationProvider)>
 {
 public:
    cEntityRenderComponent(const tChar * pszModel);
    ~cEntityRenderComponent();
+
+   virtual void Render();
 
    virtual tResult GetBoundingBox(tAxisAlignedBox * pBBox) const;
 

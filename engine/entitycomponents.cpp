@@ -248,6 +248,13 @@ cEntityRenderComponent::~cEntityRenderComponent()
 
 ///////////////////////////////////////
 
+void cEntityRenderComponent::Render()
+{
+   m_mainModel.Render();
+}
+
+///////////////////////////////////////
+
 tResult cEntityRenderComponent::GetBoundingBox(tAxisAlignedBox * pBBox) const
 {
    return m_mainModel.GetBoundingBox(pBBox);
@@ -257,7 +264,7 @@ tResult cEntityRenderComponent::GetBoundingBox(tAxisAlignedBox * pBBox) const
 
 void cEntityRenderComponent::Render(uint flags)
 {
-   m_mainModel.Render();
+   Render();
 
    if (IsFlagSet(flags, kERF_Selected))
    {
