@@ -127,8 +127,8 @@ namespace ManagedEditor
       if (m_pEntityManagerListener)
       {
          m_pEntityManagerListener->SetEditorAppForm(this);
-         UseGlobal(EntityManager);
-         pEntityManager->AddEntityManagerListener(m_pEntityManagerListener);
+         UseGlobal(EntitySelection);
+         pEntitySelection->AddEntitySelectionListener(m_pEntityManagerListener);
       }
    }
 
@@ -178,8 +178,8 @@ namespace ManagedEditor
       {
          m_pEntityManagerListener->SetEditorAppForm(nullptr);
 
-         UseGlobal(EntityManager);
-         pEntityManager->RemoveEntityManagerListener(m_pEntityManagerListener);
+         UseGlobal(EntitySelection);
+         pEntitySelection->RemoveEntitySelectionListener(m_pEntityManagerListener);
 
          m_pEntityManagerListener->Release();
          m_pEntityManagerListener = NULL;
@@ -190,12 +190,12 @@ namespace ManagedEditor
    {
       System::Object ^ newSelectedObject = nullptr;
 
-      UseGlobal(EntityManager);
-      uint nSelected = pEntityManager->GetSelectedCount();
+      UseGlobal(EntitySelection);
+      uint nSelected = pEntitySelection->GetSelectedCount();
       if (nSelected > 0)
       {
          cAutoIPtr<IEnumEntities> pEntities;
-         if (pEntityManager->GetSelected(&pEntities) == S_OK)
+         if (pEntitySelection->GetSelected(&pEntities) == S_OK)
          {
             if (nSelected == 1)
             {

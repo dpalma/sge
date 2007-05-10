@@ -32,26 +32,6 @@ typedef std::list<IEntity *> tEntityList;
 
 typedef cComObject<cComEnum<IEnumEntities, &IID_IEnumEntities, IEntity*, CopyInterface<IEntity>, tEntityList>, &IID_IEnumEntities> tEntityListEnum;
 
-////////////////////////////////////////////////////////////////////////////////
-
-typedef std::set<IEntity *, cCTLessInterface> tEntitySet;
-
-typedef cComObject<cComEnum<IEnumEntities, &IID_IEnumEntities, IEntity*, CopyInterface<IEntity>, tEntitySet>, &IID_IEnumEntities> tEntitySetEnum;
-
-template <>
-void cComEnum<IEnumEntities, &IID_IEnumEntities, IEntity*, CopyInterface<IEntity>, tEntitySet>::Initialize(tEntitySet::const_iterator first,
-                                                                                                           tEntitySet::const_iterator last)
-{
-   tEntitySet::const_iterator iter = first;
-   for (; iter != last; iter++)
-   {
-      IEntity * t;
-      CopyInterface<IEntity>::Copy(&t, &(*iter));
-      m_elements.insert(t);
-   }
-   m_iterator = m_elements.begin();
-}
-
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -90,13 +70,6 @@ public:
    virtual tResult RayCast(const cRay & ray, IEntity * * ppEntity) const;
    virtual tResult BoxCast(const tAxisAlignedBox & box, IEnumEntities * * ppEnum) const;
 
-   virtual tResult Select(IEntity * pEntity);
-   virtual tResult SelectBoxed(const tAxisAlignedBox & box);
-   virtual tResult DeselectAll();
-   virtual uint GetSelectedCount() const;
-   virtual tResult SetSelected(IEnumEntities * pEnum);
-   virtual tResult GetSelected(IEnumEntities * * ppEnum) const;
-
    ///////////////////////////////////
 
    void RegisterEntityUpdatables(IEntity * pEntity);
@@ -109,8 +82,6 @@ public:
    virtual void Reset();
 
 private:
-   bool IsSelected(IEntity * pEntity) const;
-
    class cSimClient : public cComObject<IMPLEMENTS(ISimClient)>
    {
    public:
@@ -128,7 +99,6 @@ private:
    cSimClient m_simClient;
 
    tEntityList m_entities;
-   tEntitySet m_selected;
 };
 
 ////////////////////////////////////////////////////////////////////////////////

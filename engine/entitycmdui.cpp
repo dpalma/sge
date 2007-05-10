@@ -129,7 +129,7 @@ tResult STDMETHODCALLTYPE cEntityCmdUI::QueryInterface(REFGUID iid, void * * ppv
    {
       { static_cast<IEntityCommandUI *>(this),        &IID_IEntityCommandUI },
       { static_cast<IGlobalObject *>(this),           &IID_IGlobalObject },
-      { static_cast<IEntityManagerListener *>(this),  &IID_IEntityManagerListener },
+      { static_cast<IEntitySelectionListener *>(this),&IID_IEntitySelectionListener },
       { static_cast<IGUIEventListener *>(this),       &IID_IGUIEventListener },
    };
    return cNonDelegatingUnknown::DoQueryInterface(pairs, _countof(pairs), iid, ppvObject);
@@ -139,8 +139,8 @@ tResult STDMETHODCALLTYPE cEntityCmdUI::QueryInterface(REFGUID iid, void * * ppv
 
 tResult cEntityCmdUI::Init()
 {
-   UseGlobal(EntityManager);
-   pEntityManager->AddEntityManagerListener(static_cast<IEntityManagerListener*>(this));
+   UseGlobal(EntitySelection);
+   pEntitySelection->AddEntitySelectionListener(static_cast<IEntitySelectionListener*>(this));
 
    UseGlobal(EntityComponentRegistry);
    pEntityComponentRegistry->RegisterComponentFactory(ENTITYCMDUICOMPONENT, static_cast<IEntityComponentFactory*>(this));
@@ -161,8 +161,8 @@ tResult cEntityCmdUI::Term()
    UseGlobal(GUIContext);
    pGUIContext->RemoveEventListener(static_cast<IGUIEventListener*>(this));
 
-   UseGlobal(EntityManager);
-   pEntityManager->RemoveEntityManagerListener(static_cast<IEntityManagerListener*>(this));
+   UseGlobal(EntitySelection);
+   pEntitySelection->RemoveEntitySelectionListener(static_cast<IEntitySelectionListener*>(this));
 
    UseGlobal(EntityComponentRegistry);
    pEntityComponentRegistry->RevokeComponentFactory(ENTITYCMDUICOMPONENT);
@@ -194,11 +194,11 @@ void cEntityCmdUI::OnEntitySelectionChange()
       return;
    }
 
-   UseGlobal(EntityManager);
-   if (pEntityManager->GetSelectedCount() == 1)
+   UseGlobal(EntitySelection);
+   if (pEntitySelection->GetSelectedCount() == 1)
    {
       cAutoIPtr<IEnumEntities> pEnum;
-      if (pEntityManager->GetSelected(&pEnum) == S_OK)
+      if (pEntitySelection->GetSelected(&pEnum) == S_OK)
       {
          cAutoIPtr<IEntity> pEntity;
          ulong nEntities = 0;

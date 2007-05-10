@@ -38,6 +38,7 @@ static void RegisterGlobalObjects()
    EntityComponentRegistryCreate();
    EntityFactoryCreate();
    EntityManagerCreate();
+   EntitySelectionCreate();
    GUIContextCreate();
    GUIFactoryCreate();
    InputCreate();

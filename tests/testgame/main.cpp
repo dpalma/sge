@@ -134,13 +134,14 @@ bool cMainInputListener::OnInputEvent(const sInputEvent * pEvent)
       {
          cAutoIPtr<IEntity> pEntity;
          UseGlobal(EntityManager);
+         UseGlobal(EntitySelection);
          if (pEntityManager->RayCast(pickRay, &pEntity) == S_OK)
          {
-            pEntityManager->Select(pEntity);
+            pEntitySelection->Select(pEntity);
          }
          else
          {
-            pEntityManager->DeselectAll();
+            pEntitySelection->DeselectAll();
          }
       }
    }
@@ -546,6 +547,7 @@ static void RegisterGlobalObjects()
    EntityComponentRegistryCreate();
    EntityFactoryCreate();
    EntityManagerCreate();
+   EntitySelectionCreate();
    InputCreate();
    GUIContextCreate();
    GUIFactoryCreate();

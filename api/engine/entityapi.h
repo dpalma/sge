@@ -34,6 +34,9 @@ F_DECLARE_INTERFACE_GUID(IEntityCommandUI, "06188D53-13DA-4e67-975B-A653460F8967
 F_DECLARE_INTERFACE_GUID(IEntityFactory, "B44642DB-A9BE-4e57-A70F-766837E5B1AE");
 F_DECLARE_INTERFACE_GUID(IEntityManager, "92DB7247-E01C-4935-B35C-EB233295A4BE");
 F_DECLARE_INTERFACE_GUID(IEntityManagerListener, "1EC6DB1A-C833-4b68-8705-D1A9FB5CC8D3");
+F_DECLARE_INTERFACE_GUID(IEntitySelection, "0CD9C605-ADBB-4c56-A5A5-91F526BA36A6");
+F_DECLARE_INTERFACE_GUID(IEntitySelectionListener, "FAA8FFFA-F8F7-4d72-B504-140487145D86");
+
 
 class cMultiVar;
 class cRay;
@@ -317,14 +320,6 @@ interface IEntityManager : IUnknown
 
    virtual tResult RayCast(const cRay & ray, IEntity * * ppEntity) const = 0;
    virtual tResult BoxCast(const tAxisAlignedBox & box, IEnumEntities * * ppEnum) const = 0;
-
-   virtual tResult Select(IEntity * pEntity) = 0;
-   virtual tResult SelectBoxed(const tAxisAlignedBox & box) = 0;
-   virtual tResult DeselectAll() = 0;
-   virtual uint GetSelectedCount() const = 0;
-
-   virtual tResult SetSelected(IEnumEntities * pEnum) = 0;
-   virtual tResult GetSelected(IEnumEntities * * ppEnum) const = 0;
 };
 
 ////////////////////////////////////////
@@ -338,6 +333,43 @@ ENGINE_API tResult EntityManagerCreate();
 //
 
 interface IEntityManagerListener : IUnknown
+{
+   virtual void OnRemoveEntity(IEntity * pEntity) = 0;
+};
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEntitySelection
+//
+
+interface IEntitySelection : IUnknown
+{
+   virtual tResult AddEntitySelectionListener(IEntitySelectionListener * pListener) = 0;
+   virtual tResult RemoveEntitySelectionListener(IEntitySelectionListener * pListener) = 0;
+
+   virtual tResult Select(IEntity * pEntity) = 0;
+   virtual tResult SelectBoxed(const tAxisAlignedBox & box) = 0;
+   virtual tResult DeselectAll() = 0;
+   virtual uint GetSelectedCount() const = 0;
+
+   virtual tResult SetSelected(IEnumEntities * pEnum) = 0;
+   virtual tResult GetSelected(IEnumEntities * * ppEnum) const = 0;
+
+   virtual tResult IsSelected(IEntity * pEntity) const = 0;
+};
+
+////////////////////////////////////////
+
+ENGINE_API tResult EntitySelectionCreate();
+
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// INTERFACE: IEntitySelectionListener
+//
+
+interface IEntitySelectionListener : IUnknown
 {
    virtual void OnEntitySelectionChange() = 0;
 };

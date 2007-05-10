@@ -25,8 +25,8 @@
 
 #include <tinyxml.h>
 
-#define BOOST_MEM_FN_ENABLE_STDCALL
 #include <boost/bind.hpp>
+#define BOOST_MEM_FN_ENABLE_STDCALL
 #include <boost/mem_fn.hpp>
 
 #include <algorithm>
@@ -90,7 +90,6 @@ tResult cEntityManager::Term()
    UseGlobal(SaveLoadManager);
    pSaveLoadManager->RevokeSaveLoadParticipant(SAVELOADID_EntityManager, g_entityManagerVer);
 
-   DeselectAll();
    RemoveAll();
 
    return S_OK;
@@ -165,13 +164,9 @@ tResult cEntityManager::RemoveEntity(tEntityId entityId)
       {
          bFound = true;
 
-         RevokeEntityUpdatables(pEntity);
+         ForEachConnection(bind(&IEntityManagerListener::OnRemoveEntity, _1, pEntity));
 
-         size_t nErasedFromSelected = m_selected.erase(pEntity);
-         while (nErasedFromSelected-- > 0)
-         {
-            pEntity->Release();
-         }
+         RevokeEntityUpdatables(pEntity);
 
          pEntity->Release();
          m_entities.erase(iter);
@@ -200,18 +195,14 @@ tResult cEntityManager::RemoveEntity(IEntity * pEntity)
    {
       bFound = true;
 
+      ForEachConnection(bind(&IEntityManagerListener::OnRemoveEntity, _1, *f));
+
       RevokeEntityUpdatables(*f);
 
       (*f)->Release();
       m_entities.erase(f);
 
       // TODO: return entity's id to a pool?
-   }
-
-   size_t nErasedFromSelected = m_selected.erase(pEntity);
-   while (nErasedFromSelected-- > 0)
-   {
-      pEntity->Release();
    }
 
    return bFound ? S_OK : S_FALSE;
@@ -224,6 +215,7 @@ void cEntityManager::RemoveAll()
    tEntityList::iterator iter = m_entities.begin(), end = m_entities.end();
    for (; iter != end; ++iter)
    {
+      ForEachConnection(bind(&IEntityManagerListener::OnRemoveEntity, _1, *iter));
       RevokeEntityUpdatables(*iter);
       (*iter)->Release();
    }
@@ -234,6 +226,7 @@ void cEntityManager::RemoveAll()
 
 void cEntityManager::RenderAll()
 {
+   UseGlobal(EntitySelection);
    UseGlobal(Renderer);
 
    tEntityList::iterator iter = m_entities.begin(), end = m_entities.end();
@@ -252,7 +245,7 @@ void cEntityManager::RenderAll()
             bPopMatrix = true;
          }
 
-         bool bSelected = IsSelected(*iter);
+         bool bSelected = (pEntitySelection->IsSelected(*iter) == S_OK);
 
          pRender->Render(bSelected ? kERF_Selected : kERF_None);
 
@@ -337,115 +330,6 @@ tResult cEntityManager::BoxCast(const tAxisAlignedBox & box, IEnumEntities * * p
    }
 
    return tEntityListEnum::Create(boxed, ppEnum);
-}
-
-///////////////////////////////////////
-
-tResult cEntityManager::Select(IEntity * pEntity)
-{
-   if (pEntity == NULL)
-   {
-      return E_POINTER;
-   }
-
-   pair<tEntitySet::iterator, bool> result = m_selected.insert(pEntity);
-   if (result.second)
-   {
-      pEntity->AddRef();
-      ForEachConnection(mem_fun(&IEntityManagerListener::OnEntitySelectionChange));
-      return S_OK;
-   }
-   else
-   {
-      return S_FALSE;
-   }
-}
-
-///////////////////////////////////////
-
-tResult cEntityManager::SelectBoxed(const tAxisAlignedBox & box)
-{
-   cAutoIPtr<IEnumEntities> pEnum;
-   if (BoxCast(box, &pEnum) == S_OK)
-   {
-      SetSelected(pEnum);
-   }
-
-   ForEachConnection(mem_fun(&IEntityManagerListener::OnEntitySelectionChange));
-
-   return m_selected.empty() ? S_FALSE : S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cEntityManager::DeselectAll()
-{
-   if (m_selected.empty())
-   {
-      return S_FALSE;
-   }
-   for_each(m_selected.begin(), m_selected.end(), mem_fn(&IEntity::Release));
-   m_selected.clear();
-   ForEachConnection(mem_fun(&IEntityManagerListener::OnEntitySelectionChange));
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-uint cEntityManager::GetSelectedCount() const
-{
-   return m_selected.size();
-}
-
-///////////////////////////////////////
-
-tResult cEntityManager::SetSelected(IEnumEntities * pEnum)
-{
-   if (pEnum == NULL)
-   {
-      return E_POINTER;
-   }
-
-   for_each(m_selected.begin(), m_selected.end(), mem_fn(&IEntity::Release));
-   m_selected.clear();
-
-   IEntity * pEntities[32];
-   ulong count = 0;
-
-   while (SUCCEEDED(pEnum->Next(_countof(pEntities), &pEntities[0], &count)) && (count > 0))
-   {
-      for (ulong i = 0; i < count; i++)
-      {
-         pair<tEntitySet::iterator, bool> result = m_selected.insert(pEntities[i]);
-         if (result.second)
-         {
-            pEntities[i]->AddRef();
-         }
-
-         SafeRelease(pEntities[i]);
-      }
-
-      count = 0;
-   }
-
-   ForEachConnection(mem_fun(&IEntityManagerListener::OnEntitySelectionChange));
-
-   return S_OK;
-}
-
-///////////////////////////////////////
-
-tResult cEntityManager::GetSelected(IEnumEntities * * ppEnum) const
-{
-   if (ppEnum == NULL)
-   {
-      return E_POINTER;
-   }
-   if (m_selected.empty())
-   {
-      return S_FALSE;
-   }
-   return tEntitySetEnum::Create(m_selected, ppEnum);
 }
 
 ///////////////////////////////////////
@@ -602,13 +486,6 @@ void cEntityManager::Reset()
 
 ///////////////////////////////////////
 
-bool cEntityManager::IsSelected(IEntity * pEntity) const
-{
-   return (m_selected.find(pEntity) != m_selected.end());
-}
-
-///////////////////////////////////////
-
 cEntityManager::cSimClient::cSimClient()
  : m_lastTime(0)
 {
@@ -663,22 +540,22 @@ tResult EntityManagerCreate()
 
 #ifdef HAVE_UNITTESTPP
 
-TEST(RemoveSelectedEntity)
-{
-   cAutoIPtr<cEntityManager> pEntityManager(new cEntityManager);
-
-   cAutoIPtr<IEntity> pEntity;
-
-   UseGlobal(EntityFactory);
-   CHECK_EQUAL(S_OK, pEntityFactory->CreateEntity(&pEntity));
-
-   CHECK_EQUAL(S_OK, pEntityManager->AddEntity(pEntity));
-   CHECK_EQUAL(S_OK, pEntityManager->Select(pEntity));
-   CHECK_EQUAL(S_FALSE, pEntityManager->Select(pEntity));
-   CHECK_EQUAL(1, pEntityManager->GetSelectedCount());
-   CHECK_EQUAL(S_OK, pEntityManager->RemoveEntity(pEntity));
-   CHECK_EQUAL(0, pEntityManager->GetSelectedCount());
-}
+//TEST(RemoveSelectedEntity)
+//{
+//   cAutoIPtr<cEntityManager> pEntityManager(new cEntityManager);
+//
+//   cAutoIPtr<IEntity> pEntity;
+//
+//   UseGlobal(EntityFactory);
+//   CHECK_EQUAL(S_OK, pEntityFactory->CreateEntity(&pEntity));
+//
+//   CHECK_EQUAL(S_OK, pEntityManager->AddEntity(pEntity));
+//   CHECK_EQUAL(S_OK, pEntityManager->Select(pEntity));
+//   CHECK_EQUAL(S_FALSE, pEntityManager->Select(pEntity));
+//   CHECK_EQUAL(1, pEntityManager->GetSelectedCount());
+//   CHECK_EQUAL(S_OK, pEntityManager->RemoveEntity(pEntity));
+//   CHECK_EQUAL(0, pEntityManager->GetSelectedCount());
+//}
 
 #endif // HAVE_UNITTESTPP
 

@@ -15,6 +15,7 @@ sourceFiles = Split("""
    entitycomponents.cpp
    entityfactory.cpp
    entitymanager.cpp
+   entityselection.cpp
    geomipmap.cpp
    heightmap.cpp
    model.cpp

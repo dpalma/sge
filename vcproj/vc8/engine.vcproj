@@ -512,6 +512,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\engine\entityselection.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\engine\geomipmap.cpp"
 				>
 			</File>
@@ -654,6 +658,10 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\entitymanager.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\engine\entityselection.h"
 				>
 			</File>
 			<File

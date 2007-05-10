@@ -110,7 +110,7 @@ namespace ManagedEditor
    // CLASS: EditorAppFormEntityManagerListener
    //
 
-   class EditorAppFormEntityManagerListener : public cComObject<IMPLEMENTS(IEntityManagerListener)>
+   class EditorAppFormEntityManagerListener : public cComObject<IMPLEMENTS(IEntitySelectionListener)>
    {
    public:
       EditorAppFormEntityManagerListener();

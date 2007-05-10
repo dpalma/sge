@@ -48,7 +48,7 @@ private:
 class cEntityCmdUI : public cNonDelegatingUnknown
                    , public IEntityCommandUI
                    , public IGlobalObject
-                   , public IEntityManagerListener
+                   , public IEntitySelectionListener
                    , public IGUIEventListener
                    , public IEntityComponentFactory
 {

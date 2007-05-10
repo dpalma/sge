@@ -51,11 +51,12 @@ namespace ManagedEditor
    void SelectCommand::Do()
    {
       UseGlobal(EntityManager);
+      UseGlobal(EntitySelection);
 
       Assert(m_pOldSelection == NULL);
       pin_ptr<IEnumEntities*> ppOldSelection = &m_pOldSelection;
-      pEntityManager->GetSelected(ppOldSelection);
-      pEntityManager->DeselectAll();
+      pEntitySelection->GetSelected(ppOldSelection);
+      pEntitySelection->DeselectAll();
 
       if (m_rayOrigin && m_rayDirection)
       {
@@ -66,7 +67,7 @@ namespace ManagedEditor
          cAutoIPtr<IEntity> pEntity;
          if (pEntityManager->RayCast(pickRay, &pEntity) == S_OK)
          {
-            pEntityManager->Select(pEntity);
+            pEntitySelection->Select(pEntity);
          }
       }
    }
@@ -78,17 +79,17 @@ namespace ManagedEditor
 
    void SelectCommand::Undo()
    {
-      UseGlobal(EntityManager);
+      UseGlobal(EntitySelection);
 
       if (m_pOldSelection != NULL)
       {
-         pEntityManager->SetSelected(m_pOldSelection);
+         pEntitySelection->SetSelected(m_pOldSelection);
          m_pOldSelection->Release();
          m_pOldSelection = NULL;
       }
       else
       {
-         pEntityManager->DeselectAll();
+         pEntitySelection->DeselectAll();
       }
    }
 
