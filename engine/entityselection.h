@@ -75,6 +75,8 @@ public:
    virtual void OnRemoveEntity(IEntity * pEntity);
 
 private:
+   bool Insert(IEntity * pEntity);
+   void Clear();
 
    tEntitySet m_selected;
 };

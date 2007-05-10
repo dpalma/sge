@@ -5,6 +5,8 @@
 
 #include "entityselection.h"
 
+#include "tech/comenumutil.h"
+
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
 #endif
@@ -34,6 +36,7 @@ cEntitySelection::cEntitySelection()
 
 cEntitySelection::~cEntitySelection()
 {
+   Clear();
 }
 
 ///////////////////////////////////////
@@ -50,7 +53,7 @@ tResult cEntitySelection::Init()
 
 tResult cEntitySelection::Term()
 {
-   DeselectAll();
+   Clear();
 
    UseGlobal(EntityManager);
    pEntityManager->RemoveEntityManagerListener(static_cast<IEntityManagerListener*>(this));
@@ -81,10 +84,8 @@ tResult cEntitySelection::Select(IEntity * pEntity)
       return E_POINTER;
    }
 
-   pair<tEntitySet::iterator, bool> result = m_selected.insert(pEntity);
-   if (result.second)
+   if (Insert(pEntity))
    {
-      pEntity->AddRef();
       ForEachConnection(mem_fun(&IEntitySelectionListener::OnEntitySelectionChange));
       return S_OK;
    }
@@ -119,8 +120,7 @@ tResult cEntitySelection::DeselectAll()
    {
       return S_FALSE;
    }
-   for_each(m_selected.begin(), m_selected.end(), mem_fn(&IEntity::Release));
-   m_selected.clear();
+   Clear();
    ForEachConnection(mem_fun(&IEntitySelectionListener::OnEntitySelectionChange));
    return S_OK;
 }
@@ -141,27 +141,9 @@ tResult cEntitySelection::SetSelected(IEnumEntities * pEnum)
       return E_POINTER;
    }
 
-   for_each(m_selected.begin(), m_selected.end(), mem_fn(&IEntity::Release));
-   m_selected.clear();
+   Clear();
 
-   IEntity * pEntities[32];
-   ulong count = 0;
-
-   while (SUCCEEDED(pEnum->Next(_countof(pEntities), &pEntities[0], &count)) && (count > 0))
-   {
-      for (ulong i = 0; i < count; i++)
-      {
-         pair<tEntitySet::iterator, bool> result = m_selected.insert(pEntities[i]);
-         if (result.second)
-         {
-            pEntities[i]->AddRef();
-         }
-
-         SafeRelease(pEntities[i]);
-      }
-
-      count = 0;
-   }
+   ForEach<IEnumEntities, IEntity>(pEnum, bind1st(mem_fun(&cEntitySelection::Insert), this));
 
    ForEachConnection(mem_fun(&IEntitySelectionListener::OnEntitySelectionChange));
 
@@ -203,6 +185,26 @@ void cEntitySelection::OnRemoveEntity(IEntity * pEntity)
 
 ///////////////////////////////////////
 
+bool cEntitySelection::Insert(IEntity * pEntity)
+{
+   pair<tEntitySet::iterator, bool> result = m_selected.insert(pEntity);
+   if (result.second)
+   {
+      pEntity->AddRef();
+   }
+   return result.second;
+}
+
+///////////////////////////////////////
+
+void cEntitySelection::Clear()
+{
+   for_each(m_selected.begin(), m_selected.end(), mem_fn(&IEntity::Release));
+   m_selected.clear();
+}
+
+///////////////////////////////////////
+
 tResult EntitySelectionCreate()
 {
    cAutoIPtr<IEntitySelection> pEntitySelection(static_cast<IEntitySelection*>(new cEntitySelection));
@@ -212,5 +214,54 @@ tResult EntitySelectionCreate()
    }
    return RegisterGlobalObject(IID_IEntitySelection, pEntitySelection);
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_UNITTESTPP
+
+extern tResult TestEntityCreate(IEntity * * ppEntity);
+
+TEST(EntitySelectionBasics)
+{
+   cAutoIPtr<IEntitySelection> pEntitySelection(static_cast<IEntitySelection*>(new cEntitySelection));
+
+   cAutoIPtr<IEntity> pEntity;
+   CHECK_EQUAL(S_OK, TestEntityCreate(&pEntity));
+
+   CHECK_EQUAL(S_OK, pEntitySelection->Select(pEntity));
+   CHECK_EQUAL(S_FALSE, pEntitySelection->Select(pEntity));
+   CHECK_EQUAL(1, pEntitySelection->GetSelectedCount());
+   CHECK_EQUAL(S_OK, pEntitySelection->DeselectAll());
+   CHECK_EQUAL(S_FALSE, pEntitySelection->DeselectAll());
+   CHECK_EQUAL(0, pEntitySelection->GetSelectedCount());
+}
+
+TEST(GetSetSelectedEntitiesByEnum)
+{
+   cAutoIPtr<IEntitySelection> pEntitySelection(static_cast<IEntitySelection*>(new cEntitySelection));
+
+   static const int nTestEntities = 10;
+
+   for (int i = 0; i < nTestEntities; ++i)
+   {
+      cAutoIPtr<IEntity> pEntity;
+      CHECK_EQUAL(S_OK, TestEntityCreate(&pEntity));
+      CHECK_EQUAL(S_OK, pEntitySelection->Select(pEntity));
+   }
+
+   CHECK_EQUAL(nTestEntities, pEntitySelection->GetSelectedCount());
+
+   cAutoIPtr<IEnumEntities> pEnum;
+   CHECK_EQUAL(S_OK, pEntitySelection->GetSelected(&pEnum));
+
+   CHECK_EQUAL(S_OK, pEntitySelection->DeselectAll());
+   CHECK_EQUAL(0, pEntitySelection->GetSelectedCount());
+
+   CHECK_EQUAL(S_OK, pEntitySelection->SetSelected(pEnum));
+
+   CHECK_EQUAL(nTestEntities, pEntitySelection->GetSelectedCount());
+}
+
+#endif
 
 ///////////////////////////////////////////////////////////////////////////////

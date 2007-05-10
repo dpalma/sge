@@ -174,6 +174,17 @@ void cEntity::RemoveAllComponents()
 
 #ifdef HAVE_UNITTESTPP
 
+tResult TestEntityCreate(IEntity * * ppEntity)
+{
+   if (ppEntity == NULL)
+   {
+      return E_POINTER;
+   }
+   static tEntityId nextEntityId;
+   cAutoIPtr<IEntity> pTestEntity(static_cast<IEntity*>(new cEntity(_T("TestEntity"), ++nextEntityId)));
+   return pTestEntity.GetPointer(ppEntity);
+}
+
 namespace
 {
    GUID IID_IEntityTestComponent1 =
