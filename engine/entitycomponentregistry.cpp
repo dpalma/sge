@@ -35,6 +35,7 @@ cEntityComponentRegistry::cEntityComponentRegistry()
 
 cEntityComponentRegistry::~cEntityComponentRegistry()
 {
+   RevokeAll(); // Will be done in Term() usually, but unit tests will not typically call Term()
 }
 
 ////////////////////////////////////////
@@ -42,7 +43,6 @@ cEntityComponentRegistry::~cEntityComponentRegistry()
 tResult cEntityComponentRegistry::Init()
 {
    RegisterBuiltInComponents();
-
    return S_OK;
 }
 
@@ -50,14 +50,20 @@ tResult cEntityComponentRegistry::Init()
 
 tResult cEntityComponentRegistry::Term()
 {
+   RevokeAll();
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+void cEntityComponentRegistry::RevokeAll()
+{
    tComponentFactoryMap::iterator iter = m_componentFactoryMap.begin(), end = m_componentFactoryMap.end();
    for (; iter != end; ++iter)
    {
-      SafeRelease(iter->second);
+      SafeRelease(iter->second.pFactory);
    }
    m_componentFactoryMap.clear();
-
-   return S_OK;
 }
 
 ///////////////////////////////////////
@@ -70,8 +76,13 @@ tResult cEntityComponentRegistry::RegisterComponentFactory(const tChar * pszComp
       return E_POINTER;
    }
 
+   sRegisteredComponentFactory factory;
+   factory.name.assign(pszComponent);
+   factory.cid = 0;
+   factory.pFactory = pFactory;
+
    pair<tComponentFactoryMap::iterator, bool> result =
-      m_componentFactoryMap.insert(make_pair(pszComponent, pFactory));
+      m_componentFactoryMap.insert(make_pair(pszComponent, factory));
    if (result.second)
    {
       pFactory->AddRef();
@@ -95,7 +106,8 @@ tResult cEntityComponentRegistry::RevokeComponentFactory(const tChar * pszCompon
    {
       return S_FALSE;
    }
-   iter->second->Release();
+   sRegisteredComponentFactory & factory = iter->second;
+   factory.pFactory->Release();
    m_componentFactoryMap.erase(iter);
    return S_OK;
 }
@@ -118,8 +130,8 @@ tResult cEntityComponentRegistry::CreateComponent(const tChar * pszComponent,
       return E_FAIL;
    }
 
-   IEntityComponentFactory * pFactory = f->second;
-   return pFactory->CreateComponent(pTiXmlElement, pEntity, ppComponent);
+   sRegisteredComponentFactory & factory = f->second;
+   return factory.pFactory->CreateComponent(pTiXmlElement, pEntity, ppComponent);
 }
 
 ///////////////////////////////////////
@@ -138,8 +150,8 @@ tResult cEntityComponentRegistry::CreateComponent(const tChar * pszComponent,
       return E_FAIL;
    }
 
-   IEntityComponentFactory * pFactory = f->second;
-   return pFactory->CreateComponent(NULL, pEntity, ppComponent);
+   sRegisteredComponentFactory & factory = f->second;
+   return factory.pFactory->CreateComponent(NULL, pEntity, ppComponent);
 }
 
 ///////////////////////////////////////

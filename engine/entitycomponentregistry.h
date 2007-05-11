@@ -14,6 +14,13 @@
 #pragma once
 #endif
 
+struct sRegisteredComponentFactory
+{
+   cStr name;
+   tEntityComponentID cid;
+   IEntityComponentFactory * pFactory;
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cEntityComponentRegistry
@@ -32,6 +39,8 @@ public:
    virtual tResult Init();
    virtual tResult Term();
 
+   void RevokeAll();
+
    virtual tResult RegisterComponentFactory(const tChar * pszComponent,
                                             IEntityComponentFactory * pFactory);
    virtual tResult RevokeComponentFactory(const tChar * pszComponent);
@@ -45,7 +54,7 @@ public:
                                    IEntityComponent * * ppComponent);
 
 private:
-   typedef std::map<cStr, IEntityComponentFactory*> tComponentFactoryMap;
+   typedef std::map<cStr, sRegisteredComponentFactory> tComponentFactoryMap;
    tComponentFactoryMap m_componentFactoryMap;
 };
 
