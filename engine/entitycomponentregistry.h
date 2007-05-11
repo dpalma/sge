@@ -54,6 +54,8 @@ public:
                                    IEntityComponent * * ppComponent);
 
 private:
+   tResult FindFactory(const tChar * pszComponent, IEntityComponentFactory * * ppFactory);
+
    typedef std::map<cStr, sRegisteredComponentFactory> tComponentFactoryMap;
    tComponentFactoryMap m_componentFactoryMap;
 };
