@@ -14,7 +14,6 @@
 #pragma once
 #endif
 
-
 ////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cEntityComponentRegistry
@@ -40,6 +39,8 @@ public:
    tResult CreateComponent(const tChar * pszComponent, const TiXmlElement * pTiXmlElement,
       IEntity * pEntity, IEntityComponent * * ppComponent);
 
+   virtual tResult CreateComponent(const tChar * pszComponent, IEntity * pEntity,
+                                   IEntityComponent * * ppComponent);
    virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement, IEntity * pEntity,
                                    IEntityComponent * * ppComponent);
 

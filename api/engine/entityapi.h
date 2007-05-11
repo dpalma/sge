@@ -181,8 +181,10 @@ interface IEntityComponentRegistry : IUnknown
                                             IEntityComponentFactory * pFactory) = 0;
    virtual tResult RevokeComponentFactory(const tChar * pszComponent) = 0;
 
-   virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement, IEntity * pEntity,
-                                   IEntityComponent * * ppComponent) = 0;
+   virtual tResult CreateComponent(const tChar * pszComponent,
+                                   IEntity * pEntity, IEntityComponent * * ppComponent) = 0;
+   virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement,
+                                   IEntity * pEntity, IEntityComponent * * ppComponent) = 0;
 };
 
 ENGINE_API tResult EntityComponentRegistryCreate();
