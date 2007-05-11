@@ -166,7 +166,10 @@ interface IEntityBoxSelectionIndicatorComponent : IEntityComponent
 
 interface IEntityComponentFactory : IUnknown
 {
-   virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement, IEntity * pEntity, IEntityComponent * * ppComponent) = 0;
+   virtual tResult CreateComponent(IEntity * pEntity, IEntityComponent * * ppComponent) = 0;
+
+   virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement,
+                                   IEntity * pEntity, IEntityComponent * * ppComponent) = 0;
 };
 
 
@@ -178,10 +181,14 @@ interface IEntityComponentFactory : IUnknown
 interface IEntityComponentRegistry : IUnknown
 {
    virtual tResult RegisterComponentFactory(const tChar * pszComponent,
+                                            tEntityComponentID componentId,
                                             IEntityComponentFactory * pFactory) = 0;
    virtual tResult RevokeComponentFactory(const tChar * pszComponent) = 0;
+   virtual tResult RevokeComponentFactory(tEntityComponentID componentId) = 0;
 
    virtual tResult CreateComponent(const tChar * pszComponent,
+                                   IEntity * pEntity, IEntityComponent * * ppComponent) = 0;
+   virtual tResult CreateComponent(tEntityComponentID componentId,
                                    IEntity * pEntity, IEntityComponent * * ppComponent) = 0;
    virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement,
                                    IEntity * pEntity, IEntityComponent * * ppComponent) = 0;

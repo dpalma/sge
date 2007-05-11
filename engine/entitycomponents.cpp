@@ -63,6 +63,11 @@ public:
    {
    }
 
+   virtual tResult CreateComponent(IEntity * pEntity, IEntityComponent * * ppComponent)
+   {
+      return (*m_factoryFn)(NULL, pEntity, ppComponent);
+   }
+
    virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement, IEntity * pEntity, IEntityComponent * * ppComponent)
    {
       return (*m_factoryFn)(pTiXmlElement, pEntity, ppComponent);
@@ -72,7 +77,7 @@ private:
    tEntityComponentFactoryFn m_factoryFn;
 };
 
-static tResult RegisterOldStyleComponentFactory(const tChar * pszComponent,
+static tResult RegisterOldStyleComponentFactory(const tChar * pszComponent, tEntityComponentID componentId,
                                                 tEntityComponentFactoryFn pfnFactory)
 {
    if (pszComponent == NULL || pfnFactory == NULL)
@@ -87,7 +92,7 @@ static tResult RegisterOldStyleComponentFactory(const tChar * pszComponent,
    }
 
    UseGlobal(EntityComponentRegistry);
-   return pEntityComponentRegistry->RegisterComponentFactory(pszComponent, pFactory);
+   return pEntityComponentRegistry->RegisterComponentFactory(pszComponent, componentId, pFactory);
 }
 
 
@@ -663,11 +668,11 @@ tResult EntityBoxSelectionIndicatorComponentFactory(const TiXmlElement *,
 
 void RegisterBuiltInComponents()
 {
-   Verify(RegisterOldStyleComponentFactory(g_entityPositionComponentName, EntityPositionComponentFactory) == S_OK);
-   Verify(RegisterOldStyleComponentFactory(g_entityRenderComponentName, EntityRenderComponentFactory) == S_OK);
-   Verify(RegisterOldStyleComponentFactory(g_entitySpawnComponentName, EntitySpawnComponentFactory) == S_OK);
-   Verify(RegisterOldStyleComponentFactory(g_entityBrainComponentName, EntityBrainComponentFactory) == S_OK);
-   Verify(RegisterOldStyleComponentFactory(g_entityBoxSelectionIndicatorComponentName, EntityBoxSelectionIndicatorComponentFactory) == S_OK);
+   Verify(RegisterOldStyleComponentFactory(g_entityPositionComponentName, IEntityPositionComponent::CID, EntityPositionComponentFactory) == S_OK);
+   Verify(RegisterOldStyleComponentFactory(g_entityRenderComponentName, IEntityRenderComponent::CID, EntityRenderComponentFactory) == S_OK);
+   Verify(RegisterOldStyleComponentFactory(g_entitySpawnComponentName, IEntitySpawnComponent::CID, EntitySpawnComponentFactory) == S_OK);
+   Verify(RegisterOldStyleComponentFactory(g_entityBrainComponentName, IEntityBrainComponent::CID, EntityBrainComponentFactory) == S_OK);
+   Verify(RegisterOldStyleComponentFactory(g_entityBoxSelectionIndicatorComponentName, IEntityBoxSelectionIndicatorComponent::CID, EntityBoxSelectionIndicatorComponentFactory) == S_OK);
 }
 
 

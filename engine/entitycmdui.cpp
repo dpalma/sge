@@ -97,6 +97,10 @@ const cEntityCmdInfo cEntityCmdInfo::operator =(const cEntityCmdInfo & other)
 
 ////////////////////////////////////////
 
+const tEntityComponentID cEntityCmdUI::CID = GenerateEntityComponentID(ENTITYCMDUICOMPONENT);
+
+////////////////////////////////////////
+
 cEntityCmdUI::cEntityCmdUI()
 {
 }
@@ -143,7 +147,7 @@ tResult cEntityCmdUI::Init()
    pEntitySelection->AddEntitySelectionListener(static_cast<IEntitySelectionListener*>(this));
 
    UseGlobal(EntityComponentRegistry);
-   pEntityComponentRegistry->RegisterComponentFactory(ENTITYCMDUICOMPONENT, static_cast<IEntityComponentFactory*>(this));
+   pEntityComponentRegistry->RegisterComponentFactory(ENTITYCMDUICOMPONENT, CID, static_cast<IEntityComponentFactory*>(this));
 
    UseGlobal(GUIContext);
    pGUIContext->AddEventListener(static_cast<IGUIEventListener*>(this));
@@ -323,6 +327,13 @@ static tResult EntityCmdParseArgs(const TiXmlElement * pElement, vector<cMultiVa
    }
 
    return (count > 0) ? S_OK : S_FALSE;
+}
+
+////////////////////////////////////////
+
+tResult cEntityCmdUI::CreateComponent(IEntity * pEntity, IEntityComponent * * ppComponent)
+{
+   return E_NOTIMPL;
 }
 
 ////////////////////////////////////////

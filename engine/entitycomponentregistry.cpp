@@ -71,6 +71,7 @@ void cEntityComponentRegistry::RevokeAll()
 ///////////////////////////////////////
 
 tResult cEntityComponentRegistry::RegisterComponentFactory(const tChar * pszComponent,
+                                                           tEntityComponentID componentId,
                                                            IEntityComponentFactory * pFactory)
 {
    if (pszComponent == NULL || pFactory == NULL)
@@ -80,7 +81,7 @@ tResult cEntityComponentRegistry::RegisterComponentFactory(const tChar * pszComp
 
    sRegisteredComponentFactory factory;
    factory.name.assign(pszComponent);
-   factory.cid = 0;
+   factory.cid = componentId;
    factory.pFactory = pFactory;
 
    pair<tComponentFactoryContainer::iterator, bool> result =
@@ -104,15 +105,31 @@ tResult cEntityComponentRegistry::RevokeComponentFactory(const tChar * pszCompon
       return E_POINTER;
    }
 
-   tComponentFactoryContainer::index<name>::type & nameIndex = m_componentFactoryContainer.get<name>();
-   tComponentFactoryContainer::iterator f = nameIndex.find(pszComponent);
+   tComponentFactoryContainerIndexByName & nameIndex = m_componentFactoryContainer.get<name>();
+   tComponentFactoryContainerIndexByName::iterator f = nameIndex.find(pszComponent);
    if (f == nameIndex.end())
    {
       return S_FALSE;
    }
 
    f->pFactory->Release();
-   m_componentFactoryContainer.erase(f);
+   nameIndex.erase(f);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cEntityComponentRegistry::RevokeComponentFactory(tEntityComponentID componentId)
+{
+   tComponentFactoryContainerIndexByCID & cidIndex = m_componentFactoryContainer.get<cid>();
+   tComponentFactoryContainerIndexByCID::iterator f = cidIndex.find(componentId);
+   if (f == cidIndex.end())
+   {
+      return S_FALSE;
+   }
+
+   f->pFactory->Release();
+   cidIndex.erase(f);
    return S_OK;
 }
 
@@ -153,7 +170,26 @@ tResult cEntityComponentRegistry::CreateComponent(const tChar * pszComponent,
       return E_FAIL;
    }
 
-   return pFactory->CreateComponent(NULL, pEntity, ppComponent);
+   return pFactory->CreateComponent(pEntity, ppComponent);
+}
+
+///////////////////////////////////////
+
+tResult cEntityComponentRegistry::CreateComponent(tEntityComponentID componentId,
+                                                  IEntity * pEntity, IEntityComponent * * ppComponent)
+{
+   if (ppComponent == NULL)
+   {
+      return E_POINTER;
+   }
+
+   cAutoIPtr<IEntityComponentFactory> pFactory;
+   if (FindFactory(componentId, &pFactory) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   return pFactory->CreateComponent(pEntity, ppComponent);
 }
 
 ///////////////////////////////////////
@@ -183,9 +219,26 @@ tResult cEntityComponentRegistry::FindFactory(const tChar * pszComponent, IEntit
    Assert(pszComponent != NULL);
    Assert(ppFactory != NULL);
 
-   tComponentFactoryContainer::index<name>::type & nameIndex = m_componentFactoryContainer.get<name>();
-   tComponentFactoryContainer::iterator f = nameIndex.find(pszComponent);
+   tComponentFactoryContainerIndexByName & nameIndex = m_componentFactoryContainer.get<name>();
+   tComponentFactoryContainerIndexByName::iterator f = nameIndex.find(pszComponent);
    if (f == nameIndex.end())
+   {
+      return E_FAIL;
+   }
+
+   *ppFactory = CTAddRef(f->pFactory);
+   return S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cEntityComponentRegistry::FindFactory(tEntityComponentID componentId, IEntityComponentFactory * * ppFactory)
+{
+   Assert(ppFactory != NULL);
+
+   tComponentFactoryContainerIndexByCID & cidIndex = m_componentFactoryContainer.get<cid>();
+   tComponentFactoryContainerIndexByCID::iterator f = cidIndex.find(componentId);
+   if (f == cidIndex.end())
    {
       return E_FAIL;
    }
@@ -227,10 +280,15 @@ namespace
    class cTestComponentFactory : public cComObject<IMPLEMENTS(IEntityComponentFactory)>
    {
    public:
-      tResult CreateComponent(const TiXmlElement *, IEntity *, IEntityComponent * * ppComponent)
+      tResult CreateComponent(IEntity * pEntity, IEntityComponent * * ppComponent)
       {
          *ppComponent = static_cast<IEntityComponent*>(new T);
          return S_OK;
+      }
+
+      tResult CreateComponent(const TiXmlElement *, IEntity * pEntity, IEntityComponent * * ppComponent)
+      {
+         return CreateComponent(pEntity, ppComponent);
       }
    };
 }
@@ -250,7 +308,7 @@ TEST(EntityComponentRegisterRevoke)
 
    CHECK_EQUAL(S_FALSE, pECR->RevokeComponentFactory(cTestComponent::gm_name));
 
-   CHECK_EQUAL(S_OK, pECR->RegisterComponentFactory(cTestComponent::gm_name, pECF));
+   CHECK_EQUAL(S_OK, pECR->RegisterComponentFactory(cTestComponent::gm_name, cTestComponent::gm_cid, pECF));
 
    {
       cAutoIPtr<IEntity> pEntity;
@@ -259,7 +317,15 @@ TEST(EntityComponentRegisterRevoke)
       CHECK_EQUAL(S_OK, pECR->CreateComponent(cTestComponent::gm_name, pEntity, &pComponent));
    }
 
+   {
+      cAutoIPtr<IEntity> pEntity;
+      CHECK_EQUAL(S_OK, TestEntityCreate(&pEntity));
+      cAutoIPtr<IEntityComponent> pComponent;
+      CHECK_EQUAL(S_OK, pECR->CreateComponent(cTestComponent::gm_cid, pEntity, &pComponent));
+   }
+
    CHECK_EQUAL(S_OK, pECR->RevokeComponentFactory(cTestComponent::gm_name));
+   CHECK_EQUAL(S_FALSE, pECR->RevokeComponentFactory(cTestComponent::gm_cid));
    CHECK_EQUAL(S_FALSE, pECR->RevokeComponentFactory(cTestComponent::gm_name));
 }
 

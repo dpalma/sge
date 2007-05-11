@@ -73,9 +73,12 @@ public:
    virtual tResult SetEntityPanelId(const tChar * pszId);
    virtual tResult GetEntityPanelId(cStr * pId);
 
+   virtual tResult CreateComponent(IEntity * pEntity, IEntityComponent * * ppComponent);
    virtual tResult CreateComponent(const TiXmlElement * pTiXmlElement, IEntity * pEntity, IEntityComponent * * ppComponent);
 
 private:
+   static const tEntityComponentID CID;
+
    cStr m_entityPanelId;
 
    typedef std::multimap<cStr, cEntityCmdInfo> tEntityTypeCmdMap;
