@@ -8,7 +8,9 @@
 
 #include "tech/globalobjdef.h"
 
-#include <map>
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/member.hpp>
 
 #ifdef _MSC_VER
 #pragma once
@@ -56,8 +58,18 @@ public:
 private:
    tResult FindFactory(const tChar * pszComponent, IEntityComponentFactory * * ppFactory);
 
-   typedef std::map<cStr, sRegisteredComponentFactory> tComponentFactoryMap;
-   tComponentFactoryMap m_componentFactoryMap;
+   struct name {};
+
+   typedef boost::multi_index_container<
+      sRegisteredComponentFactory,
+      boost::multi_index::indexed_by<
+         boost::multi_index::hashed_unique<
+            boost::multi_index::tag<name>,
+            boost::multi_index::member<sRegisteredComponentFactory, cStr, &sRegisteredComponentFactory::name>
+         >
+      >
+   > tComponentFactoryContainer;
+   tComponentFactoryContainer m_componentFactoryContainer;
 };
 
 

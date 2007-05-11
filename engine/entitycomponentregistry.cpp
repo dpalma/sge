@@ -58,12 +58,14 @@ tResult cEntityComponentRegistry::Term()
 
 void cEntityComponentRegistry::RevokeAll()
 {
-   tComponentFactoryMap::iterator iter = m_componentFactoryMap.begin(), end = m_componentFactoryMap.end();
+   tComponentFactoryContainer::iterator
+      iter = m_componentFactoryContainer.begin(),
+      end = m_componentFactoryContainer.end();
    for (; iter != end; ++iter)
    {
-      SafeRelease(iter->second.pFactory);
+      SafeRelease(iter->pFactory);
    }
-   m_componentFactoryMap.clear();
+   m_componentFactoryContainer.clear();
 }
 
 ///////////////////////////////////////
@@ -81,8 +83,8 @@ tResult cEntityComponentRegistry::RegisterComponentFactory(const tChar * pszComp
    factory.cid = 0;
    factory.pFactory = pFactory;
 
-   pair<tComponentFactoryMap::iterator, bool> result =
-      m_componentFactoryMap.insert(make_pair(pszComponent, factory));
+   pair<tComponentFactoryContainer::iterator, bool> result =
+      m_componentFactoryContainer.insert(factory);
    if (result.second)
    {
       pFactory->AddRef();
@@ -101,14 +103,16 @@ tResult cEntityComponentRegistry::RevokeComponentFactory(const tChar * pszCompon
    {
       return E_POINTER;
    }
-   tComponentFactoryMap::iterator iter = m_componentFactoryMap.find(pszComponent);
-   if (iter == m_componentFactoryMap.end())
+
+   tComponentFactoryContainer::index<name>::type & nameIndex = m_componentFactoryContainer.get<name>();
+   tComponentFactoryContainer::iterator f = nameIndex.find(pszComponent);
+   if (f == nameIndex.end())
    {
       return S_FALSE;
    }
-   sRegisteredComponentFactory & factory = iter->second;
-   factory.pFactory->Release();
-   m_componentFactoryMap.erase(iter);
+
+   f->pFactory->Release();
+   m_componentFactoryContainer.erase(f);
    return S_OK;
 }
 
@@ -179,14 +183,14 @@ tResult cEntityComponentRegistry::FindFactory(const tChar * pszComponent, IEntit
    Assert(pszComponent != NULL);
    Assert(ppFactory != NULL);
 
-   tComponentFactoryMap::iterator f = m_componentFactoryMap.find(pszComponent);
-   if (f == m_componentFactoryMap.end())
+   tComponentFactoryContainer::index<name>::type & nameIndex = m_componentFactoryContainer.get<name>();
+   tComponentFactoryContainer::iterator f = nameIndex.find(pszComponent);
+   if (f == nameIndex.end())
    {
       return E_FAIL;
    }
 
-   sRegisteredComponentFactory & factory = f->second;
-   *ppFactory = CTAddRef(factory.pFactory);
+   *ppFactory = CTAddRef(f->pFactory);
    return S_OK;
 }
 
