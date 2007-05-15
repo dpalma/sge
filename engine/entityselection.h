@@ -78,6 +78,7 @@ public:
 
 private:
    bool Insert(IEntity * pEntity);
+   void Erase(tEntitySet::iterator iter);
    void Clear();
 
    tEntitySet m_selected;

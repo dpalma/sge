@@ -6,6 +6,8 @@
 
 #include "engine/entityapi.h"
 
+#include "entitylist.h"
+
 #include "engine/saveloadapi.h"
 
 #include "tech/axisalignedbox.h"
@@ -14,7 +16,6 @@
 #include "tech/globalobjdef.h"
 #include "tech/simapi.h"
 
-#include <list>
 #include <set>
 
 #ifdef _MSC_VER
@@ -25,13 +26,6 @@
 
 typedef std::set<IUpdatable *, cCTLessInterface> tUpdatableSet;
 typedef std::list<IUpdatable *> tUpdatableList;
-
-////////////////////////////////////////////////////////////////////////////////
-
-typedef std::list<IEntity *> tEntityList;
-
-typedef cComObject<cComEnum<IEnumEntities, &IID_IEnumEntities, IEntity*, CopyInterface<IEntity>, tEntityList>, &IID_IEnumEntities> tEntityListEnum;
-
 
 ////////////////////////////////////////////////////////////////////////////////
 //
