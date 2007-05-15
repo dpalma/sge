@@ -65,12 +65,14 @@ public:
    virtual tResult RemoveEntitySelectionListener(IEntitySelectionListener * pListener);
 
    virtual tResult Select(IEntity * pEntity);
-   virtual tResult SelectBoxed(const tAxisAlignedBox & box);
+   virtual tResult Deselect(IEntity * pEntity);
+   virtual void ToggleSelect(IEntity * pEntity);
+   virtual tResult IsSelected(IEntity * pEntity) const;
    virtual tResult DeselectAll();
    virtual uint GetSelectedCount() const;
+
    virtual tResult SetSelected(IEnumEntities * pEnum);
    virtual tResult GetSelected(IEnumEntities * * ppEnum) const;
-   virtual tResult IsSelected(IEntity * pEntity) const;
 
    virtual void OnRemoveEntity(IEntity * pEntity);
 

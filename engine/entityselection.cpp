@@ -97,19 +97,39 @@ tResult cEntitySelection::Select(IEntity * pEntity)
 
 ///////////////////////////////////////
 
-tResult cEntitySelection::SelectBoxed(const tAxisAlignedBox & box)
+tResult cEntitySelection::Deselect(IEntity * pEntity)
 {
-   UseGlobal(EntityManager);
-
-   cAutoIPtr<IEnumEntities> pEnum;
-   if (pEntityManager->BoxCast(box, &pEnum) == S_OK)
+   tEntitySet::iterator f = m_selected.find(pEntity);
+   if (f == m_selected.end())
    {
-      SetSelected(pEnum);
+      return S_FALSE;
    }
+   SafeRelease(*f);
+   m_selected.erase(f);
+   return S_OK;
+}
 
-   ForEachConnection(mem_fun(&IEntitySelectionListener::OnEntitySelectionChange));
+///////////////////////////////////////
 
-   return m_selected.empty() ? S_FALSE : S_OK;
+void cEntitySelection::ToggleSelect(IEntity * pEntity)
+{
+   tEntitySet::iterator f = m_selected.find(pEntity);
+   if (f == m_selected.end())
+   {
+      Insert(pEntity);
+   }
+   else
+   {
+      SafeRelease(*f);
+      m_selected.erase(f);
+   }
+}
+
+///////////////////////////////////////
+
+tResult cEntitySelection::IsSelected(IEntity * pEntity) const
+{
+   return (m_selected.find(pEntity) != m_selected.end()) ? S_OK : S_FALSE;
 }
 
 ///////////////////////////////////////
@@ -167,13 +187,6 @@ tResult cEntitySelection::GetSelected(IEnumEntities * * ppEnum) const
 
 ///////////////////////////////////////
 
-tResult cEntitySelection::IsSelected(IEntity * pEntity) const
-{
-   return (m_selected.find(pEntity) != m_selected.end()) ? S_OK : S_FALSE;
-}
-
-///////////////////////////////////////
-
 void cEntitySelection::OnRemoveEntity(IEntity * pEntity)
 {
    size_t nErasedFromSelected = m_selected.erase(pEntity);
@@ -221,7 +234,7 @@ tResult EntitySelectionCreate()
 
 extern tResult TestEntityCreate(IEntity * * ppEntity);
 
-TEST(EntitySelectionBasics)
+TEST(SingleEntitySelection)
 {
    cAutoIPtr<IEntitySelection> pEntitySelection(static_cast<IEntitySelection*>(new cEntitySelection));
 
@@ -234,6 +247,38 @@ TEST(EntitySelectionBasics)
    CHECK_EQUAL(S_OK, pEntitySelection->DeselectAll());
    CHECK_EQUAL(S_FALSE, pEntitySelection->DeselectAll());
    CHECK_EQUAL(0, pEntitySelection->GetSelectedCount());
+   CHECK_EQUAL(S_FALSE, pEntitySelection->Deselect(pEntity));
+   CHECK_EQUAL(S_OK, pEntitySelection->Select(pEntity));
+   CHECK_EQUAL(1, pEntitySelection->GetSelectedCount());
+   CHECK_EQUAL(S_OK, pEntitySelection->Deselect(pEntity));
+   CHECK_EQUAL(S_FALSE, pEntitySelection->Deselect(pEntity));
+}
+
+TEST(ToggleEntitySelect)
+{
+   cAutoIPtr<IEntitySelection> pEntitySelection(static_cast<IEntitySelection*>(new cEntitySelection));
+
+   cAutoIPtr<IEntity> pEntity;
+   CHECK_EQUAL(S_OK, TestEntityCreate(&pEntity));
+
+   CHECK_EQUAL(0, pEntitySelection->GetSelectedCount());
+   pEntitySelection->ToggleSelect(pEntity);
+   CHECK_EQUAL(1, pEntitySelection->GetSelectedCount());
+   pEntitySelection->ToggleSelect(pEntity);
+   CHECK_EQUAL(0, pEntitySelection->GetSelectedCount());
+}
+
+TEST(SameEntityPointerAddedTwice)
+{
+   cAutoIPtr<IEntitySelection> pEntitySelection(static_cast<IEntitySelection*>(new cEntitySelection));
+
+   cAutoIPtr<IEntity> pEntity;
+   CHECK_EQUAL(S_OK, TestEntityCreate(&pEntity));
+
+   CHECK_EQUAL(S_OK, pEntitySelection->Select(pEntity));
+   CHECK_EQUAL(S_FALSE, pEntitySelection->Select(pEntity));
+
+   // TODO: Test via SetSelected
 }
 
 TEST(GetSetSelectedEntitiesByEnum)
@@ -261,6 +306,26 @@ TEST(GetSetSelectedEntitiesByEnum)
 
    CHECK_EQUAL(nTestEntities, pEntitySelection->GetSelectedCount());
 }
+
+//TEST(SelectionIndicatorInstallation)
+//{
+//   cAutoIPtr<IEntitySelection> pEntitySelection(static_cast<IEntitySelection*>(new cEntitySelection));
+//
+//   cAutoIPtr<IEntity> pEntity;
+//   CHECK_EQUAL(S_OK, TestEntityCreate(&pEntity));
+//
+//   cAutoIPtr<IEntityComponent> pComponent;
+//   CHECK_EQUAL(S_FALSE, pEntity->GetComponent(IEntityBoxSelectionIndicatorComponent::CID, &pComponent));
+//
+//   CHECK_EQUAL(S_OK, pEntitySelection->Select(pEntity));
+//
+//   CHECK_EQUAL(S_OK, pEntity->GetComponent(IEntityBoxSelectionIndicatorComponent::CID, &pComponent));
+//   SafeRelease(pComponent);
+//
+//   CHECK_EQUAL(S_OK, pEntitySelection->DeselectAll());
+//
+//   CHECK_EQUAL(S_FALSE, pEntity->GetComponent(IEntityBoxSelectionIndicatorComponent::CID, &pComponent));
+//}
 
 #endif
 

@@ -382,14 +382,14 @@ interface IEntitySelection : IUnknown
    virtual tResult RemoveEntitySelectionListener(IEntitySelectionListener * pListener) = 0;
 
    virtual tResult Select(IEntity * pEntity) = 0;
-   virtual tResult SelectBoxed(const tAxisAlignedBox & box) = 0;
+   virtual tResult Deselect(IEntity * pEntity) = 0;
+   virtual void ToggleSelect(IEntity * pEntity) = 0;
+   virtual tResult IsSelected(IEntity * pEntity) const = 0;
    virtual tResult DeselectAll() = 0;
    virtual uint GetSelectedCount() const = 0;
 
    virtual tResult SetSelected(IEnumEntities * pEnum) = 0;
    virtual tResult GetSelected(IEnumEntities * * ppEnum) const = 0;
-
-   virtual tResult IsSelected(IEntity * pEntity) const = 0;
 };
 
 ////////////////////////////////////////
