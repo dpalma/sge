@@ -59,7 +59,7 @@ public:
                                    IEntityComponent * * ppComponent);
 
 private:
-   tResult FindFactory(const tChar * pszComponent, IEntityComponentFactory * * ppFactory);
+   tResult FindFactory(const tChar * pszComponent, tEntityComponentID * pCid, IEntityComponentFactory * * ppFactory);
    tResult FindFactory(tEntityComponentID componentId, IEntityComponentFactory * * ppFactory);
 
    struct name {};

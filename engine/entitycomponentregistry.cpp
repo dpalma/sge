@@ -145,13 +145,19 @@ tResult cEntityComponentRegistry::CreateComponent(const tChar * pszComponent,
       return E_POINTER;
    }
 
+   tEntityComponentID cid;
    cAutoIPtr<IEntityComponentFactory> pFactory;
-   if (FindFactory(pszComponent, &pFactory) != S_OK)
+   if (FindFactory(pszComponent, &cid, &pFactory) != S_OK)
    {
       return E_FAIL;
    }
 
-   return pFactory->CreateComponent(pTiXmlElement, pEntity, ppComponent);
+   tResult result = pFactory->CreateComponent(pTiXmlElement, pEntity, ppComponent);
+   if (result == S_OK)
+   {
+      result = pEntity->SetComponent(cid, *ppComponent);
+   }
+   return result;
 }
 
 ///////////////////////////////////////
@@ -164,13 +170,19 @@ tResult cEntityComponentRegistry::CreateComponent(const tChar * pszComponent,
       return E_POINTER;
    }
 
+   tEntityComponentID cid;
    cAutoIPtr<IEntityComponentFactory> pFactory;
-   if (FindFactory(pszComponent, &pFactory) != S_OK)
+   if (FindFactory(pszComponent, &cid, &pFactory) != S_OK)
    {
       return E_FAIL;
    }
 
-   return pFactory->CreateComponent(pEntity, ppComponent);
+   tResult result = pFactory->CreateComponent(pEntity, ppComponent);
+   if (result == S_OK)
+   {
+      result = pEntity->SetComponent(cid, *ppComponent);
+   }
+   return result;
 }
 
 ///////////////////////////////////////
@@ -189,7 +201,12 @@ tResult cEntityComponentRegistry::CreateComponent(tEntityComponentID componentId
       return E_FAIL;
    }
 
-   return pFactory->CreateComponent(pEntity, ppComponent);
+   tResult result = pFactory->CreateComponent(pEntity, ppComponent);
+   if (result == S_OK)
+   {
+      result = pEntity->SetComponent(componentId, *ppComponent);
+   }
+   return result;
 }
 
 ///////////////////////////////////////
@@ -214,9 +231,10 @@ tResult cEntityComponentRegistry::CreateComponent(const TiXmlElement * pTiXmlEle
 
 ///////////////////////////////////////
 
-tResult cEntityComponentRegistry::FindFactory(const tChar * pszComponent, IEntityComponentFactory * * ppFactory)
+tResult cEntityComponentRegistry::FindFactory(const tChar * pszComponent, tEntityComponentID * pCid, IEntityComponentFactory * * ppFactory)
 {
    Assert(pszComponent != NULL);
+   Assert(pCid != NULL);
    Assert(ppFactory != NULL);
 
    tComponentFactoryContainerIndexByName & nameIndex = m_componentFactoryContainer.get<name>();
@@ -226,6 +244,11 @@ tResult cEntityComponentRegistry::FindFactory(const tChar * pszComponent, IEntit
       return E_FAIL;
    }
 
+   tComponentFactoryContainerIndexByCID::iterator g = m_componentFactoryContainer.project<cid>(f);
+
+   Assert(CTIsSameObject(f->pFactory, g->pFactory));
+
+   *pCid = g->cid;
    *ppFactory = CTAddRef(f->pFactory);
    return S_OK;
 }
@@ -327,6 +350,24 @@ TEST(EntityComponentRegisterRevoke)
    CHECK_EQUAL(S_OK, pECR->RevokeComponentFactory(cTestComponent::gm_name));
    CHECK_EQUAL(S_FALSE, pECR->RevokeComponentFactory(cTestComponent::gm_cid));
    CHECK_EQUAL(S_FALSE, pECR->RevokeComponentFactory(cTestComponent::gm_name));
+}
+
+TEST(CreateEntityComponent)
+{
+   cAutoIPtr<IEntityComponentRegistry> pECR(static_cast<IEntityComponentRegistry*>(new cEntityComponentRegistry));
+
+   cAutoIPtr<IEntityComponentFactory> pECF(static_cast<IEntityComponentFactory*>(new cTestComponentFactory<cTestComponent>));
+
+   CHECK_EQUAL(S_OK, pECR->RegisterComponentFactory(cTestComponent::gm_name, cTestComponent::gm_cid, pECF));
+
+   cAutoIPtr<IEntity> pEntity;
+   CHECK_EQUAL(S_OK, TestEntityCreate(&pEntity));
+
+   // Create component by name, then remove by identifier
+   CHECK_EQUAL(S_FALSE, pEntity->RemoveComponent(cTestComponent::gm_cid));
+   cAutoIPtr<IEntityComponent> pComponent;
+   CHECK_EQUAL(S_OK, pECR->CreateComponent(cTestComponent::gm_name, pEntity, &pComponent));
+   CHECK_EQUAL(S_OK, pEntity->RemoveComponent(cTestComponent::gm_cid));
 }
 
 #endif

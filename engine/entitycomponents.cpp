@@ -219,11 +219,6 @@ tResult EntityPositionComponentFactory(const TiXmlElement * pTiXmlElement,
       return E_OUTOFMEMORY;
    }
 
-   if (pEntity->SetComponent(IEntityPositionComponent::CID, static_cast<IEntityComponent*>(pPosition)) != S_OK)
-   {
-      return E_FAIL;
-   }
-
    *ppComponent = CTAddRef(static_cast<IEntityComponent*>(pPosition));
    return S_OK;
 }
@@ -378,11 +373,6 @@ tResult EntityRenderComponentFactory(const TiXmlElement * pTiXmlElement,
       return E_OUTOFMEMORY;
    }
 
-   if (pEntity->SetComponent(IEntityRenderComponent::CID, static_cast<IEntityComponent*>(pRender)) != S_OK)
-   {
-      return E_FAIL;
-   }
-
    *ppComponent = CTAddRef(static_cast<IEntityComponent*>(pRender));
    return S_OK;
 }
@@ -464,11 +454,6 @@ tResult EntitySpawnComponentFactory(const TiXmlElement * pTiXmlElement,
    if (!pSpawnComponent)
    {
       return E_OUTOFMEMORY;
-   }
-
-   if (pEntity->SetComponent(IEntitySpawnComponent::CID, static_cast<IEntityComponent*>(pSpawnComponent)) != S_OK)
-   {
-      return E_FAIL;
    }
 
    *ppComponent = CTAddRef(static_cast<IEntityComponent*>(pSpawnComponent));
@@ -578,11 +563,6 @@ tResult EntityBrainComponentFactory(const TiXmlElement * pTiXmlElement,
       return result;
    }
 
-   if (pEntity->SetComponent(IEntityBrainComponent::CID, static_cast<IEntityComponent*>(pBrainComponent)) != S_OK)
-   {
-      return E_FAIL;
-   }
-
    *ppComponent = CTAddRef(static_cast<IEntityComponent*>(pBrainComponent));
    return S_OK;
 }
@@ -652,11 +632,6 @@ tResult EntityBoxSelectionIndicatorComponentFactory(const TiXmlElement *,
    if (!pComponent)
    {
       return E_OUTOFMEMORY;
-   }
-
-   if (pEntity->SetComponent(IEntityBoxSelectionIndicatorComponent::CID, pComponent) != S_OK)
-   {
-      return E_FAIL;
    }
 
    *ppComponent = CTAddRef(pComponent);
