@@ -77,6 +77,9 @@ public:
    virtual void OnRemoveEntity(IEntity * pEntity);
 
 private:
+   void AddSelectionIndicatorComponent(IEntity * pEntity);
+   void RemoveSelectionIndicatorComponent(IEntity * pEntity);
+
    bool Insert(IEntity * pEntity);
    void Erase(tEntitySet::iterator iter);
    void Clear();

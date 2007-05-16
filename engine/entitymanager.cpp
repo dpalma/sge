@@ -252,18 +252,6 @@ static void RenderEntity(IEntity * pEntity)
       ForEach<IEnumEntityComponents, IEntityComponent>(pEnum, RenderRenderableComponent);
    }
 
-   // TODO: this rendering of the selection box is temporary
-   UseGlobal(EntitySelection);
-   bool bSelected = (pEntitySelection->IsSelected(pEntity) == S_OK);
-   if (bSelected)
-   {
-      cAutoIPtr<IEntityRenderComponent> pRender;
-      if (pEntity->GetComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
-      {
-         pRender->Render(kERF_Selected);
-      }
-   }
-
    if (bPopMatrix)
    {
       pRenderer->PopMatrix();

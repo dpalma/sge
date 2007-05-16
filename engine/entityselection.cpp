@@ -6,6 +6,7 @@
 #include "entityselection.h"
 #include "entitylist.h"
 
+#include "tech/axisalignedbox.h"
 #include "tech/comenumutil.h"
 
 #ifdef HAVE_UNITTESTPP
@@ -189,9 +190,32 @@ tResult cEntitySelection::GetSelected(IEnumEntities * * ppEnum) const
 void cEntitySelection::OnRemoveEntity(IEntity * pEntity)
 {
    size_t nErasedFromSelected = m_selected.erase(pEntity);
+   if (nErasedFromSelected > 0)
+   {
+      RemoveSelectionIndicatorComponent(pEntity);
+   }
    while (nErasedFromSelected-- > 0)
    {
       pEntity->Release();
+   }
+}
+
+///////////////////////////////////////
+
+void cEntitySelection::AddSelectionIndicatorComponent(IEntity * pEntity)
+{
+   cAutoIPtr<IEntityComponent> pComponent;
+   UseGlobal(EntityComponentRegistry);
+   pEntityComponentRegistry->CreateComponent(IEntityBoxSelectionIndicatorComponent::CID, pEntity, &pComponent);
+}
+
+///////////////////////////////////////
+
+void cEntitySelection::RemoveSelectionIndicatorComponent(IEntity * pEntity)
+{
+   if (pEntity != NULL)
+   {
+      pEntity->RemoveComponent(IEntityBoxSelectionIndicatorComponent::CID);
    }
 }
 
@@ -202,6 +226,7 @@ bool cEntitySelection::Insert(IEntity * pEntity)
    pair<tEntitySet::iterator, bool> result = m_selected.insert(pEntity);
    if (result.second)
    {
+      AddSelectionIndicatorComponent(pEntity);
       pEntity->AddRef();
    }
    return result.second;
@@ -212,6 +237,7 @@ bool cEntitySelection::Insert(IEntity * pEntity)
 void cEntitySelection::Erase(tEntitySet::iterator iter)
 {
    Assert(iter != m_selected.end());
+   RemoveSelectionIndicatorComponent(*iter);
    SafeRelease(*iter);
    m_selected.erase(iter);
 }
@@ -220,6 +246,7 @@ void cEntitySelection::Erase(tEntitySet::iterator iter)
 
 void cEntitySelection::Clear()
 {
+   for_each(m_selected.begin(), m_selected.end(), bind1st(mem_fun(&cEntitySelection::RemoveSelectionIndicatorComponent), this));
    for_each(m_selected.begin(), m_selected.end(), mem_fn(&IEntity::Release));
    m_selected.clear();
 }
@@ -241,6 +268,20 @@ tResult EntitySelectionCreate()
 #ifdef HAVE_UNITTESTPP
 
 extern tResult TestEntityCreate(IEntity * * ppEntity);
+
+namespace
+{
+   class cTestRenderComponent : public cComObject<IMPLEMENTS(IEntityRenderComponent)>
+   {
+   public:
+      virtual tResult GetBoundingBox(tAxisAlignedBox * pBBox) const
+      {
+         *pBBox = tAxisAlignedBox(tVec3(0,0,0),tVec3(1,1,1));
+         return S_OK;
+      }
+      virtual void Render(uint flags) {}
+   };
+}
 
 TEST(SingleEntitySelection)
 {
@@ -319,6 +360,29 @@ TEST(GetSetSelectedEntitiesByEnum)
    CHECK_EQUAL(S_OK, pEntitySelection->SetSelected(pEnum));
 
    CHECK_EQUAL(nTestEntities, pEntitySelection->GetSelectedCount());
+}
+
+TEST(SelectionIndicatorInstallation)
+{
+   cAutoIPtr<IEntitySelection> pEntitySelection(static_cast<IEntitySelection*>(new cEntitySelection));
+
+   cAutoIPtr<IEntity> pEntity;
+   CHECK_EQUAL(S_OK, TestEntityCreate(&pEntity));
+
+   cAutoIPtr<IEntityComponent> pRenderComponent(static_cast<IEntityComponent*>(new cTestRenderComponent));
+   CHECK_EQUAL(S_OK, pEntity->SetComponent(IEntityRenderComponent::CID, pRenderComponent));
+
+   cAutoIPtr<IEntityComponent> pComponent;
+   CHECK_EQUAL(S_FALSE, pEntity->GetComponent(IEntityBoxSelectionIndicatorComponent::CID, &pComponent));
+
+   CHECK_EQUAL(S_OK, pEntitySelection->Select(pEntity));
+
+   CHECK_EQUAL(S_OK, pEntity->GetComponent(IEntityBoxSelectionIndicatorComponent::CID, &pComponent));
+   SafeRelease(pComponent);
+
+   CHECK_EQUAL(S_OK, pEntitySelection->DeselectAll());
+
+   CHECK_EQUAL(S_FALSE, pEntity->GetComponent(IEntityBoxSelectionIndicatorComponent::CID, &pComponent));
 }
 
 #endif
