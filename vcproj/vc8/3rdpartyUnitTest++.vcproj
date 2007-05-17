@@ -40,7 +40,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories=".\..\..\3rdparty\UnitTest++\src"
-				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,_USRDLL,NO_AUTO_EXPORTS,_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,_USRDLL,NO_AUTO_EXPORTS,_CRT_SECURE_NO_DEPRECATE,UNITTEST_USE_CUSTOM_STREAMS"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
@@ -112,7 +112,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories=".\..\..\3rdparty\UnitTest++\src"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;UNITTEST_USE_CUSTOM_STREAMS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
@@ -201,7 +201,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories=".\..\..\3rdparty\UnitTest++\src"
-				PreprocessorDefinitions="_DEBUG,WIN32,_WINDOWS,_USRDLL,_CRT_SECURE_NO_DEPRECATE,NO_AUTO_EXPORTS"
+				PreprocessorDefinitions="_DEBUG,WIN32,_WINDOWS,_USRDLL,_CRT_SECURE_NO_DEPRECATE,NO_AUTO_EXPORTS,UNITTEST_USE_CUSTOM_STREAMS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
@@ -273,7 +273,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories=".\..\..\3rdparty\UnitTest++\src"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;UNITTEST_USE_CUSTOM_STREAMS"
 				StringPooling="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
@@ -361,7 +361,7 @@
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories=".\..\..\3rdparty\UnitTest++\src"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;UNITTEST_USE_CUSTOM_STREAMS"
 				StringPooling="true"
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
@@ -465,6 +465,22 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\3rdparty\UnitTest++\src\DeferredTestReporter.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\3rdparty\UnitTest++\src\DeferredTestReporter.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\3rdparty\UnitTest++\src\DeferredTestResult.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\3rdparty\UnitTest++\src\DeferredTestResult.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\3rdparty\UnitTest++\src\MemoryOutStream.cpp"
 			>
 		</File>
@@ -486,6 +502,14 @@
 		</File>
 		<File
 			RelativePath="..\..\3rdparty\UnitTest++\src\Test.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\3rdparty\UnitTest++\src\TestDetails.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\3rdparty\UnitTest++\src\TestDetails.h"
 			>
 		</File>
 		<File
@@ -533,6 +557,10 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\3rdparty\UnitTest++\src\TestSuite.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\3rdparty\UnitTest++\src\TimeConstraint.cpp"
 			>
 		</File>
@@ -550,6 +578,14 @@
 		</File>
 		<File
 			RelativePath="..\..\3rdparty\UnitTest++\src\UnitTest++.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\3rdparty\UnitTest++\src\XmlTestReporter.cpp"
+			>
+		</File>
+		<File
+			RelativePath="..\..\3rdparty\UnitTest++\src\XmlTestReporter.h"
 			>
 		</File>
 	</Files>

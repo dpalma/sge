@@ -574,9 +574,9 @@ public:
    HASH_MAP_NS::hash_map<const char *, int> m_hashMap;
 #endif
 
-   void RunInsertSpeedTest(sTiming * pHashTableResult, sTiming * pMapResult, sTiming * pHashMapResult, UnitTest::TestResults & testResults_, const char * m_name);
+   void RunInsertSpeedTest(sTiming * pHashTableResult, sTiming * pMapResult, sTiming * pHashMapResult, UnitTest::TestResults & testResults_, const UnitTest::TestDetails & details);
    void TestInsertSpeed();
-   void RunLookupSpeedTest(int nLookups, double * pHashTableResult, double * pMapResult, double * pHashMapResult, UnitTest::TestResults & testResults_, const char * m_name);
+   void RunLookupSpeedTest(int nLookups, double * pHashTableResult, double * pMapResult, double * pHashMapResult, UnitTest::TestResults & testResults_, const UnitTest::TestDetails & details);
    void TestLookupSpeed();
 };
 
@@ -611,7 +611,7 @@ void cHashTableSpeedTests::RunInsertSpeedTest(sTiming * pHashTableResult,
                                               sTiming * pMapResult,
                                               sTiming * pHashMapResult,
                                               UnitTest::TestResults & testResults_,
-                                              const char * m_testName)
+                                              const UnitTest::TestDetails & m_details)
 {
    CHECK(pHashTableResult != NULL);
    CHECK(pMapResult != NULL);
@@ -680,7 +680,7 @@ TEST_FIXTURE(cHashTableSpeedTests, TestInsertSpeed)
    LocalMsg2("Insert Speed Test; inserting %d items; %d runs\n", kNumTests, kNumRuns);
    for (int i = 0; i < kNumRuns; i++)
    {
-      RunInsertSpeedTest(&hashTableResult[i], &mapResult[i], &hashMapResult[i], testResults_, m_testName);
+      RunInsertSpeedTest(&hashTableResult[i], &mapResult[i], &hashMapResult[i], testResults_, m_details);
 
       LocalMsg3("   [%d] cHashTable:      %.5f seconds, %d clock ticks\n",
          i, hashTableResult[i].seconds, hashTableResult[i].clockTicks);
@@ -715,7 +715,7 @@ void cHashTableSpeedTests::RunLookupSpeedTest(int nLookups,
                                               double * pMapResult,
                                               double * pHashMapResult,
                                               UnitTest::TestResults & testResults_,
-                                              const char * m_testName)
+                                              const UnitTest::TestDetails & m_details)
 {
    CHECK(pHashTableResult != NULL);
    CHECK(pMapResult != NULL);
@@ -759,7 +759,7 @@ void cHashTableSpeedTests::RunLookupSpeedTest(int nLookups,
 TEST_FIXTURE(cHashTableSpeedTests, TestLookupSpeed)
 {
    double hashTableResult, mapResult, hashMapResult;
-   RunLookupSpeedTest(kNumTests, &hashTableResult, &mapResult, &hashMapResult, testResults_, m_testName);
+   RunLookupSpeedTest(kNumTests, &hashTableResult, &mapResult, &hashMapResult, testResults_, m_details);
 
    LocalMsg1("Lookup (average over %d lookups):\n", kNumTests);
    LocalMsg1("   cHashTable:     %.2f clock ticks\n", hashTableResult);

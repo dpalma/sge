@@ -9,6 +9,7 @@
 
 #ifdef HAVE_UNITTESTPP
 #include "Test.h"
+#include "TestDetails.h"
 #include "TestReporter.h"
 #include "TestRunner.h"
 #endif
@@ -17,6 +18,8 @@
 #include <list>
 
 #include "tech/dbgalloc.h" // must be last header
+
+using namespace UnitTest;
 
 LOG_DEFINE_CHANNEL(VerboseUnitTests);
 
@@ -103,25 +106,29 @@ public:
    cSysTestReporter();
    virtual ~cSysTestReporter();
 
-   virtual void ReportTestStart(char const* testName);
-   virtual void ReportFailure(char const* file, int line, char const* testName, char const* failure);
-   virtual void ReportTestFinish(char const* testName, float secondsElapsed);
-   virtual void ReportSummary(int testCount, int failureCount, float secondsElapsed);
+   virtual void ReportTestStart(TestDetails const & test);
+   virtual void ReportFailure(TestDetails const & test, char const * failure);
+   virtual void ReportTestFinish(TestDetails const & test, float secondsElapsed);
+   virtual void ReportSummary(int totalTestCount, int failedTestCount, int failureCount, float secondsElapsed);
 
 private:
    class cTestFailure
    {
    public:
-      cTestFailure(const char * file, int line, const char * testName, const char * failure)
-       : m_file((file != NULL) ? file : "")
-       , m_line(line)
-       , m_testName((testName != NULL) ? testName : "")
+      cTestFailure(const TestDetails & details, const char * failure)
+       : m_testName(details.testName)
+       , m_suiteName(details.suiteName)
+       , m_filename(details.filename)
+       , m_lineNumber(details.lineNumber)
        , m_failure((failure != NULL) ? failure : "")
       {
       }
 
-      cStr m_file, m_testName, m_failure;
-      int m_line;
+      std::string m_testName;
+      std::string m_suiteName;
+      std::string m_filename;
+      int m_lineNumber;
+      std::string m_failure;
    };
 
    std::list<cTestFailure> m_failures;
@@ -141,49 +148,49 @@ cSysTestReporter::~cSysTestReporter()
 
 ////////////////////////////////////////
 
-void cSysTestReporter::ReportTestStart(char const* testName)
+void cSysTestReporter::ReportTestStart(TestDetails const & test)
 {
    if (LOG_IS_CHANNEL_ENABLED(VerboseUnitTests))
    {
-      LogMsgNoFL1(kInfo, "Test \"%s\" begin\n", testName);
+      LogMsgNoFL1(kInfo, "Test \"%s\" begin\n", test.testName);
    }
 }
 
 ////////////////////////////////////////
 
-void cSysTestReporter::ReportFailure(char const* file, int line, char const* testName, char const* failure)
+void cSysTestReporter::ReportFailure(TestDetails const & test, char const * failure)
 {
-   m_failures.push_back(cTestFailure(file, line, testName, failure));
+   m_failures.push_back(cTestFailure(test, failure));
 }
 
 ////////////////////////////////////////
 
-void cSysTestReporter::ReportTestFinish(char const* testName, float secondsElapsed)
+void cSysTestReporter::ReportTestFinish(TestDetails const & test, float secondsElapsed)
 {
    if (LOG_IS_CHANNEL_ENABLED(VerboseUnitTests))
    {
-      LogMsgNoFL2(kInfo, "Test \"%s\" end (%f seconds elapsed)\n", testName, secondsElapsed);
+      LogMsgNoFL2(kInfo, "Test \"%s\" end (%f seconds elapsed)\n", test.testName, secondsElapsed);
    }
 }
 
 ////////////////////////////////////////
 
-void cSysTestReporter::ReportSummary(int testCount, int failureCount, float secondsElapsed)
+void cSysTestReporter::ReportSummary(int totalTestCount, int failedTestCount, int failureCount, float secondsElapsed)
 {
    Assert(m_failures.size() == failureCount);
    if (failureCount > 0)
    {
-      LogMsgNoFL2(kError, "%d of %d UNIT TESTS FAILED!\n", failureCount, testCount);
+      LogMsgNoFL2(kError, "%d of %d UNIT TESTS FAILED!\n", failedTestCount, totalTestCount);
       std::list<cTestFailure>::const_iterator iter = m_failures.begin(), end = m_failures.end();
       for (; iter != end; ++iter)
       {
-         techlog.Print(iter->m_file.c_str(), iter->m_line, kError,
+         techlog.Print(iter->m_filename.c_str(), iter->m_lineNumber, kError,
             "Failure in %s: %s\n", iter->m_testName.c_str(), iter->m_failure.c_str());
       }
    }
    else
    {
-      LogMsgNoFL2(kInfo, "%d unit tests succeeded (%f seconds elapsed)\n", testCount, secondsElapsed);
+      LogMsgNoFL2(kInfo, "%d unit tests succeeded (%f seconds elapsed)\n", totalTestCount, secondsElapsed);
    }
 }
 
@@ -192,10 +199,9 @@ void cSysTestReporter::ReportSummary(int testCount, int failureCount, float seco
 
 static tResult SysRunUnitTestPP()
 {
-   using namespace UnitTest;
    cSysTestReporter reporter;
    const TestList & tests = Test::GetTestList();
-   int nFailures = RunAllTests(reporter, tests);
+   int nFailures = RunAllTests(reporter, tests, NULL);
    if (nFailures > 0)
    {
       return E_FAIL;
