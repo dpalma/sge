@@ -4,25 +4,29 @@
 namespace UnitTest {
 
 class TestReporter;
+class TestDetails;
 
 class TestResults
 {
 public:
     explicit TestResults(TestReporter* reporter = 0);
 
-    void OnTestStart(char const* testName);
-    void OnTestFailure(char const* file, int line, char const* testName, char const* failure);
-    void OnTestFinish(char const* testName, float secondsElapsed);
+    void OnTestStart(TestDetails const& test);
+    void OnTestFailure(TestDetails const& test, char const* failure);
+    void OnTestFinish(TestDetails const& test, float secondsElapsed);
 
-    int GetTestCount() const;
+    int GetTotalTestCount() const;
+    int GetFailedTestCount() const;
     int GetFailureCount() const;
 
 private:
     TestReporter* m_testReporter;
-    int m_testCount;
+    int m_totalTestCount;
+    int m_failedTestCount;
     int m_failureCount;
 
-    // revoked
+    bool m_currentTestFailed;
+
     TestResults(TestResults const&);
     TestResults& operator =(TestResults const&);
 };
@@ -30,4 +34,3 @@ private:
 }
 
 #endif
-

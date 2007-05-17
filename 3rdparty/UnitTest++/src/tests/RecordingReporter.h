@@ -4,6 +4,7 @@
 #include "../TestReporter.h"
 #include <cstring>
 
+#include "../TestDetails.h"
 
 struct RecordingReporter : public UnitTest::TestReporter
 {
@@ -17,55 +18,72 @@ public:
         , lastFailedLine(0)
         , testFinishedCount(0)
         , lastFinishedTestTime(0)
-        , summaryTestCount(0)
+        , summaryTotalTestCount(0)
+        , summaryFailedTestCount(0)
         , summaryFailureCount(0)
         , summarySecondsElapsed(0)
     {
+        lastStartedSuite[0] = '\0';
+        lastStartedTest[0] = '\0';
+        lastFailedFile[0] = '\0';
+        lastFailedSuite[0] = '\0';
+        lastFailedTest[0] = '\0';
+        lastFailedMessage[0] = '\0';
+        lastFinishedSuite[0] = '\0';
+        lastFinishedTest[0] = '\0';
     }
 
-    virtual void ReportTestStart(char const* testName)
+    virtual void ReportTestStart(UnitTest::TestDetails const& test)
     {
         ++testRunCount;
-        std::strcpy(lastStartedTest, testName);
+        std::strcpy(lastStartedSuite, test.suiteName);
+        std::strcpy(lastStartedTest, test.testName);
     }
 
-    virtual void ReportFailure(char const* file, int line, char const* testName, char const* failure)
+    virtual void ReportFailure(UnitTest::TestDetails const& test, char const* failure)
     {
         ++testFailedCount;
-        std::strcpy(lastFailedFile, file);
-        lastFailedLine = line;
-        std::strcpy(lastFailedTest, testName);
+        std::strcpy(lastFailedFile, test.filename);
+        lastFailedLine = test.lineNumber;
+        std::strcpy(lastFailedSuite, test.suiteName);
+        std::strcpy(lastFailedTest, test.testName);
         std::strcpy(lastFailedMessage, failure);
     }
 
-    virtual void ReportTestFinish(char const* testName, float testDuration)
+    virtual void ReportTestFinish(UnitTest::TestDetails const& test, float testDuration)
     {
         ++testFinishedCount;
-        std::strcpy(lastFinishedTest, testName);
+        std::strcpy(lastFinishedSuite, test.suiteName);
+        std::strcpy(lastFinishedTest, test.testName);
         lastFinishedTestTime = testDuration;
     }
 
-    virtual void ReportSummary(int testCount, int failureCount, float secondsElapsed) 
+    virtual void ReportSummary(int totalTestCount, int failedTestCount, int failureCount, float secondsElapsed) 
     {
-        summaryTestCount = testCount;
+        summaryTotalTestCount = totalTestCount;
+        summaryFailedTestCount = failedTestCount;
         summaryFailureCount = failureCount;
         summarySecondsElapsed = secondsElapsed;
     }
 
     int testRunCount;
+    char lastStartedSuite[kMaxStringLength];
     char lastStartedTest[kMaxStringLength];
 
     int testFailedCount;
     char lastFailedFile[kMaxStringLength];
     int lastFailedLine;
+    char lastFailedSuite[kMaxStringLength];
     char lastFailedTest[kMaxStringLength];
     char lastFailedMessage[kMaxStringLength];
 
     int testFinishedCount;
+    char lastFinishedSuite[kMaxStringLength];
     char lastFinishedTest[kMaxStringLength];
     float lastFinishedTestTime;
 
-    int summaryTestCount;
+    int summaryTotalTestCount;
+    int summaryFailedTestCount;
     int summaryFailureCount;
     float summarySecondsElapsed;
 };

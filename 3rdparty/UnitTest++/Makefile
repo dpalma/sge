@@ -1,12 +1,12 @@
 CC = g++
-CCFLAGS = -g -ansi -Wall -W -ansi -pedantic
+CCFLAGS = -g -ansi -Wall -W -ansi # -pedantic
 SED = sed
 MV = mv
 RM = rm
 
 .SUFFIXES: .o .cpp
 
-lib = UnitTest++.a
+lib = libUnitTest++.a
 test = TestUnitTest++
 
 src = src/AssertException.cpp \
@@ -19,14 +19,23 @@ src = src/AssertException.cpp \
 	src/ReportAssert.cpp \
 	src/TestList.cpp \
 	src/TimeConstraint.cpp \
+	src/TestDetails.cpp \
 	src/MemoryOutStream.cpp \
-	src/Posix/SignalTranslator.cpp \
+	src/DeferredTestReporter.cpp \
+	src/DeferredTestResult.cpp \
+	src/XmlTestReporter.cpp
+	
+ifeq ($(MSYSTEM), MINGW32)
+  src += src/Win32/TimeHelpers.cpp
+else
+  src += src/Posix/SignalTranslator.cpp \
 	src/Posix/TimeHelpers.cpp
+endif
 
 test_src = src/tests/Main.cpp \
 	src/tests/TestAssertHandler.cpp \
 	src/tests/TestChecks.cpp \
-	src/tests/TestUnitTestCpp.cpp \
+	src/tests/TestUnitTest++.cpp \
 	src/tests/TestTest.cpp \
 	src/tests/TestTestResults.cpp \
 	src/tests/TestTestRunner.cpp \
@@ -34,7 +43,10 @@ test_src = src/tests/Main.cpp \
 	src/tests/TestTestList.cpp \
 	src/tests/TestTestMacros.cpp \
 	src/tests/TestTimeConstraint.cpp \
-	src/tests/TestMemoryOutStream.cpp
+	src/tests/TestTimeConstraintMacro.cpp \
+	src/tests/TestMemoryOutStream.cpp \
+	src/tests/TestDeferredTestReporter.cpp \
+	src/tests/TestXmlTestReporter.cpp
 
 objects = $(patsubst %.cpp, %.o, $(src))
 test_objects = $(patsubst %.cpp, %.o, $(test_src))

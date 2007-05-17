@@ -1,12 +1,13 @@
 #include "Config.h"
 #include "Test.h"
+#include "TestList.h"
 #include "TestResults.h"
 #include "AssertException.h"
 #include "MemoryOutStream.h"
+
 #ifdef UNITTEST_POSIX
     #include "Posix/SignalTranslator.h"
 #endif
-
 
 namespace UnitTest {
 
@@ -16,11 +17,9 @@ TestList& Test::GetTestList()
     return s_list;
 }
 
-Test::Test(char const* testName, char const* filename, int const lineNumber)
-    : next(0)
-    , m_testName(testName)
-    , m_filename(filename)
-    , m_lineNumber(lineNumber)
+Test::Test(char const* testName, char const* suiteName, char const* filename, int const lineNumber)
+    : m_details(testName, suiteName, filename, lineNumber)
+    , next(0)
     , m_timeConstraintExempt(false)
 {
 }
@@ -40,17 +39,17 @@ void Test::Run(TestResults& testResults) const
     }
     catch (AssertException const& e)
     {
-        testResults.OnTestFailure(e.Filename(), e.LineNumber(), m_testName, e.what());
+        testResults.OnTestFailure( TestDetails(m_details.testName, m_details.suiteName, e.Filename(), e.LineNumber()), e.what());
     }
     catch (std::exception const& e)
     {
         MemoryOutStream stream;
         stream << "Unhandled exception: " << e.what();
-        testResults.OnTestFailure(m_filename, m_lineNumber, m_testName, stream.GetText());
+        testResults.OnTestFailure(m_details, stream.GetText());
     }
     catch (...)
     {
-        testResults.OnTestFailure(m_filename, m_lineNumber, m_testName, "Unhandled exception: Crash!");
+        testResults.OnTestFailure(m_details, "Unhandled exception: Crash!");
     }
 }
 

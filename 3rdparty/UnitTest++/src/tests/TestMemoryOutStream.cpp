@@ -1,4 +1,5 @@
 #include "../UnitTest++.h"
+
 #include "../MemoryOutStream.h"
 #include <cstring>
 
@@ -8,7 +9,7 @@ namespace {
 
 TEST (DefaultIsEmptyString)
 {
-    MemoryOutStream stream;
+    MemoryOutStream const stream;
     CHECK (stream.GetText() != 0);
     CHECK_EQUAL ("", stream.GetText());
 }
@@ -30,7 +31,28 @@ TEST (StreamingMultipleTimesConcatenatesResult)
 TEST (StreamingIntWritesCorrectCharacters)
 {
     MemoryOutStream stream;
-    stream << 123;
+    stream << (int)123;
+    CHECK_EQUAL ("123", stream.GetText());
+}
+
+TEST (StreamingUnsignedIntWritesCorrectCharacters)
+{
+    MemoryOutStream stream;
+    stream << (unsigned int)123;
+    CHECK_EQUAL ("123", stream.GetText());
+}
+
+TEST (StreamingLongWritesCorrectCharacters)
+{
+    MemoryOutStream stream;
+    stream << (long)(-123);
+    CHECK_EQUAL ("-123", stream.GetText());
+}
+
+TEST (StreamingUnsignedLongWritesCorrectCharacters)
+{
+    MemoryOutStream stream;
+    stream << (unsigned long)123;
     CHECK_EQUAL ("123", stream.GetText());
 }
 
@@ -38,7 +60,14 @@ TEST (StreamingFloatWritesCorrectCharacters)
 {
     MemoryOutStream stream;
     stream << 3.1415f;
-    CHECK (std::strstr(stream.GetText(), "3.1415"));
+	CHECK (std::strstr(stream.GetText(), "3.1415"));
+}
+
+TEST (StreamingDoubleWritesCorrectCharacters)
+{
+	MemoryOutStream stream;
+	stream << 3.1415;
+	CHECK (std::strstr(stream.GetText(), "3.1415"));
 }
 
 TEST (StreamingPointerWritesCorrectCharacters)
@@ -52,10 +81,12 @@ TEST (StreamingPointerWritesCorrectCharacters)
 TEST (StreamingSizeTWritesCorrectCharacters)
 {
     MemoryOutStream stream;
-    size_t s = 53124;
+    size_t const s = 53124;
     stream << s;
     CHECK_EQUAL ("53124", stream.GetText());
 }
+
+#ifdef UNITTEST_USE_CUSTOM_STREAMS
 
 TEST (StreamInitialCapacityIsCorrect)
 {
@@ -104,7 +135,7 @@ TEST (WritingFloatLongerThanCapacityFitsInNewBuffer)
 {
     MemoryOutStream stream(8);
     stream << "aaaa" << 123456.0f;;
-    CHECK_EQUAL ("aaaa123456.000000", stream.GetText());
+    CHECK_EQUAL ("aaaa123456.000000f", stream.GetText());
 }
 
 TEST (WritingSizeTLongerThanCapacityFitsInNewBuffer)
@@ -113,5 +144,7 @@ TEST (WritingSizeTLongerThanCapacityFitsInNewBuffer)
     stream << "aaaa" << size_t(32145);
     CHECK_EQUAL ("aaaa32145", stream.GetText());
 }
+
+#endif
 
 }

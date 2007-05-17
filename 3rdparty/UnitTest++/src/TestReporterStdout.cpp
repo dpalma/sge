@@ -1,33 +1,35 @@
 #include "TestReporterStdout.h"
 #include <cstdio>
 
+#include "TestDetails.h"
+
 namespace UnitTest {
 
-void TestReporterStdout::ReportFailure(char const* file, int const line, 
-                char const* testName, char const* failure)
+void TestReporterStdout::ReportFailure(TestDetails const& details, char const* failure)
 {
 #ifdef __APPLE__
     char const* const errorFormat = "%s:%d: error: Failure in %s: %s\n";
 #else
     char const* const errorFormat = "%s(%d): error: Failure in %s: %s\n";
 #endif
-    std::printf(errorFormat, file, line, testName, failure);
+    std::printf(errorFormat, details.filename, details.lineNumber, details.testName, failure);
 }
 
-void TestReporterStdout::ReportTestStart(char const*)
+void TestReporterStdout::ReportTestStart(TestDetails const& /*test*/)
 {
 }
 
-void TestReporterStdout::ReportTestFinish(char const*, float)
+void TestReporterStdout::ReportTestFinish(TestDetails const& /*test*/, float)
 {
 }
 
-void TestReporterStdout::ReportSummary(int const testCount, int const failureCount, float secondsElapsed)
+void TestReporterStdout::ReportSummary(int const totalTestCount, int const failedTestCount,
+                                       int const failureCount, float secondsElapsed)
 {
     if (failureCount > 0)
-        std::printf("FAILURE: %d out of %d tests failed.\n", failureCount, testCount);
+        std::printf("FAILURE: %d out of %d tests failed (%d failures).\n", failedTestCount, totalTestCount, failureCount);
     else
-        std::printf("Success: %d tests passed.\n", testCount);
+        std::printf("Success: %d tests passed.\n", totalTestCount);
     std::printf("Test time: %.2f seconds.\n", secondsElapsed);
 }
 

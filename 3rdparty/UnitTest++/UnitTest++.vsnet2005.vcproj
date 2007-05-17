@@ -181,6 +181,22 @@
 			>
 		</File>
 		<File
+			RelativePath=".\src\DeferredTestReporter.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\src\DeferredTestReporter.h"
+			>
+		</File>
+		<File
+			RelativePath=".\src\DeferredTestResult.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\src\DeferredTestResult.h"
+			>
+		</File>
+		<File
 			RelativePath=".\src\MemoryOutStream.cpp"
 			>
 		</File>
@@ -202,6 +218,14 @@
 		</File>
 		<File
 			RelativePath=".\src\Test.h"
+			>
+		</File>
+		<File
+			RelativePath=".\src\TestDetails.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\src\TestDetails.h"
 			>
 		</File>
 		<File
@@ -249,6 +273,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\src\TestSuite.h"
+			>
+		</File>
+		<File
 			RelativePath=".\src\TimeConstraint.cpp"
 			>
 		</File>
@@ -262,6 +290,14 @@
 		</File>
 		<File
 			RelativePath=".\src\UnitTest++.h"
+			>
+		</File>
+		<File
+			RelativePath=".\src\XmlTestReporter.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\src\XmlTestReporter.h"
 			>
 		</File>
 	</Files>

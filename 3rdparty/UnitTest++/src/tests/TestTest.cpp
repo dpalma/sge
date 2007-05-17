@@ -59,6 +59,8 @@ TEST (ThrowingTestsAreReportedAsFailures)
     CHECK_EQUAL(1, results.GetFailureCount());
 }
 
+
+#ifndef UNITTEST_MINGW
 TEST (CrashingTestsAreReportedAsFailures)
 {
     class CrashingTest : public Test
@@ -74,6 +76,21 @@ TEST (CrashingTestsAreReportedAsFailures)
     TestResults results;
     CrashingTest().Run(results);
     CHECK_EQUAL(1, results.GetFailureCount());
+}
+#endif
+
+TEST (TestWithUnspecifiedSuiteGetsDefaultSuite)
+{
+    Test test("test");
+    CHECK(test.m_details.suiteName != NULL);
+    CHECK_EQUAL("DefaultSuite", test.m_details.suiteName);
+}
+
+TEST (TestReflectsSpecifiedSuiteName)
+{
+    Test test("test", "testSuite");
+    CHECK(test.m_details.suiteName != NULL);
+    CHECK_EQUAL("testSuite", test.m_details.suiteName);
 }
 
 

@@ -195,6 +195,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\src\tests\TestDeferredTestReporter.cpp"
+			>
+		</File>
+		<File
 			RelativePath=".\src\tests\TestMemoryOutStream.cpp"
 			>
 		</File>
@@ -219,11 +223,23 @@
 			>
 		</File>
 		<File
+			RelativePath=".\src\tests\TestTestSuite.cpp"
+			>
+		</File>
+		<File
 			RelativePath=".\src\tests\TestTimeConstraint.cpp"
 			>
 		</File>
 		<File
-			RelativePath=".\src\tests\TestUnitTestCpp.cpp"
+			RelativePath=".\src\tests\TestTimeConstraintMacro.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\src\tests\TestUnitTest++.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\src\tests\TestXmlTestReporter.cpp"
 			>
 		</File>
 	</Files>

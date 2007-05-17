@@ -1,4 +1,23 @@
 #include "MemoryOutStream.h"
+
+#ifndef UNITTEST_USE_CUSTOM_STREAMS
+
+
+namespace UnitTest {
+
+char const* MemoryOutStream::GetText() const
+{
+    m_text = this->str();
+    return m_text.c_str();
+}
+
+
+}
+
+
+#else
+
+
 #include <cstring>
 #include <cstdio>
 
@@ -61,9 +80,21 @@ MemoryOutStream& MemoryOutStream::operator << (int const n)
     return *this;
 }
 
+MemoryOutStream& MemoryOutStream::operator << (long const n)
+{
+    FormatToStream(*this, "%li", n);
+    return *this;
+}
+
+MemoryOutStream& MemoryOutStream::operator << (unsigned long const n)
+{
+    FormatToStream(*this, "%lu", n);
+    return *this;
+}
+
 MemoryOutStream& MemoryOutStream::operator << (float const f)
 {
-    FormatToStream(*this, "%f", f);
+    FormatToStream(*this, "%ff", f);
     return *this;    
 }
 
@@ -73,12 +104,17 @@ MemoryOutStream& MemoryOutStream::operator << (void const* p)
     return *this;    
 }
 
-MemoryOutStream& MemoryOutStream::operator << (size_t const s)
+MemoryOutStream& MemoryOutStream::operator << (unsigned int const s)
 {
     FormatToStream(*this, "%u", s);
     return *this;    
 }
 
+MemoryOutStream& MemoryOutStream::operator <<(double const d)
+{
+	FormatToStream(*this, "%f", d);
+	return *this;
+}
 
 int MemoryOutStream::GetCapacity() const
 {
@@ -102,3 +138,6 @@ void MemoryOutStream::GrowBuffer(int const desiredCapacity)
 }
 
 }
+
+
+#endif

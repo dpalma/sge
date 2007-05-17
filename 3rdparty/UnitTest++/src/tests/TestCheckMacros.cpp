@@ -4,7 +4,7 @@
 
 namespace {
 
-TEST(CheckSuceedsOnTrue)
+TEST(CheckSucceedsOnTrue)
 {
     bool failure = true;
     {
@@ -38,7 +38,7 @@ TEST(FailureReportsCorrectTestName)
         CHECK (false);
     }
 
-    CHECK_EQUAL (m_testName, reporter.lastFailedTest);
+    CHECK_EQUAL (m_details.testName, reporter.lastFailedTest);
 }
 
 TEST(CheckFailureIncludesCheckContents)
@@ -82,7 +82,7 @@ TEST(CheckFailureBecauseOfExceptionIncludesCheckContents)
     CHECK (std::strstr(reporter.lastFailedMessage, "ThrowingFunction() == 1"));
 }
 
-TEST(CheckEqualSuceedsOnEqual)
+TEST(CheckEqualSucceedsOnEqual)
 {
     bool failure = true;
     {
@@ -121,17 +121,35 @@ TEST(CheckEqualFailsOnException)
     CHECK (failure);
 }
 
-TEST(CheckEqualFailureContainsCorrectInfo)
+TEST(CheckEqualFailureContainsCorrectDetails)
 {
     int line = 0;
     RecordingReporter reporter;
     {
         UnitTest::TestResults testResults_(&reporter);
+        UnitTest::TestDetails const m_details("testName", "suiteName", "filename", -1);
         CHECK_EQUAL (1, 123);    line = __LINE__;
     }
 
-    CHECK_EQUAL ("CheckEqualFailureContainsCorrectInfo", reporter.lastFailedTest);
-    CHECK_EQUAL (__FILE__, reporter.lastFailedFile);
+    CHECK_EQUAL("testName", reporter.lastFailedTest);
+    CHECK_EQUAL("suiteName", reporter.lastFailedSuite);
+    CHECK_EQUAL ("filename", reporter.lastFailedFile);
+    CHECK_EQUAL (line, reporter.lastFailedLine);
+}
+
+TEST(CheckEqualFailureBecauseOfExceptionContainsCorrectDetails)
+{
+    int line = 0;
+    RecordingReporter reporter;
+    {
+        UnitTest::TestResults testResults_(&reporter);
+        UnitTest::TestDetails const m_details("testName", "suiteName", "filename", -1);
+        CHECK_EQUAL (ThrowingFunction(), 123);    line = __LINE__;
+    }
+
+    CHECK_EQUAL("testName", reporter.lastFailedTest);
+    CHECK_EQUAL("suiteName", reporter.lastFailedSuite);
+    CHECK_EQUAL ("filename", reporter.lastFailedFile);
     CHECK_EQUAL (line, reporter.lastFailedLine);
 }
 
@@ -175,7 +193,7 @@ TEST(CheckEqualDoesNotHaveSideEffectsWhenFailing)
 }
 
 
-TEST(CheckCloseSuceedsOnEqual)
+TEST(CheckCloseSucceedsOnEqual)
 {
     bool failure = true;
     {
@@ -214,17 +232,35 @@ TEST(CheckCloseFailsOnException)
     CHECK (failure);
 }
 
-TEST(CheckCloseFailureContainsCorrectInfo)
+TEST(CheckCloseFailureContainsCorrectDetails)
 {
     int line = 0;
     RecordingReporter reporter;
     {
         UnitTest::TestResults testResults_(&reporter);
+        UnitTest::TestDetails m_details("test", "suite", "filename", -1);
         CHECK_CLOSE (1.0f, 1.1f, 0.01f);    line = __LINE__;
     }
 
-    CHECK_EQUAL ("CheckCloseFailureContainsCorrectInfo", reporter.lastFailedTest);
-    CHECK_EQUAL (__FILE__, reporter.lastFailedFile);
+    CHECK_EQUAL("test", reporter.lastFailedTest);
+    CHECK_EQUAL("suite", reporter.lastFailedSuite);
+    CHECK_EQUAL ("filename", reporter.lastFailedFile);
+    CHECK_EQUAL (line, reporter.lastFailedLine);
+}
+
+TEST(CheckCloseFailureBecauseOfExceptionContainsCorrectDetails)
+{
+    int line = 0;
+    RecordingReporter reporter;
+    {
+        UnitTest::TestResults testResults_(&reporter);
+        UnitTest::TestDetails m_details("closeTest", "closeSuite", "filename", -1);
+        CHECK_CLOSE ((float)ThrowingFunction(), 1.0001f, 0.1f);    line = __LINE__;
+    }
+
+    CHECK_EQUAL("closeTest", reporter.lastFailedTest);
+    CHECK_EQUAL("closeSuite", reporter.lastFailedSuite);
+    CHECK_EQUAL ("filename", reporter.lastFailedFile);
     CHECK_EQUAL (line, reporter.lastFailedLine);
 }
 
@@ -270,15 +306,8 @@ public:
     }
 };
 
-float const* FunctionWithSideEffects2()
-{
-    ++g_sideEffect;
-    static float const data[] = {1,2,3,4};
-    return data;
-}
 
-
-TEST(CheckArrayCloseSuceedsOnEqual)
+TEST(CheckArrayCloseSucceedsOnEqual)
 {
     bool failure = true;
     {
@@ -321,19 +350,38 @@ TEST(CheckArrayCloseFailureIncludesCheckExpectedAndActual)
     CHECK (std::strstr(reporter.lastFailedMessage, "was [ 0 1 3 3 ]"));
 }
 
-TEST(CheckArrayCloseFailureContainsCorrectInfo)
+TEST(CheckArrayCloseFailureContainsCorrectDetails)
 {
     int line = 0;
     RecordingReporter reporter;
     {
         UnitTest::TestResults testResults_(&reporter);
+        UnitTest::TestDetails m_details("arrayCloseTest", "arrayCloseSuite", "filename", -1);
         int const data1[4] = { 0, 1, 2, 3 };
         int const data2[4] = { 0, 1, 3, 3 };
         CHECK_ARRAY_CLOSE (data1, data2, 4, 0.01f);     line = __LINE__;
     }
 
-    CHECK_EQUAL ("CheckArrayCloseFailureContainsCorrectInfo", reporter.lastFailedTest);
-    CHECK_EQUAL (__FILE__, reporter.lastFailedFile);
+    CHECK_EQUAL("arrayCloseTest", reporter.lastFailedTest);
+    CHECK_EQUAL("arrayCloseSuite", reporter.lastFailedSuite);
+    CHECK_EQUAL ("filename", reporter.lastFailedFile);
+    CHECK_EQUAL (line, reporter.lastFailedLine);
+}
+
+TEST(CheckArrayCloseFailureBecauseOfExceptionContainsCorrectDetails)
+{
+    int line = 0;
+    RecordingReporter reporter;
+    {
+        UnitTest::TestResults testResults_(&reporter);
+        UnitTest::TestDetails m_details("arrayCloseTest", "arrayCloseSuite", "filename", -1);
+        int const data[4] = { 0, 1, 2, 3 };
+        CHECK_ARRAY_CLOSE (data, ThrowingObject(), 4, 0.01f);     line = __LINE__;
+    }
+
+    CHECK_EQUAL("arrayCloseTest", reporter.lastFailedTest);
+    CHECK_EQUAL("arrayCloseSuite", reporter.lastFailedSuite);
+    CHECK_EQUAL ("filename", reporter.lastFailedFile);
     CHECK_EQUAL (line, reporter.lastFailedLine);
 }
 
@@ -380,6 +428,102 @@ TEST(CheckArrayCloseFailureOnExceptionIncludesCheckContents)
     CHECK (std::strstr(reporter.lastFailedMessage, "obj"));
 }
 
+
+TEST(CheckArrayEqualSuceedsOnEqual)
+{
+    bool failure = true;
+    {
+        RecordingReporter reporter;
+        UnitTest::TestResults testResults_(&reporter);
+        const float data[4] = { 0, 1, 2, 3 };
+        CHECK_ARRAY_EQUAL (data, data, 4);
+        failure = (testResults_.GetFailureCount() > 0);
+    }
+
+    CHECK (!failure);
+}
+
+TEST(CheckArrayEqualFailsOnNotEqual)
+{
+    bool failure = false;
+    {
+        RecordingReporter reporter;
+        UnitTest::TestResults testResults_(&reporter);
+        int const data1[4] = { 0, 1, 2, 3 };
+        int const data2[4] = { 0, 1, 3, 3 };
+        CHECK_ARRAY_EQUAL (data1, data2, 4);
+        failure = (testResults_.GetFailureCount() > 0);
+    }
+
+    CHECK (failure);
+}
+
+TEST(CheckArrayEqualFailureIncludesCheckExpectedAndActual)
+{
+    RecordingReporter reporter;
+    {
+        UnitTest::TestResults testResults_(&reporter);
+        int const data1[4] = { 0, 1, 2, 3 };
+        int const data2[4] = { 0, 1, 3, 3 };
+        CHECK_ARRAY_EQUAL (data1, data2, 4);
+    }
+
+    CHECK (std::strstr(reporter.lastFailedMessage, "xpected [ 0 1 2 3 ]"));
+    CHECK (std::strstr(reporter.lastFailedMessage, "was [ 0 1 3 3 ]"));
+}
+
+TEST(CheckArrayEqualFailureContainsCorrectInfo)
+{
+    int line = 0;
+    RecordingReporter reporter;
+    {
+        UnitTest::TestResults testResults_(&reporter);
+        int const data1[4] = { 0, 1, 2, 3 };
+        int const data2[4] = { 0, 1, 3, 3 };
+        CHECK_ARRAY_EQUAL (data1, data2, 4);     line = __LINE__;
+    }
+
+    CHECK_EQUAL ("CheckArrayEqualFailureContainsCorrectInfo", reporter.lastFailedTest);
+    CHECK_EQUAL (__FILE__, reporter.lastFailedFile);
+    CHECK_EQUAL (line, reporter.lastFailedLine);
+}
+
+TEST(CheckArrayEqualFailsOnException)
+{
+    bool failure = false;
+    {
+        RecordingReporter reporter;
+        UnitTest::TestResults testResults_(&reporter);
+        const float data[4] = { 0, 1, 2, 3 };
+        ThrowingObject obj;
+        CHECK_ARRAY_EQUAL (data, obj, 3);
+        failure = (testResults_.GetFailureCount() > 0);
+    }
+
+    CHECK (failure);
+}
+
+TEST(CheckArrayEqualFailureOnExceptionIncludesCheckContents)
+{
+    RecordingReporter reporter;
+    {
+        UnitTest::TestResults testResults_(&reporter);
+        const float data[4] = { 0, 1, 2, 3 };
+        ThrowingObject obj;
+        CHECK_ARRAY_EQUAL (data, obj, 3);
+    }
+
+    CHECK (std::strstr(reporter.lastFailedMessage, "data"));
+    CHECK (std::strstr(reporter.lastFailedMessage, "obj"));
+}
+
+float const* FunctionWithSideEffects2()
+{
+    ++g_sideEffect;
+    static float const data[] = {1,2,3,4};
+    return data;
+}
+
 TEST(CheckArrayCloseDoesNotHaveSideEffectsWhenPassing)
 {
     g_sideEffect = 0;
@@ -402,5 +546,165 @@ TEST(CheckArrayCloseDoesNotHaveSideEffectsWhenFailing)
     CHECK_EQUAL (1, g_sideEffect);
 }
 
+class ThrowingObject2D
+{
+public:
+    float* operator[](int) const
+    {
+        throw "Test throw";
+    }
+};
+
+
+TEST(CheckArray2DCloseSucceedsOnEqual)
+{
+    bool failure = true;
+    {
+        RecordingReporter reporter;
+        UnitTest::TestResults testResults_(&reporter);
+        const float data[2][2] = { {0, 1}, {2, 3} };
+        CHECK_ARRAY2D_CLOSE (data, data, 2, 2, 0.01f);
+        failure = (testResults_.GetFailureCount() > 0);
+    }
+
+    CHECK (!failure);
+}
+
+TEST(CheckArray2DCloseFailsOnNotEqual)
+{
+    bool failure = false;
+    {
+        RecordingReporter reporter;
+        UnitTest::TestResults testResults_(&reporter);
+        int const data1[2][2] = { {0, 1}, {2, 3} };
+        int const data2[2][2] = { {0, 1}, {3, 3} };
+        CHECK_ARRAY2D_CLOSE (data1, data2, 2, 2, 0.01f);
+        failure = (testResults_.GetFailureCount() > 0);
+    }
+
+    CHECK (failure);
+}
+
+TEST(CheckArray2DCloseFailureIncludesCheckExpectedAndActual)
+{
+    RecordingReporter reporter;
+    {
+        UnitTest::TestResults testResults_(&reporter);
+        int const data1[2][2] = { {0, 1}, {2, 3} };
+        int const data2[2][2] = { {0, 1}, {3, 3} };
+        CHECK_ARRAY2D_CLOSE (data1, data2, 2, 2, 0.01f);
+    }
+
+    CHECK (std::strstr(reporter.lastFailedMessage, "xpected [ [ 0 1 ] [ 2 3 ] ]"));
+    CHECK (std::strstr(reporter.lastFailedMessage, "was [ [ 0 1 ] [ 3 3 ] ]"));
+}
+
+TEST(CheckArray2DCloseFailureContainsCorrectDetails)
+{
+    int line = 0;
+    RecordingReporter reporter;
+    {
+        UnitTest::TestResults testResults_(&reporter);
+        UnitTest::TestDetails m_details("array2DCloseTest", "array2DCloseSuite", "filename", -1);
+        int const data1[2][2] = { {0, 1}, {2, 3} };
+        int const data2[2][2] = { {0, 1}, {3, 3} };
+        CHECK_ARRAY2D_CLOSE (data1, data2, 2, 2, 0.01f);     line = __LINE__;
+    }
+
+    CHECK_EQUAL("array2DCloseTest", reporter.lastFailedTest);
+    CHECK_EQUAL("array2DCloseSuite", reporter.lastFailedSuite);
+    CHECK_EQUAL ("filename", reporter.lastFailedFile);
+    CHECK_EQUAL (line, reporter.lastFailedLine);
+}
+
+TEST(CheckArray2DCloseFailureBecauseOfExceptionContainsCorrectDetails)
+{
+    int line = 0;
+    RecordingReporter reporter;
+    {
+        UnitTest::TestResults testResults_(&reporter);
+        UnitTest::TestDetails m_details("array2DCloseTest", "array2DCloseSuite", "filename", -1);
+        const float data[2][2] = { {0, 1}, {2, 3} };
+        CHECK_ARRAY2D_CLOSE (data, ThrowingObject2D(), 2, 2, 0.01f);   line = __LINE__;
+    }
+
+    CHECK_EQUAL("array2DCloseTest", reporter.lastFailedTest);
+    CHECK_EQUAL("array2DCloseSuite", reporter.lastFailedSuite);
+    CHECK_EQUAL ("filename", reporter.lastFailedFile);
+    CHECK_EQUAL (line, reporter.lastFailedLine);
+}
+
+TEST(CheckArray2DCloseFailureIncludesTolerance)
+{
+    RecordingReporter reporter;
+    {
+        UnitTest::TestResults testResults_(&reporter);
+        float const data1[2][2] = { {0, 1}, {2, 3} };
+        float const data2[2][2] = { {0, 1}, {3, 3} };
+        CHECK_ARRAY2D_CLOSE (data1, data2, 2, 2, 0.01f);
+    }
+
+    CHECK (std::strstr(reporter.lastFailedMessage, "0.01"));
+}
+
+TEST(CheckArray2DCloseFailsOnException)
+{
+    bool failure = false;
+    {
+        RecordingReporter reporter;
+        UnitTest::TestResults testResults_(&reporter);
+        const float data[2][2] = { {0, 1}, {2, 3} };
+        ThrowingObject2D obj;
+        CHECK_ARRAY2D_CLOSE (data, obj, 2, 2, 0.01f);
+        failure = (testResults_.GetFailureCount() > 0);
+    }
+
+    CHECK (failure);
+}
+
+TEST(CheckArray2DCloseFailureOnExceptionIncludesCheckContents)
+{
+    RecordingReporter reporter;
+    {
+        UnitTest::TestResults testResults_(&reporter);
+        const float data[2][2] = { {0, 1}, {2, 3} };
+        ThrowingObject2D obj;
+        CHECK_ARRAY2D_CLOSE (data, obj, 2, 2, 0.01f);
+    }
+
+    CHECK (std::strstr(reporter.lastFailedMessage, "data"));
+    CHECK (std::strstr(reporter.lastFailedMessage, "obj"));
+}
+
+float const* const* FunctionWithSideEffects3()
+{
+    ++g_sideEffect;
+    static float const data1[] = {0,1};
+    static float const data2[] = {2,3};
+    static const float* const data[] = {data1, data2};
+    return data;
+}
+
+TEST(CheckArray2DCloseDoesNotHaveSideEffectsWhenPassing)
+{
+    g_sideEffect = 0;
+    {
+        UnitTest::TestResults testResults_;
+        const float data[2][2] = { {0, 1}, {2, 3} };
+        CHECK_ARRAY2D_CLOSE (data, FunctionWithSideEffects3(), 2, 2, 0.01f);
+    }
+    CHECK_EQUAL (1, g_sideEffect);
+}
+
+TEST(CheckArray2DCloseDoesNotHaveSideEffectsWhenFailing)
+{
+    g_sideEffect = 0;
+    {
+        UnitTest::TestResults testResults_;
+        const float data[2][2] = { {0, 1}, {3, 3} };
+        CHECK_ARRAY2D_CLOSE (data, FunctionWithSideEffects3(), 2, 2, 0.01f);
+    }
+    CHECK_EQUAL (1, g_sideEffect);
+}
 
 }
