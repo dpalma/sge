@@ -145,10 +145,10 @@ cModel::~cModel()
 
 ///////////////////////////////////////
 
-tResult cModel::Create(const tModelVertices & verts,
-                       const vector<uint16> & indices,
-                       const vector<sModelMesh> & meshes,
-                       const tModelMaterials & materials,
+tResult cModel::Create(const sModelVertex * pVerts, size_t nVerts,
+                       const uint16 * pIndices, size_t nIndices,
+                       const sModelMesh * pMeshes, size_t nMeshes,
+                       const sModelMaterial * pMaterials, size_t nMaterials,
                        IModelSkeleton * pSkeleton,
                        IModel * * ppModel)
 {
@@ -157,10 +157,10 @@ tResult cModel::Create(const tModelVertices & verts,
       return E_POINTER;
    }
 
-   cModel * pModel = new cModel(verts.begin(), verts.end(),
-                                indices.begin(), indices.end(),
-                                meshes.begin(), meshes.end(),
-                                materials.begin(), materials.end(),
+   cModel * pModel = new cModel(pVerts, pVerts + nVerts,
+                                pIndices, pIndices + nIndices,
+                                pMeshes, pMeshes + nMeshes,
+                                pMaterials, pMaterials + nMaterials,
                                 pSkeleton);
    if (pModel == NULL)
    {
@@ -409,6 +409,19 @@ tResult ModelCreateBox(const tVec3 & mins, const tVec3 & maxs, const float color
    }
 
    return pModel.GetPointer(ppModel);
+}
+
+tResult ModelCreate(const sModelVertex * pVerts, size_t nVerts,
+                    const uint16 * pIndices, size_t nIndices,
+                    const sModelMesh * pMeshes, size_t nMeshes,
+                    const sModelMaterial * pMaterials, size_t nMaterials,
+                    IModelSkeleton * pSkeleton, IModel * * ppModel)
+{
+   if (ppModel == NULL)
+   {
+      return E_POINTER;
+   }
+   return cModel::Create(pVerts, nVerts, pIndices, nIndices, pMeshes, nMeshes, pMaterials, nMaterials, pSkeleton, ppModel);
 }
 
 ///////////////////////////////////////////////////////////////////////////////

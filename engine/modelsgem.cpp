@@ -193,19 +193,24 @@ void * ModelSgemLoad(IReader * pReader)
 
    //////////////////////////////
 
+   const std::vector<sModelVertex> & verts = verticesChunk.GetChunkData();
+   const std::vector<uint16> & indices = indicesChunk.GetChunkData();
+   const std::vector<sModelMesh> & meshes = meshesChunk.GetChunkData();
+   const std::vector<sModelMaterial> & materials = materialsChunk.GetChunkData();
+
    IModel * pModel = NULL;
    if (!joints.empty() && !!pSkeleton)
    {
-      if (cModel::Create(verticesChunk.GetChunkData(), indicesChunk.GetChunkData(),
-         meshesChunk.GetChunkData(), materialsChunk.GetChunkData(), pSkeleton, &pModel) == S_OK)
+      if (cModel::Create(&verts[0], verts.size(), &indices[0], indices.size(),
+         &meshes[0], meshes.size(), &materials[0], materials.size(), pSkeleton, &pModel) == S_OK)
       {
          return pModel;
       }
    }
    else
    {
-      if (cModel::Create(verticesChunk.GetChunkData(), indicesChunk.GetChunkData(),
-         meshesChunk.GetChunkData(), materialsChunk.GetChunkData(), NULL, &pModel) == S_OK)
+      if (cModel::Create(&verts[0], verts.size(), &indices[0], indices.size(),
+         &meshes[0], meshes.size(), &materials[0], materials.size(), NULL, &pModel) == S_OK)
       {
          return pModel;
       }

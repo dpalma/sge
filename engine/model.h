@@ -56,10 +56,10 @@ class cModel : public cComObject<IMPLEMENTS(IModel)>
 public:
    virtual ~cModel();
 
-   static tResult Create(const tModelVertices & verts,
-                         const std::vector<uint16> & indices,
-                         const std::vector<sModelMesh> & meshes,
-                         const tModelMaterials & materials,
+   static tResult Create(const sModelVertex * pVerts, size_t nVerts,
+                         const uint16 * pIndices, size_t nIndices,
+                         const sModelMesh * pMeshes, size_t nMeshes,
+                         const sModelMaterial * pMaterials, size_t nMaterials,
                          IModelSkeleton * pSkeleton,
                          IModel * * ppModel);
 

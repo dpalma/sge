@@ -179,6 +179,12 @@ interface IModel : IUnknown
 
 ENGINE_API tResult ModelCreateBox(const tVec3 & mins, const tVec3 & maxs, const float color[4], IModel * * ppModel);
 
+ENGINE_API tResult ModelCreate(const sModelVertex * pVerts, size_t nVerts,
+                               const uint16 * pIndices, size_t nIndices,
+                               const sModelMesh * pMeshes, size_t nMeshes,
+                               const sModelMaterial * pMaterials, size_t nMaterials,
+                               IModelSkeleton * pSkeleton, IModel * * ppModel);
+
 ////////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_MODELAPI_H

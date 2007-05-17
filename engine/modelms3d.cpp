@@ -625,14 +625,16 @@ void * ModelMs3dLoad(IReader * pReader)
    IModel * pModel = NULL;
    if (nJoints > 0)
    {
-      if (cModel::Create(vertices, indices, meshes2, materials, pSkeleton, &pModel) == S_OK)
+      if (cModel::Create(&vertices[0], vertices.size(), &indices[0], indices.size(),
+         &meshes2[0], meshes2.size(), &materials[0], materials.size(), pSkeleton, &pModel) == S_OK)
       {
          return pModel;
       }
    }
    else
    {
-      if (cModel::Create(vertices, indices, meshes2, materials, NULL, &pModel) == S_OK)
+      if (cModel::Create(&vertices[0], vertices.size(), &indices[0], indices.size(),
+         &meshes2[0], meshes2.size(), &materials[0], materials.size(), NULL, &pModel) == S_OK)
       {
          return pModel;
       }
