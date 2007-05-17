@@ -3,9 +3,11 @@
 
 #include "stdhdr.h"
 
-#include "model.h"
 #include "ms3dread.h"
 #include "ms3d.h"
+
+#include "engine/modelapi.h"
+#include "engine/modeltypes.h"
 
 #include "render/renderapi.h"
 
@@ -15,7 +17,6 @@
 #include "tech/readwriteapi.h"
 #include "tech/globalobj.h"
 #include "tech/filespec.h"
-#include "tech/techmath.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -615,7 +616,7 @@ void * ModelMs3dLoad(IReader * pReader)
             }
          }
 
-         for_each(interpolators.begin(), interpolators.end(), mem_fn(&IUnknown::Release));
+         for_each(interpolators.begin(), interpolators.end(), mem_fn(&IModelKeyFrameInterpolator::Release));
       }
    }
 
@@ -625,7 +626,7 @@ void * ModelMs3dLoad(IReader * pReader)
    IModel * pModel = NULL;
    if (nJoints > 0)
    {
-      if (cModel::Create(&vertices[0], vertices.size(), &indices[0], indices.size(),
+      if (ModelCreate(&vertices[0], vertices.size(), &indices[0], indices.size(),
          &meshes2[0], meshes2.size(), &materials[0], materials.size(), pSkeleton, &pModel) == S_OK)
       {
          return pModel;
@@ -633,7 +634,7 @@ void * ModelMs3dLoad(IReader * pReader)
    }
    else
    {
-      if (cModel::Create(&vertices[0], vertices.size(), &indices[0], indices.size(),
+      if (ModelCreate(&vertices[0], vertices.size(), &indices[0], indices.size(),
          &meshes2[0], meshes2.size(), &materials[0], materials.size(), NULL, &pModel) == S_OK)
       {
          return pModel;
@@ -659,39 +660,5 @@ tResult ModelMs3dResourceRegister()
    UseGlobal(ResourceManager);
    return pResourceManager->RegisterFormat(kRT_Model, _T("ms3d"), ModelMs3dLoad, NULL, ModelMs3dUnload);
 }
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-#ifdef HAVE_UNITTESTPP
-
-TEST(ParseAnimDescs)
-{
-   static const tChar animDescTest[] =
-   {
-      _T("2,20,walk\n")
-      _T("22,36,walk\n")
-      _T("38,47,damage\n")
-      _T("48,57,damage\n")
-      _T("59,75,death\n")
-      _T("91,103,death\n")
-      _T("106,115,attack\n")
-      _T("117,128,attack\n")
-      _T("129,136,attack\n")
-      _T("137,169,idle\n")
-      _T("170,200,idle\n")
-   };
-
-   vector<sModelAnimationDesc> animDescs;
-   ParseAnimDescs(animDescTest, &animDescs);
-
-   CHECK_EQUAL(11, animDescs.size());
-
-   CHECK_EQUAL(kMAT_Death, animDescs[4].type);
-   CHECK_EQUAL(59, animDescs[4].start);
-   CHECK_EQUAL(75, animDescs[4].end);
-}
-
-#endif // HAVE_UNITTESTPP
 
 ////////////////////////////////////////////////////////////////////////////////

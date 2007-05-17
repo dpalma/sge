@@ -5,6 +5,10 @@
 
 #include "model.h"
 
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
+#endif
+
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
@@ -411,6 +415,8 @@ tResult ModelCreateBox(const tVec3 & mins, const tVec3 & maxs, const float color
    return pModel.GetPointer(ppModel);
 }
 
+///////////////////////////////////////////////////////////////////////////////
+
 tResult ModelCreate(const sModelVertex * pVerts, size_t nVerts,
                     const uint16 * pIndices, size_t nIndices,
                     const sModelMesh * pMeshes, size_t nMeshes,
@@ -423,5 +429,38 @@ tResult ModelCreate(const sModelVertex * pVerts, size_t nVerts,
    }
    return cModel::Create(pVerts, nVerts, pIndices, nIndices, pMeshes, nMeshes, pMaterials, nMaterials, pSkeleton, ppModel);
 }
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_UNITTESTPP
+
+TEST(ParseAnimDescs)
+{
+   static const tChar animDescTest[] =
+   {
+      _T("2,20,walk\n")
+      _T("22,36,walk\n")
+      _T("38,47,damage\n")
+      _T("48,57,damage\n")
+      _T("59,75,death\n")
+      _T("91,103,death\n")
+      _T("106,115,attack\n")
+      _T("117,128,attack\n")
+      _T("129,136,attack\n")
+      _T("137,169,idle\n")
+      _T("170,200,idle\n")
+   };
+
+   vector<sModelAnimationDesc> animDescs;
+   ParseAnimDescs(animDescTest, &animDescs);
+
+   CHECK_EQUAL(11, animDescs.size());
+
+   CHECK_EQUAL(kMAT_Death, animDescs[4].type);
+   CHECK_EQUAL(59, animDescs[4].start);
+   CHECK_EQUAL(75, animDescs[4].end);
+}
+
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////
