@@ -160,12 +160,12 @@ tResult cSelectTool::OnDragEnd(const cEditorMouseEvent & mouseEvent)
 {
    if (m_selectType == kST_Ray)
    {
-      UseGlobal(EntityManager);
-      pEntityManager->DeselectAll();
+      UseGlobal(EntitySelection);
+      pEntitySelection->DeselectAll();
       cAutoIPtr<IEntity> pEntity;
       if (GetRayHitEntity(mouseEvent, &pEntity) == S_OK)
       {
-         pEntityManager->Select(pEntity);
+         pEntitySelection->Select(pEntity);
       }
    }
    return S_EDITOR_TOOL_HANDLED;

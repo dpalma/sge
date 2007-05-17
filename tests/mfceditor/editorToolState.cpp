@@ -8,11 +8,15 @@
 
 #include <algorithm>
 
+#include <boost/bind.hpp>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #endif
+
+using namespace boost;
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -169,7 +173,7 @@ tResult cEditorToolState::GetActiveTool(IEditorTool * * ppTool)
 
 tResult cEditorToolState::SetActiveTool(IEditorTool * pTool)
 {
-   ForEachConnection(&IEditorToolStateListener::OnActiveToolChange, pTool, AccessActiveTool());
+   ForEachConnection(bind(&IEditorToolStateListener::OnActiveToolChange, _1, pTool, AccessActiveTool()));
 
    if (!!m_pActiveTool)
    {
