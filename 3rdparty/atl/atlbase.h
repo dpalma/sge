@@ -284,13 +284,15 @@ struct _stdcallthunk
 };
 #pragma pack(pop)
 
-PVOID __stdcall __AllocStdCallThunk(VOID);
-VOID  __stdcall __FreeStdCallThunk(PVOID);
-
-#define AllocStdCallThunk() __AllocStdCallThunk()
-#define FreeStdCallThunk(p) __FreeStdCallThunk(p)
-
-#pragma comment(lib, "atlthunk.lib")
+//PVOID __stdcall __AllocStdCallThunk(VOID);
+//VOID  __stdcall __FreeStdCallThunk(PVOID);
+//
+//#define AllocStdCallThunk() __AllocStdCallThunk()
+//#define FreeStdCallThunk(p) __FreeStdCallThunk(p)
+//
+//#pragma comment(lib, "atlthunk.lib")
+#define AllocStdCallThunk() HeapAlloc(GetProcessHeap(), 0, sizeof(_stdcallthunk))
+#define FreeStdCallThunk(p) HeapFree(GetProcessHeap(), 0, p)
 
 #elif defined (_M_AMD64)
 #pragma pack(push,2)
