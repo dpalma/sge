@@ -476,6 +476,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\ms3dmodel\ms3dheader.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\ms3dmodel\ms3djoint.cpp"
 				>
 			</File>
@@ -542,6 +546,10 @@
 			</File>
 			<File
 				RelativePath="..\..\ms3dmodel\ms3dgroup.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\ms3dmodel\ms3dheader.h"
 				>
 			</File>
 			<File

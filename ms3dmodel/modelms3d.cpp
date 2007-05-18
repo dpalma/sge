@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "ms3dgroup.h"
+#include "ms3dheader.h"
 #include "ms3djoint.h"
 #include "ms3dread.h"
 #include "ms3d.h"
@@ -80,10 +81,6 @@ static void MatrixFromAngles(tVec3 angles, tMatrix4 * pMatrix)
    temp2.Multiply(rotX, pMatrix);
 }
 
-
-static const char g_ms3dId[] = "MS3D000000";
-static const int g_ms3dVer = 4; // ms3d files this version or later are supported
-
 void * ModelMs3dLoad(IReader * pReader)
 {
    if (pReader == NULL)
@@ -96,10 +93,14 @@ void * ModelMs3dLoad(IReader * pReader)
    //////////////////////////////
    // Read the header
 
-   ms3d_header_t header;
-   if (pReader->Read(&header, sizeof(header)) != S_OK ||
-      memcmp(g_ms3dId, header.id, _countof(header.id)) != 0 ||
-      header.version < g_ms3dVer)
+   cMs3dHeader header;
+   if (pReader->Read(&header) != S_OK)
+   {
+      ErrorMsg("Error reading MS3D file header\n");
+      return NULL;
+   }
+
+   if (!header.EqualTo(cMs3dHeader::gm_ms3dHeader))
    {
       ErrorMsg("Bad MS3D file header\n");
       return NULL;
