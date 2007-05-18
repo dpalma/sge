@@ -1,5 +1,5 @@
 ///////////////////////////////////////////////////////////////////////////////
-// $Id: stdhdr.h 1505 2006-10-26 14:52:07Z dpalma $
+// $Id$
 
 #ifndef INCLUDED_STDHDR_H
 #define INCLUDED_STDHDR_H
