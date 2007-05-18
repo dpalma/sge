@@ -3,15 +3,11 @@
 	ProjectType="Visual C++"
 	Version="7.10"
 	Name="3rdpartyUnitTest++"
-	ProjectGUID="{FB6B440F-2457-4526-A399-5B17A7A8BC9D}"
-	>
+	ProjectGUID="{FB6B440F-2457-4526-A399-5B17A7A8BC9D}">
 	<Platforms>
 		<Platform
-			Name="Win32"
-		/>
+			Name="Win32"/>
 	</Platforms>
-	<ToolFiles>
-	</ToolFiles>
 	<Configurations>
 		<Configuration
 			Name="StaticRelease|Win32"
@@ -19,71 +15,49 @@
 			IntermediateDirectory=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++"
 			ConfigurationType="4"
 			UseOfMFC="0"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories=".\..\..\3rdparty\UnitTest++\src"
-				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,_USRDLL,NO_AUTO_EXPORTS,_CRT_SECURE_NO_DEPRECATE"
-				StringPooling="true"
+				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,_USRDLL,NO_AUTO_EXPORTS,_CRT_SECURE_NO_DEPRECATE,UNITTEST_USE_CUSTOM_STREAMS"
+				StringPooling="TRUE"
 				RuntimeLibrary="0"
-				EnableFunctionLevelLinking="true"
+				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++/UnitTest++.pch"
 				AssemblerListingLocation=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++/"
 				ObjectFile=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++/"
 				WarningLevel="4"
-				SuppressStartupBanner="true"
-				CompileAs="0"
-			/>
+				SuppressStartupBanner="TRUE"
+				CompileAs="0"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1036"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
 				OutputFile="..\..\Build.vc71\$(ConfigurationName)\UnitTest++.lib"
-				SuppressStartupBanner="true"
-			/>
+				SuppressStartupBanner="TRUE"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1036"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
@@ -91,28 +65,12 @@
 			IntermediateDirectory=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++"
 			ConfigurationType="2"
 			UseOfMFC="0"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories=".\..\..\3rdparty\UnitTest++\src"
-				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;UNITTEST_USE_CUSTOM_STREAMS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
@@ -121,58 +79,45 @@
 				ObjectFile=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++/"
 				WarningLevel="4"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="4"
-				CompileAs="0"
-			/>
+				CompileAs="0"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1036"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				OutputFile="..\..\Build.vc71\$(ConfigurationName)/UnitTest++.dll"
 				LinkIncremental="2"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile="..\..\3rdparty\UnitTest++\src\UnitTest++.def"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc71\$(ConfigurationName)/UnitTest++.pdb"
-				GenerateMapFile="true"
+				GenerateMapFile="TRUE"
 				MapFileName=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++/UnitTest++.map"
-				ImportLibrary=".\..\..\Build.vc71\$(ConfigurationName)/UnitTest++.lib"
-			/>
+				ImportLibrary=".\..\..\Build.vc71\$(ConfigurationName)/UnitTest++.lib"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCManifestTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1036"/>
 			<Tool
-				Name="VCAppVerifierTool"
-			/>
+				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
+				Name="VCXMLDataGeneratorTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="StaticDebug|Win32"
@@ -180,28 +125,12 @@
 			IntermediateDirectory=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++"
 			ConfigurationType="4"
 			UseOfMFC="0"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				AdditionalIncludeDirectories=".\..\..\3rdparty\UnitTest++\src"
-				PreprocessorDefinitions="_DEBUG,WIN32,_WINDOWS,_USRDLL,_CRT_SECURE_NO_DEPRECATE,NO_AUTO_EXPORTS"
+				PreprocessorDefinitions="_DEBUG,WIN32,_WINDOWS,_USRDLL,_CRT_SECURE_NO_DEPRECATE,NO_AUTO_EXPORTS,UNITTEST_USE_CUSTOM_STREAMS"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
 				UsePrecompiledHeader="0"
@@ -210,41 +139,35 @@
 				ObjectFile=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++/"
 				WarningLevel="4"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="4"
-				CompileAs="0"
-			/>
+				CompileAs="0"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="_DEBUG"
-				Culture="1036"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLibrarianTool"
 				OutputFile="..\..\Build.vc71\StaticDebug\UnitTest++.lib"
-				SuppressStartupBanner="true"
-			/>
+				SuppressStartupBanner="TRUE"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1036"/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Release|Win32"
@@ -252,87 +175,58 @@
 			IntermediateDirectory=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++"
 			ConfigurationType="2"
 			UseOfMFC="0"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories=".\..\..\3rdparty\UnitTest++\src"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE"
-				StringPooling="true"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;UNITTEST_USE_CUSTOM_STREAMS"
+				StringPooling="TRUE"
 				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
+				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++/UnitTest++.pch"
 				AssemblerListingLocation=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++/"
 				ObjectFile=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++/"
 				WarningLevel="4"
-				SuppressStartupBanner="true"
-				CompileAs="0"
-			/>
+				SuppressStartupBanner="TRUE"
+				CompileAs="0"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1036"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				OutputFile="..\..\Build.vc71\$(ConfigurationName)/UnitTest++.dll"
 				LinkIncremental="1"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile="..\..\3rdparty\UnitTest++\src\UnitTest++.def"
 				ProgramDatabaseFile=".\..\..\Build.vc71\$(ConfigurationName)/UnitTest++.pdb"
-				GenerateMapFile="true"
+				GenerateMapFile="TRUE"
 				MapFileName=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++/UnitTest++.map"
-				ImportLibrary=".\..\..\Build.vc71\$(ConfigurationName)/UnitTest++.lib"
-			/>
+				ImportLibrary=".\..\..\Build.vc71\$(ConfigurationName)/UnitTest++.lib"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCManifestTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1036"/>
 			<Tool
-				Name="VCAppVerifierTool"
-			/>
+				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
+				Name="VCXMLDataGeneratorTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 		<Configuration
 			Name="Opt|Win32"
@@ -340,217 +234,181 @@
 			IntermediateDirectory=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++"
 			ConfigurationType="2"
 			UseOfMFC="0"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
+			CharacterSet="2">
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories=".\..\..\3rdparty\UnitTest++\src"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE"
-				StringPooling="true"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;UNITTEST_USE_CUSTOM_STREAMS"
+				StringPooling="TRUE"
 				RuntimeLibrary="3"
-				EnableFunctionLevelLinking="true"
+				EnableFunctionLevelLinking="TRUE"
 				UsePrecompiledHeader="0"
 				PrecompiledHeaderFile=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++/UnitTest++.pch"
 				AssemblerListingLocation=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++/"
 				ObjectFile=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++/"
 				ProgramDataBaseFileName=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++/"
 				WarningLevel="4"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				DebugInformationFormat="3"
-				CompileAs="0"
-			/>
+				CompileAs="0"/>
 			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				PreprocessorDefinitions="NDEBUG"
-				Culture="1036"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
+				Name="VCCustomBuildTool"/>
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
 				OutputFile="..\..\Build.vc71\$(ConfigurationName)/UnitTest++.dll"
 				LinkIncremental="1"
-				SuppressStartupBanner="true"
+				SuppressStartupBanner="TRUE"
 				ModuleDefinitionFile="..\..\3rdparty\UnitTest++\src\UnitTest++.def"
-				GenerateDebugInformation="true"
+				GenerateDebugInformation="TRUE"
 				ProgramDatabaseFile=".\..\..\Build.vc71\$(ConfigurationName)/UnitTest++.pdb"
-				GenerateMapFile="true"
+				GenerateMapFile="TRUE"
 				MapFileName=".\..\..\Build.vc71\$(ConfigurationName)\UnitTest++/UnitTest++.map"
-				ImportLibrary=".\..\..\Build.vc71\$(ConfigurationName)/UnitTest++.lib"
-			/>
+				ImportLibrary=".\..\..\Build.vc71\$(ConfigurationName)/UnitTest++.lib"/>
 			<Tool
-				Name="VCALinkTool"
-			/>
+				Name="VCMIDLTool"/>
 			<Tool
-				Name="VCManifestTool"
-			/>
+				Name="VCPostBuildEventTool"/>
 			<Tool
-				Name="VCXDCMakeTool"
-			/>
+				Name="VCPreBuildEventTool"/>
 			<Tool
-				Name="VCBscMakeTool"
-			/>
+				Name="VCPreLinkEventTool"/>
 			<Tool
-				Name="VCFxCopTool"
-			/>
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1036"/>
 			<Tool
-				Name="VCAppVerifierTool"
-			/>
+				Name="VCWebServiceProxyGeneratorTool"/>
 			<Tool
-				Name="VCWebDeploymentTool"
-			/>
+				Name="VCXMLDataGeneratorTool"/>
 			<Tool
-				Name="VCPostBuildEventTool"
-			/>
+				Name="VCWebDeploymentTool"/>
+			<Tool
+				Name="VCManagedWrapperGeneratorTool"/>
+			<Tool
+				Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
 		</Configuration>
 	</Configurations>
 	<References>
 	</References>
 	<Files>
 		<Filter
-			Name="Win32"
-			>
+			Name="Win32">
 			<File
-				RelativePath="..\..\3rdparty\UnitTest++\src\Win32\TimeHelpers.cpp"
-				>
+				RelativePath="..\..\3rdparty\UnitTest++\src\Win32\TimeHelpers.cpp">
 			</File>
 			<File
-				RelativePath="..\..\3rdparty\UnitTest++\src\Win32\TimeHelpers.h"
-				>
+				RelativePath="..\..\3rdparty\UnitTest++\src\Win32\TimeHelpers.h">
 			</File>
 		</Filter>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\AssertException.cpp"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\AssertException.cpp">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\AssertException.h"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\AssertException.h">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\CheckMacros.h"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\CheckMacros.h">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\Checks.cpp"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\Checks.cpp">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\Checks.h"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\Checks.h">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\Config.h"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\Config.h">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\MemoryOutStream.cpp"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\DeferredTestReporter.cpp">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\MemoryOutStream.h"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\DeferredTestReporter.h">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\ReportAssert.cpp"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\DeferredTestResult.cpp">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\ReportAssert.h"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\DeferredTestResult.h">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\Test.cpp"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\MemoryOutStream.cpp">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\Test.h"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\MemoryOutStream.h">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\TestList.cpp"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\ReportAssert.cpp">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\TestList.h"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\ReportAssert.h">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\TestMacros.h"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\Test.cpp">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\TestReporter.cpp"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\Test.h">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\TestReporter.h"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\TestDetails.cpp">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\TestReporterStdout.cpp"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\TestDetails.h">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\TestReporterStdout.h"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\TestList.cpp">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\TestResults.cpp"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\TestList.h">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\TestResults.h"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\TestMacros.h">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\TestRunner.cpp"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\TestReporter.cpp">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\TestRunner.h"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\TestReporter.h">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\TimeConstraint.cpp"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\TestReporterStdout.cpp">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\TimeConstraint.h"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\TestReporterStdout.h">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\TimeHelpers.h"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\TestResults.cpp">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\UnitTest++.def"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\TestResults.h">
 		</File>
 		<File
-			RelativePath="..\..\3rdparty\UnitTest++\src\UnitTest++.h"
-			>
+			RelativePath="..\..\3rdparty\UnitTest++\src\TestRunner.cpp">
+		</File>
+		<File
+			RelativePath="..\..\3rdparty\UnitTest++\src\TestRunner.h">
+		</File>
+		<File
+			RelativePath="..\..\3rdparty\UnitTest++\src\TimeConstraint.cpp">
+		</File>
+		<File
+			RelativePath="..\..\3rdparty\UnitTest++\src\TimeConstraint.h">
+		</File>
+		<File
+			RelativePath="..\..\3rdparty\UnitTest++\src\TimeHelpers.h">
+		</File>
+		<File
+			RelativePath="..\..\3rdparty\UnitTest++\src\UnitTest++.def">
+		</File>
+		<File
+			RelativePath="..\..\3rdparty\UnitTest++\src\UnitTest++.h">
+		</File>
+		<File
+			RelativePath="..\..\3rdparty\UnitTest++\src\XmlTestReporter.cpp">
+		</File>
+		<File
+			RelativePath="..\..\3rdparty\UnitTest++\src\XmlTestReporter.h">
 		</File>
 	</Files>
 	<Globals>

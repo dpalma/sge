@@ -309,7 +309,7 @@ tResult cGUIEventRouterFixture::RemoveEventListener(IGUIEventListener * pListene
 // Remove an element during execution of its event handler; Check that nothing
 // bad happens and that the element actually does get removed
 
-TEST_FIXTURE(cGUIEventRouterFixture, RemoveElementFromEventHandler)
+namespace
 {
    class cRemoveElement : public cGUITestElement
    {
@@ -328,7 +328,10 @@ TEST_FIXTURE(cGUIEventRouterFixture, RemoveElementFromEventHandler)
          return S_OK;
       }
    };
+}
 
+TEST_FIXTURE(cGUIEventRouterFixture, RemoveElementFromEventHandler)
+{
    // Element at position (1,1); size 1x1 pixels
    cAutoIPtr<IGUIElement> pTestElement;
    CHECK_EQUAL(S_OK, CreateTestElement<cRemoveElement>(_T("removeElement"), tGUIPoint(1,1), tGUISize(1,1), &pTestElement));

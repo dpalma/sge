@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="opengl32.lib glu32.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib"
+				AdditionalDependencies="opengl32.lib glu32.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib $(OutDir)\UnitTest++.lib"
 				OutputFile=".\..\..\Build.vc71\Opt/engine.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
@@ -161,7 +161,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="opengl32.lib glu32.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib"
+				AdditionalDependencies="opengl32.lib glu32.lib $(OutDir)\tinyxml.lib $(OutDir)\glew.lib $(OutDir)\UnitTest++.lib"
 				OutputFile=".\..\..\Build.vc71\Debug/engine.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="TRUE"
