@@ -20,12 +20,10 @@ sourceFiles = Split("""
    heightmap.cpp
    model.cpp
    modelanim.cpp
-   modelms3d.cpp
    modelsgem.cpp
    modelskeleton.cpp
    modeltypes.cpp
    modelutils.cpp
-   ms3dread.cpp
    saveloadmanager.cpp
    scenario.cpp
    terrain.cpp

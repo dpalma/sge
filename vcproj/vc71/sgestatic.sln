@@ -82,6 +82,10 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "renderdx", "renderdx.vcproj
 	ProjectSection(ProjectDependencies) = postProject
 	EndProjectSection
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ms3dmodel", "ms3dmodel.vcproj", "{CE4EDBE2-75ED-40F0-A4D5-E878F7456336}"
+	ProjectSection(ProjectDependencies) = postProject
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfiguration) = preSolution
 		Debug = Debug
@@ -241,6 +245,16 @@ Global
 		{E90B95DE-C73A-498D-93F4-CFA262779282}.StaticDebug.Build.0 = StaticDebug|Win32
 		{E90B95DE-C73A-498D-93F4-CFA262779282}.StaticRelease.ActiveCfg = StaticRelease|Win32
 		{E90B95DE-C73A-498D-93F4-CFA262779282}.StaticRelease.Build.0 = StaticRelease|Win32
+		{CE4EDBE2-75ED-40F0-A4D5-E878F7456336}.Debug.ActiveCfg = Debug|Win32
+		{CE4EDBE2-75ED-40F0-A4D5-E878F7456336}.Debug.Build.0 = Debug|Win32
+		{CE4EDBE2-75ED-40F0-A4D5-E878F7456336}.Opt.ActiveCfg = Opt|Win32
+		{CE4EDBE2-75ED-40F0-A4D5-E878F7456336}.Opt.Build.0 = Opt|Win32
+		{CE4EDBE2-75ED-40F0-A4D5-E878F7456336}.Release.ActiveCfg = Release|Win32
+		{CE4EDBE2-75ED-40F0-A4D5-E878F7456336}.Release.Build.0 = Release|Win32
+		{CE4EDBE2-75ED-40F0-A4D5-E878F7456336}.StaticDebug.ActiveCfg = StaticDebug|Win32
+		{CE4EDBE2-75ED-40F0-A4D5-E878F7456336}.StaticDebug.Build.0 = StaticDebug|Win32
+		{CE4EDBE2-75ED-40F0-A4D5-E878F7456336}.StaticRelease.ActiveCfg = StaticRelease|Win32
+		{CE4EDBE2-75ED-40F0-A4D5-E878F7456336}.StaticRelease.Build.0 = StaticRelease|Win32
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 	EndGlobalSection

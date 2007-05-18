@@ -6,6 +6,8 @@
 #include "ms3dread.h"
 #include "ms3d.h"
 
+#include "ms3dmodel/ms3dmodelapi.h"
+
 #include "engine/modelapi.h"
 #include "engine/modeltypes.h"
 
@@ -655,9 +657,12 @@ void ModelMs3dUnload(void * pData)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-tResult ModelMs3dResourceRegister()
+tResult Ms3dModelResourceRegister(IResourceManager * pResourceManager)
 {
-   UseGlobal(ResourceManager);
+   if (pResourceManager == NULL)
+   {
+      return E_POINTER;
+   }
    return pResourceManager->RegisterFormat(kRT_Model, _T("ms3d"), ModelMs3dLoad, NULL, ModelMs3dUnload);
 }
 

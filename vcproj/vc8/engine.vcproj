@@ -532,10 +532,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\engine\modelms3d.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\engine\modelsgem.cpp"
 				>
 			</File>
@@ -549,10 +545,6 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\modelutils.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\engine\ms3dread.cpp"
 				>
 			</File>
 			<File
@@ -686,14 +678,6 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\modelutils.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\engine\ms3d.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\engine\ms3dread.h"
 				>
 			</File>
 			<File

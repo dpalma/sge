@@ -1,0 +1,6 @@
+///////////////////////////////////////////////////////////////////////////////
+// $Id: stdhdr.cpp 1505 2006-10-26 14:52:07Z dpalma $
+//
+// Generates the pre-compiled header file
+
+#include "stdhdr.h"

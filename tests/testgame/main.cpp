@@ -12,6 +12,7 @@
 #include "engine/terrainapi.h"
 #include "gui/guiapi.h"
 #include "gui/guielementapi.h"
+#include "ms3dmodel/ms3dmodelapi.h"
 #include "network/netapi.h"
 #include "platform/inputapi.h"
 #include "platform/keys.h"
@@ -424,6 +425,8 @@ tResult cMainInitTask::SetupResourceManager()
    UseGlobal(ResourceManager);
    pResourceManager->RegisterFormat(kRT_Dictionary, _T("cfg"),
       DictionaryLoad, NULL, DictionaryUnload, g_pConfig);
+
+   Ms3dModelResourceRegister(pResourceManager);
 
    cStr temp;
    if (ConfigGet(_T("data"), &temp) == S_OK)
