@@ -21,7 +21,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\api"
+				AdditionalIncludeDirectories="..\..\3rdparty\ms3dsdk\msLib,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\api"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;MS3DMODEL_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;HAVE_UNITTESTPP"
 				StringPooling="TRUE"
 				RuntimeLibrary="3"
@@ -90,7 +90,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\api"
+				AdditionalIncludeDirectories="..\..\3rdparty\ms3dsdk\msLib,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\api"
 				PreprocessorDefinitions="NO_AUTO_EXPORTS,_DEBUG,_USRDLL,MS3DMODEL_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL,HAVE_UNITTESTPP"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -142,7 +142,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\api"
+				AdditionalIncludeDirectories="..\..\3rdparty\ms3dsdk\msLib,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\api"
 				PreprocessorDefinitions="_DEBUG;_USRDLL;MS3DMODEL_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL;HAVE_UNITTESTPP"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
@@ -210,7 +210,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\api"
+				AdditionalIncludeDirectories="..\..\3rdparty\ms3dsdk\msLib,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\api"
 				PreprocessorDefinitions="NDEBUG,NO_AUTO_EXPORTS,_USRDLL,MS3DMODEL_EXPORTS,WIN32,_WINDOWS,STRICT,TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
@@ -262,7 +262,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\api"
+				AdditionalIncludeDirectories="..\..\3rdparty\ms3dsdk\msLib,..\..\3rdparty\UnitTest++\src,..\..\3rdparty\tinyxml,..\..\api"
 				PreprocessorDefinitions="NDEBUG;_USRDLL;MS3DMODEL_EXPORTS;WIN32;_WINDOWS;STRICT;TIXML_USE_STL"
 				StringPooling="TRUE"
 				RuntimeLibrary="2"
@@ -330,7 +330,16 @@
 				RelativePath="..\..\ms3dmodel\modelms3d.cpp">
 			</File>
 			<File
+				RelativePath="..\..\ms3dmodel\ms3dgroup.cpp">
+			</File>
+			<File
+				RelativePath="..\..\ms3dmodel\ms3djoint.cpp">
+			</File>
+			<File
 				RelativePath="..\..\ms3dmodel\ms3dread.cpp">
+			</File>
+			<File
+				RelativePath="..\..\ms3dmodel\ms3dvertex.cpp">
 			</File>
 			<File
 				RelativePath="..\..\ms3dmodel\stdhdr.cpp">
@@ -373,7 +382,16 @@
 				RelativePath="..\..\ms3dmodel\ms3d.h">
 			</File>
 			<File
+				RelativePath="..\..\ms3dmodel\ms3dgroup.h">
+			</File>
+			<File
+				RelativePath="..\..\ms3dmodel\ms3djoint.h">
+			</File>
+			<File
 				RelativePath="..\..\ms3dmodel\ms3dread.h">
+			</File>
+			<File
+				RelativePath="..\..\ms3dmodel\ms3dvertex.h">
 			</File>
 			<File
 				RelativePath="..\..\ms3dmodel\stdhdr.h">
