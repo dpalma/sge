@@ -153,20 +153,13 @@ void * ModelMs3dLoad(IReader * pReader)
    //////////////////////////////
    // Read the triangles
 
-   uint16 nTriangles;
-   if (pReader->Read(&nTriangles, sizeof(nTriangles)) != S_OK
-      || nTriangles == 0)
+   vector<cMs3dTriangle> ms3dTris;
+   if (ReadVector<cMs3dTriangle, uint16>(pReader, &ms3dTris) != S_OK)
    {
       return NULL;
    }
 
-   LocalMsg1("%d Triangles\n", nTriangles);
-
-   vector<ms3d_triangle_t> tris(nTriangles);
-   if (pReader->Read(&tris[0], nTriangles * sizeof(ms3d_triangle_t)) != S_OK)
-   {
-      return NULL;
-   }
+   LocalMsg1("%d Triangles\n", ms3dTris.size());
 
    //////////////////////////////
    // Re-map the vertices based on the triangles because Milkshape file
@@ -182,23 +175,23 @@ void * ModelMs3dLoad(IReader * pReader)
    typedef multimap<uint, uint> tVertexMap;
    tVertexMap vertexMap;
 
-   vector<ms3d_triangle_t>::const_iterator iter;
-   for (iter = tris.begin(); iter != tris.end(); iter++)
+   vector<cMs3dTriangle>::const_iterator iter = ms3dTris.begin(), end = ms3dTris.end();
+   for (; iter != end; ++iter)
    {
-      for (int k = 0; k < 3; k++)
+      for (int k = 0; k < 3; ++k)
       {
          vertexMapper.MapVertex(
-            iter->vertexIndices[k], 
-            iter->vertexNormals[k], 
-            iter->s[k], 
-            iter->t[k]);
+            iter->GetVertexIndex(k), 
+            iter->GetVertexNormal(k), 
+            iter->GetS(k), 
+            iter->GetT(k));
 
-         uint index = iter->vertexIndices[k];
+         uint index = iter->GetVertexIndex(k);
          if (vertexMap.find(index) == vertexMap.end())
          {
-            vertices[index].u = iter->s[k];
-            vertices[index].v = 1 - iter->t[k];
-            vertices[index].normal = iter->vertexNormals[k];
+            vertices[index].u = iter->GetS(k);
+            vertices[index].v = 1 - iter->GetT(k);
+            vertices[index].normal = iter->GetVertexNormal(k);
             vertices[index].pos = ms3dVerts[index].GetPosition();
             vertices[index].bone = ms3dVerts[index].GetBone();
             vertexMap.insert(make_pair(index,index));
@@ -206,9 +199,9 @@ void * ModelMs3dLoad(IReader * pReader)
          else
          {
             sModelVertex vert = vertices[index];
-            vert.u = iter->s[k];
-            vert.v = 1 - iter->t[k];
-            vert.normal = iter->vertexNormals[k];
+            vert.u = iter->GetS(k);
+            vert.v = 1 - iter->GetT(k);
+            vert.normal = iter->GetVertexNormal(k);
             uint iVertMatch = ~0u;
             tVertexMap::iterator viter = vertexMap.lower_bound(index);
             tVertexMap::iterator vend = vertexMap.upper_bound(index);
@@ -263,43 +256,33 @@ void * ModelMs3dLoad(IReader * pReader)
    //////////////////////////////
    // Read the groups
 
-   uint16 nGroups;
-   if (pReader->Read(&nGroups, sizeof(nGroups)) != S_OK)
+   vector<cMs3dGroup> ms3dGroups;
+   if (ReadVector<cMs3dGroup, uint16>(pReader, &ms3dGroups) != S_OK)
    {
       return NULL;
    }
 
-   LocalMsg1("%d Groups\n", nGroups);
-
-   uint i;
-   cMs3dGroup groups[MAX_GROUPS];
-   for (i = 0; i < nGroups; i++)
-   {
-      if (pReader->Read(&groups[i]) != S_OK)
-      {
-         return NULL;
-      }
-   }
+   LocalMsg1("%d Groups\n", ms3dGroups.size());
 
    //////////////////////////////
    // Prepare the groups for the model
 
-   vector<sModelMesh> meshes2(nGroups);
+   vector<sModelMesh> meshes2(ms3dGroups.size());
    vector<uint16> indices;
 
-   for (i = 0; i < nGroups; i++)
+   for (uint i = 0; i < ms3dGroups.size(); i++)
    {
-      const cMs3dGroup & group = groups[i];
+      const cMs3dGroup & group = ms3dGroups[i];
 
       vector<uint16> mappedIndices;
       for (uint j = 0; j < group.GetNumTriangles(); j++)
       {
-         const ms3d_triangle_t & tri = tris[group.GetTriangle(j)];
+         const cMs3dTriangle & tri = ms3dTris[group.GetTriangle(j)];
          for (int k = 0; k < 3; k++)
          {
             mappedIndices.push_back(vertexMapper.MapVertex(
-               tri.vertexIndices[k], tri.vertexNormals[k], 
-               tri.s[k], tri.t[k]));
+               tri.GetVertexIndex(k), tri.GetVertexNormal(k), 
+               tri.GetS(k), tri.GetT(k)));
          }
       }
 
@@ -326,7 +309,7 @@ void * ModelMs3dLoad(IReader * pReader)
 
    if (nMaterials > 0)
    {
-      for (i = 0; i < nMaterials; i++)
+      for (uint i = 0; i < nMaterials; i++)
       {
          ms3d_material_t ms3dMat;
          if (pReader->Read(&ms3dMat, sizeof(ms3d_material_t)) != S_OK)
@@ -381,7 +364,7 @@ void * ModelMs3dLoad(IReader * pReader)
 
       map<cStr, int> jointNameMap;
 
-      for (i = 0; i < nJoints; i++)
+      for (uint i = 0; i < nJoints; i++)
       {
          if (pReader->Read(&ms3dJoints[i]) != S_OK)
          {
@@ -393,7 +376,7 @@ void * ModelMs3dLoad(IReader * pReader)
 
       vector<cMs3dJoint>::iterator iter = ms3dJoints.begin();
       vector<cMs3dJoint>::iterator end = ms3dJoints.end();
-      for (i = 0; iter != end; iter++, i++)
+      for (uint i = 0; iter != end; iter++, i++)
       {
          LocalMsg1("Joint %d\n", i);
 

@@ -29,10 +29,10 @@ public:
 
    enum Index { Zero = 0, One = 1, Two = 2 };
 
-   uint16 GetVertexIndex(Index index) const;
-   const float * GetVertexNormal(Index index) const;
-   float GetS(Index index) const;
-   float GetT(Index index) const;
+   uint16 GetVertexIndex(int index) const;
+   const float * GetVertexNormal(int index) const;
+   float GetS(int index) const;
+   float GetT(int index) const;
 
 private:
    uint16 m_flags;
@@ -46,30 +46,30 @@ private:
 
 ///////////////////////////////////////
 
-inline uint16 cMs3dTriangle::GetVertexIndex(Index index) const
+inline uint16 cMs3dTriangle::GetVertexIndex(int index) const
 {
-   return m_vertexIndices[index];
+   return m_vertexIndices[static_cast<Index>(index)];
 }
 
 ///////////////////////////////////////
 
-inline const float * cMs3dTriangle::GetVertexNormal(Index index) const
+inline const float * cMs3dTriangle::GetVertexNormal(int index) const
 {
-   return m_vertexNormals[index];
+   return m_vertexNormals[static_cast<Index>(index)];
 }
 
 ///////////////////////////////////////
 
-inline float cMs3dTriangle::GetS(Index index) const
+inline float cMs3dTriangle::GetS(int index) const
 {
-   return m_s[index];
+   return m_s[static_cast<Index>(index)];
 }
 
 ///////////////////////////////////////
 
-inline float cMs3dTriangle::GetT(Index index) const
+inline float cMs3dTriangle::GetT(int index) const
 {
-   return m_t[index];
+   return m_t[static_cast<Index>(index)];
 }
 
 ///////////////////////////////////////
