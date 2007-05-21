@@ -214,6 +214,20 @@ inline tResult cReadWriteOps<byte>::Write(IWriter * pWriter, byte value)
    return pWriter->Write(&value, sizeof(value));
 }
 
+///////////////////////////////////////
+
+template <>
+inline tResult cReadWriteOps<char>::Read(IReader * pReader, char * pValue)
+{
+   return pReader->Read(pValue, sizeof(*pValue));
+}
+
+template <>
+inline tResult cReadWriteOps<char>::Write(IWriter * pWriter, char value)
+{
+   return pWriter->Write(&value, sizeof(value));
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 
 template <>

@@ -377,6 +377,9 @@
 						UsePrecompiledHeader="1"/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="..\..\ms3dmodel\vertexmapper.cpp">
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -401,6 +404,9 @@
 			</File>
 			<File
 				RelativePath="..\..\ms3dmodel\stdhdr.h">
+			</File>
+			<File
+				RelativePath="..\..\ms3dmodel\vertexmapper.h">
 			</File>
 		</Filter>
 		<Filter

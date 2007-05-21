@@ -6,8 +6,8 @@
 #include "ms3dgroup.h"
 #include "ms3dheader.h"
 #include "ms3djoint.h"
-#include "ms3dread.h"
 #include "ms3d.h"
+#include "vertexmapper.h"
 
 #include "ms3dmodel/ms3dmodelapi.h"
 
@@ -81,6 +81,38 @@ static void MatrixFromAngles(tVec3 angles, tMatrix4 * pMatrix)
    temp2.Multiply(rotX, pMatrix);
 }
 
+template <typename T, typename SIZE_T>
+static tResult ReadVector(IReader * pReader, std::vector<T> * pVector)
+{
+   if (pReader == NULL || pVector == NULL)
+   {
+      return E_POINTER;
+   }
+
+   SIZE_T count;
+   if (pReader->Read(&count, sizeof(count)) != S_OK)
+   {
+      return E_FAIL;
+   }
+
+   if (count == 0)
+   {
+      return S_FALSE;
+   }
+
+   pVector->resize(count);
+
+   for (SIZE_T i = 0; i < count; ++i)
+   {
+      if (pReader->Read(&((*pVector)[i])) != S_OK)
+      {
+         return NULL;
+      }
+   }
+
+   return S_OK;
+}
+
 void * ModelMs3dLoad(IReader * pReader)
 {
    if (pReader == NULL)
@@ -109,20 +141,26 @@ void * ModelMs3dLoad(IReader * pReader)
    //////////////////////////////
    // Read the vertices
 
-   uint16 nVertices;
-   if (pReader->Read(&nVertices, sizeof(nVertices)) != S_OK
-      || nVertices == 0)
+   //uint16 nVertices;
+   //if (pReader->Read(&nVertices, sizeof(nVertices)) != S_OK
+   //   || nVertices == 0)
+   //{
+   //   return NULL;
+   //}
+
+   vector<cMs3dVertex> ms3dVerts;
+   if (ReadVector<cMs3dVertex, uint16>(pReader, &ms3dVerts) != S_OK)
    {
       return NULL;
    }
 
-   LocalMsg1("%d Vertices\n", nVertices);
+   LocalMsg1("%d Vertices\n", ms3dVerts.size());
 
-   vector<ms3d_vertex_t> ms3dVerts(nVertices);
-   if (pReader->Read(&ms3dVerts[0], nVertices * sizeof(ms3d_vertex_t)) != S_OK)
-   {
-      return NULL;
-   }
+   //vector<ms3d_vertex_t> ms3dVerts(nVertices);
+   //if (pReader->Read(&ms3dVerts[0], nVertices * sizeof(ms3d_vertex_t)) != S_OK)
+   //{
+   //   return NULL;
+   //}
 
    //////////////////////////////
    // Read the triangles
@@ -149,9 +187,9 @@ void * ModelMs3dLoad(IReader * pReader)
    // TODO: clean up this vertex mapping code !!!!!!!
 
    vector<sModelVertex> vertices;
-   vertices.resize(nVertices);
+   vertices.resize(ms3dVerts.size());
 
-   cMs3dVertexMapper vertexMapper(ms3dVerts);
+   cVertexMapper vertexMapper(ms3dVerts);
 
    typedef multimap<uint, uint> tVertexMap;
    tVertexMap vertexMap;
@@ -173,8 +211,8 @@ void * ModelMs3dLoad(IReader * pReader)
             vertices[index].u = iter->s[k];
             vertices[index].v = 1 - iter->t[k];
             vertices[index].normal = iter->vertexNormals[k];
-            vertices[index].pos = ms3dVerts[index].vertex;
-            vertices[index].bone = ms3dVerts[index].boneId;
+            vertices[index].pos = ms3dVerts[index].GetPosition();
+            vertices[index].bone = ms3dVerts[index].GetBone();
             vertexMap.insert(make_pair(index,index));
          }
          else

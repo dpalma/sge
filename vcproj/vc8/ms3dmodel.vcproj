@@ -484,10 +484,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\ms3dmodel\ms3dread.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\ms3dmodel\ms3dvertex.cpp"
 				>
 			</File>
@@ -535,6 +531,10 @@
 					/>
 				</FileConfiguration>
 			</File>
+			<File
+				RelativePath="..\..\ms3dmodel\vertexmapper.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -557,15 +557,15 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\ms3dmodel\ms3dread.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\ms3dmodel\ms3dvertex.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\ms3dmodel\stdhdr.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\ms3dmodel\vertexmapper.h"
 				>
 			</File>
 		</Filter>

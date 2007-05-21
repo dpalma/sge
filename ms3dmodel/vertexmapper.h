@@ -1,14 +1,12 @@
 ///////////////////////////////////////////////////////////////////////////////
 // $Id$
 
-#ifndef INCLUDED_MS3DREAD_H
-#define INCLUDED_MS3DREAD_H
+#ifndef INCLUDED_VERTEXMAPPER_H
+#define INCLUDED_VERTEXMAPPER_H
 
-#include "ms3d.h"
 #include "ms3dvertex.h"
 
-#include "tech/readwriteapi.h"
-#include "tech/vec3.h"
+#include "engine/modeltypes.h"
 
 #include <map>
 #include <vector>
@@ -19,14 +17,13 @@
 
 ///////////////////////////////////////////////////////////////////////////////
 //
-// CLASS: cMs3dVertexMapper
+// CLASS: cVertexMapper
 //
 
-class cMs3dVertexMapper
+class cVertexMapper
 {
 public:
-   cMs3dVertexMapper(const ms3d_vertex_t * pVertices, size_t nVertices);
-   cMs3dVertexMapper(const std::vector<ms3d_vertex_t> & vertices);
+   cVertexMapper(const std::vector<cMs3dVertex> & vertices);
 
    uint MapVertex(uint originalIndex, const float normal[3], float s, float t);
 
@@ -35,7 +32,7 @@ public:
 
 private:
    uint m_nOriginalVertices;
-   std::vector<sMs3dVertex> m_vertices;
+   std::vector<sModelVertex> m_vertices;
    std::vector<bool> m_haveVertex;
    std::map<uint, uint> m_remap;
 };
@@ -43,4 +40,4 @@ private:
 
 ///////////////////////////////////////////////////////////////////////////////
 
-#endif // !INCLUDED_MS3DREAD_H
+#endif // !INCLUDED_VERTEXMAPPER_H

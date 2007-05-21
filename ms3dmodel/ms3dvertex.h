@@ -4,25 +4,11 @@
 #ifndef INCLUDED_MS3DVERTEX_H
 #define INCLUDED_MS3DVERTEX_H
 
-#include "ms3d.h"
-
 #include "tech/readwriteapi.h"
-#include "tech/vec3.h"
-
-#include <vector>
 
 #ifdef _MSC_VER
 #pragma once
 #endif
-
-
-struct sMs3dVertex
-{
-   tVec3::value_type u, v;
-   tVec3 normal;
-   tVec3 pos;
-   float bone;
-};
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -34,15 +20,45 @@ class cMs3dVertex
 {
    friend class cReadWriteOps<cMs3dVertex>;
 
-   void operator =(const cMs3dVertex &);
-
 public:
    cMs3dVertex();
    cMs3dVertex(const cMs3dVertex & other);
    ~cMs3dVertex();
 
+   const cMs3dVertex & operator =(const cMs3dVertex &);
+
+   enum Flags
+   {
+      None           = 0,
+      Selected       = 1,
+      Hidden         = 2,
+      Selected2      = 4,
+      Dirty          = 8,
+   };
+
+   const float * GetPosition() const;
+   int8 GetBone() const;
+
 private:
+   byte m_flags;
+   float m_vertex[3];
+   int8 m_boneId;
+   byte m_referenceCount;
 };
+
+///////////////////////////////////////
+
+inline const float * cMs3dVertex::GetPosition() const
+{
+   return m_vertex;
+}
+
+///////////////////////////////////////
+
+inline int8 cMs3dVertex::GetBone() const
+{
+   return m_boneId;
+}
 
 ///////////////////////////////////////
 

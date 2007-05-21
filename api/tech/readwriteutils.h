@@ -89,10 +89,10 @@ tResult cReadWriteOps< std::vector<T> >::Write(IWriter * pWriter, const std::vec
       for (uint i = 0; i < values.size(); ++i)
       {
          result = pWriter->Write(values[i]);
-	 if (result != S_OK)
-	 {
-	    break;
-	 }
+         if (result != S_OK)
+         {
+            break;
+         }
       }
    }
    return result;
