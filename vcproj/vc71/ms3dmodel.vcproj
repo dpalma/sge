@@ -339,7 +339,7 @@
 				RelativePath="..\..\ms3dmodel\ms3djoint.cpp">
 			</File>
 			<File
-				RelativePath="..\..\ms3dmodel\ms3dread.cpp">
+				RelativePath="..\..\ms3dmodel\ms3dtriangle.cpp">
 			</File>
 			<File
 				RelativePath="..\..\ms3dmodel\ms3dvertex.cpp">
@@ -397,7 +397,7 @@
 				RelativePath="..\..\ms3dmodel\ms3djoint.h">
 			</File>
 			<File
-				RelativePath="..\..\ms3dmodel\ms3dread.h">
+				RelativePath="..\..\ms3dmodel\ms3dtriangle.h">
 			</File>
 			<File
 				RelativePath="..\..\ms3dmodel\ms3dvertex.h">

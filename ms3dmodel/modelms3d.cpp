@@ -6,6 +6,7 @@
 #include "ms3dgroup.h"
 #include "ms3dheader.h"
 #include "ms3djoint.h"
+#include "ms3dtriangle.h"
 #include "ms3d.h"
 #include "vertexmapper.h"
 
@@ -141,13 +142,6 @@ void * ModelMs3dLoad(IReader * pReader)
    //////////////////////////////
    // Read the vertices
 
-   //uint16 nVertices;
-   //if (pReader->Read(&nVertices, sizeof(nVertices)) != S_OK
-   //   || nVertices == 0)
-   //{
-   //   return NULL;
-   //}
-
    vector<cMs3dVertex> ms3dVerts;
    if (ReadVector<cMs3dVertex, uint16>(pReader, &ms3dVerts) != S_OK)
    {
@@ -155,12 +149,6 @@ void * ModelMs3dLoad(IReader * pReader)
    }
 
    LocalMsg1("%d Vertices\n", ms3dVerts.size());
-
-   //vector<ms3d_vertex_t> ms3dVerts(nVertices);
-   //if (pReader->Read(&ms3dVerts[0], nVertices * sizeof(ms3d_vertex_t)) != S_OK)
-   //{
-   //   return NULL;
-   //}
 
    //////////////////////////////
    // Read the triangles

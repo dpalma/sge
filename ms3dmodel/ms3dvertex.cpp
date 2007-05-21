@@ -4,8 +4,7 @@
 #include "stdhdr.h"
 
 #include "ms3dvertex.h"
-
-#include "tech/vec3.h"
+#include "ms3dflags.h"
 
 #include "tech/dbgalloc.h" // must be last header
 
@@ -18,7 +17,7 @@
 ///////////////////////////////////////
 
 cMs3dVertex::cMs3dVertex()
- : m_flags(None)
+ : m_flags(kMs3dFlagNone)
  , m_boneId(-1)
  , m_referenceCount(0)
 {

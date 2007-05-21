@@ -27,15 +27,6 @@ public:
 
    const cMs3dVertex & operator =(const cMs3dVertex &);
 
-   enum Flags
-   {
-      None           = 0,
-      Selected       = 1,
-      Hidden         = 2,
-      Selected2      = 4,
-      Dirty          = 8,
-   };
-
    const float * GetPosition() const;
    int8 GetBone() const;
 
