@@ -4,6 +4,8 @@
 #ifndef INCLUDED_MS3DJOINT_H
 #define INCLUDED_MS3DJOINT_H
 
+#include "ms3dmodeldll.h"
+
 #include "tech/readwriteapi.h"
 
 #include <vector>
@@ -28,12 +30,18 @@ struct sMs3dPositionKeyframe
 
 #pragma pack(pop)
 
+template class MS3DMODEL_API std::allocator<sMs3dRotationKeyframe>;
+template class MS3DMODEL_API std::allocator<sMs3dPositionKeyframe>;
+
+template class MS3DMODEL_API std::vector<sMs3dRotationKeyframe>;
+template class MS3DMODEL_API std::vector<sMs3dPositionKeyframe>;
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cMs3dJoint
 //
 
-class cMs3dJoint
+class MS3DMODEL_API cMs3dJoint
 {
    friend class cReadWriteOps<cMs3dJoint>;
 
@@ -106,7 +114,7 @@ inline const std::vector<sMs3dPositionKeyframe> & cMs3dJoint::GetKeyFramesTrans(
 ///////////////////////////////////////
 
 template <>
-class cReadWriteOps<cMs3dJoint>
+class MS3DMODEL_API cReadWriteOps<cMs3dJoint>
 {
 public:
    static tResult Read(IReader * pReader, cMs3dJoint * pJoint);

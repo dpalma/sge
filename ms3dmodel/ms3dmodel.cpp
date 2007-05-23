@@ -5,11 +5,11 @@
 
 #include "ms3dgroup.h"
 #include "ms3dheader.h"
-#include "ms3djoint.h"
 #include "ms3dmaterial.h"
 #include "ms3dtriangle.h"
 #include "vertexmapper.h"
 
+#include "ms3dmodel/ms3djoint.h"
 #include "ms3dmodel/ms3dmodelapi.h"
 
 #include "engine/modelapi.h"

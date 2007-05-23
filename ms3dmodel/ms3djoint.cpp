@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "ms3djoint.h"
+#include "ms3dmodel/ms3djoint.h"
 
 #include "tech/dbgalloc.h" // must be last header
 

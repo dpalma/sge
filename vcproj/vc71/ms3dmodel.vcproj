@@ -327,9 +327,6 @@
 			Name="Source Files"
 			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
 			<File
-				RelativePath="..\..\ms3dmodel\modelms3d.cpp">
-			</File>
-			<File
 				RelativePath="..\..\ms3dmodel\ms3dgroup.cpp">
 			</File>
 			<File
@@ -340,6 +337,9 @@
 			</File>
 			<File
 				RelativePath="..\..\ms3dmodel\ms3dmaterial.cpp">
+			</File>
+			<File
+				RelativePath="..\..\ms3dmodel\ms3dmodel.cpp">
 			</File>
 			<File
 				RelativePath="..\..\ms3dmodel\ms3dtriangle.cpp">
@@ -397,9 +397,6 @@
 				RelativePath="..\..\ms3dmodel\ms3dheader.h">
 			</File>
 			<File
-				RelativePath="..\..\ms3dmodel\ms3djoint.h">
-			</File>
-			<File
 				RelativePath="..\..\ms3dmodel\ms3dmaterial.h">
 			</File>
 			<File
@@ -417,6 +414,9 @@
 		</Filter>
 		<Filter
 			Name="API">
+			<File
+				RelativePath="..\..\api\ms3dmodel\ms3djoint.h">
+			</File>
 			<File
 				RelativePath="..\..\api\ms3dmodel\ms3dmodelapi.h">
 			</File>
