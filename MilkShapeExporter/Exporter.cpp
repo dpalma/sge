@@ -24,6 +24,8 @@
 
 #include "tech/dbgalloc.h" // must be last header
 
+using namespace std;
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -31,8 +33,8 @@
 //
 
 cExportAnimation::cExportAnimation(eModelAnimationType type,
-                                   std::vector<tModelKeyFrameVector>::const_iterator firstKFV,
-                                   std::vector<tModelKeyFrameVector>::const_iterator lastKFV)
+                                   vector<tModelKeyFrameVector>::const_iterator firstKFV,
+                                   vector<tModelKeyFrameVector>::const_iterator lastKFV)
  : m_type(type)
  , m_keyFrameVectors(firstKFV, lastKFV)
 {
@@ -94,34 +96,34 @@ void cExporter::PreProcess()
    memset(szComment, 0, sizeof(szComment));
    msModel_GetComment(m_pModel, szComment, _countof(szComment));
 
-   std::vector<sModelAnimationDesc> animDescs;
+   vector<sModelAnimationDesc> animDescs;
    ParseAnimDescs(szComment, &animDescs);
 
    int nTotalFrames = msModel_GetTotalFrames(m_pModel);
 
-   std::vector<sModelAnimationDesc>::const_iterator iter = animDescs.begin(), end = animDescs.end();
+   vector<sModelAnimationDesc>::const_iterator iter = animDescs.begin(), end = animDescs.end();
    for (; iter != end; ++iter)
    {
       const sModelAnimationDesc & animDesc = *iter;
 
-      std::vector<tModelKeyFrameVector> animKeyFrames(m_tempJoints.size());
+      vector<tModelKeyFrameVector> animKeyFrames(m_tempJoints.size());
 
       for (uint i = 0; i < m_tempJoints.size(); ++i)
       {
-         const std::vector<msRotationKey> & rotKeys = m_tempJoints[i].GetRotationKeys();
-         const std::vector<msPositionKey> & posKeys = m_tempJoints[i].GetPositionKeys();
+         const vector<sMs3dRotationKeyframe> & rotKeys = m_tempJoints[i].GetRotationKeys();
+         const vector<sMs3dPositionKeyframe> & posKeys = m_tempJoints[i].GetPositionKeys();
 
          if (rotKeys.size() == posKeys.size())
          {
-            std::vector<sModelKeyFrame> jointAnimKeyFrames;
+            vector<sModelKeyFrame> jointAnimKeyFrames;
 
             int iStart = -1, iEnd = -1;
             for (uint j = 0; j < rotKeys.size(); ++j)
             {
-               const msRotationKey & rotKey = rotKeys[j];
-               const msPositionKey & posKey = posKeys[j];
-               uint rotFrame = FloatToInt(rotKey.fTime);
-               uint posFrame = FloatToInt(posKey.fTime);
+               const sMs3dRotationKeyframe & rotKey = rotKeys[j];
+               const sMs3dPositionKeyframe & posKey = posKeys[j];
+               uint rotFrame = FloatToInt(rotKey.time);
+               uint posFrame = FloatToInt(posKey.time);
                Assert(rotFrame == posFrame);
                if (rotFrame == animDesc.start)
                {
@@ -130,9 +132,9 @@ void cExporter::PreProcess()
                if (rotFrame >= animDesc.start)
                {
                   sModelKeyFrame keyFrame;
-                  keyFrame.time = rotKey.fTime / 24; // 24 frames per second
-                  keyFrame.translation = tVec3(posKey.Position);
-                  keyFrame.rotation = QuatFromEulerAngles(tVec3(rotKey.Rotation));
+                  keyFrame.time = rotKey.time / 24; // 24 frames per second
+                  keyFrame.translation = tVec3(posKey.position);
+                  keyFrame.rotation = QuatFromEulerAngles(tVec3(rotKey.rotation));
                   jointAnimKeyFrames.push_back(keyFrame);
                }
                if (rotFrame >= animDesc.end)
@@ -145,7 +147,7 @@ void cExporter::PreProcess()
             Assert(jointAnimKeyFrames.size() == (iEnd - iStart + 1));
 
             animKeyFrames[i].resize(jointAnimKeyFrames.size());
-            std::copy(jointAnimKeyFrames.begin(), jointAnimKeyFrames.end(), animKeyFrames[i].begin());
+            copy(jointAnimKeyFrames.begin(), jointAnimKeyFrames.end(), animKeyFrames[i].begin());
          }
       }
 
@@ -191,21 +193,21 @@ tResult cExporter::ExportMesh(IWriter * pWriter)
 
    tResult result = E_FAIL;
 
-   typedef cModelChunk< std::vector<sModelJoint> > tJointArrayChunk;
+   typedef cModelChunk< vector<sModelJoint> > tJointArrayChunk;
    cModelChunk<tJointArrayChunk> skeletonChunk(MODEL_SKELETON_CHUNK,
       tJointArrayChunk(MODEL_JOINT_ARRAY_CHUNK, m_modelJoints));
 
    if (pWriter->Write(cModelChunk<NoChunkData>(MODEL_FILE_ID_CHUNK)) == S_OK
       && pWriter->Write(cModelChunk<uint>(MODEL_VERSION_CHUNK, 1)) == S_OK
-      && pWriter->Write(cModelChunk< std::vector<sModelVertex> >(MODEL_VERTEX_ARRAY_CHUNK, m_vertices)) == S_OK
-      && pWriter->Write(cModelChunk< std::vector<uint16> >(MODEL_INDEX16_ARRAY_CHUNK, m_indices)) == S_OK
-      && pWriter->Write(cModelChunk< std::vector<sModelMesh> >(MODEL_MESH_ARRAY_CHUNK, m_modelMeshes)) == S_OK
-      && pWriter->Write(cModelChunk< std::vector<sModelMaterial> >(MODEL_MATERIAL_ARRAY_CHUNK, m_materials)) == S_OK
+      && pWriter->Write(cModelChunk< vector<sModelVertex> >(MODEL_VERTEX_ARRAY_CHUNK, m_vertices)) == S_OK
+      && pWriter->Write(cModelChunk< vector<uint16> >(MODEL_INDEX16_ARRAY_CHUNK, m_indices)) == S_OK
+      && pWriter->Write(cModelChunk< vector<sModelMesh> >(MODEL_MESH_ARRAY_CHUNK, m_modelMeshes)) == S_OK
+      && pWriter->Write(cModelChunk< vector<sModelMaterial> >(MODEL_MATERIAL_ARRAY_CHUNK, m_materials)) == S_OK
       && pWriter->Write(skeletonChunk) == S_OK)
    {
       result = S_OK;
 
-      std::vector<cExportAnimation>::const_iterator iter = m_animSeqs.begin(), end = m_animSeqs.end();
+      vector<cExportAnimation>::const_iterator iter = m_animSeqs.begin(), end = m_animSeqs.end();
       for (; iter != end; ++iter)
       {
          result = pWriter->Write(cModelChunk<cExportAnimation>(MODEL_ANIMATION_SEQUENCE_CHUNK, *iter));
@@ -216,13 +218,13 @@ tResult cExporter::ExportMesh(IWriter * pWriter)
 }
 
 void cExporter::CollectMeshes(msModel * pModel,
-                              std::vector<sModelVertex> * pVertices,
-                              std::vector<uint16> * pIndices,
-                              std::vector<sModelMesh> * pModelMeshes)
+                              vector<sModelVertex> * pVertices,
+                              vector<uint16> * pIndices,
+                              vector<sModelMesh> * pModelMeshes)
 {
    int nMeshes = msModel_GetMeshCount(pModel);
 
-   typedef std::map<std::pair<uint16, uint16>, uint16> tVertexMap;
+   typedef map<pair<uint16, uint16>, uint16> tVertexMap;
    tVertexMap vertexMap;
 
    for (int i = 0; i < nMeshes; ++i)
@@ -235,8 +237,8 @@ void cExporter::CollectMeshes(msModel * pModel,
          word meshVertexBase = pVertices->size();
          CollectMeshVertices(pMesh, pVertices);
 
-         std::set<uint8> meshBones;
-         std::vector<sModelVertex>::iterator iter = pVertices->begin() + meshVertexBase;
+         set<uint8> meshBones;
+         vector<sModelVertex>::iterator iter = pVertices->begin() + meshVertexBase;
          for (; iter != pVertices->end(); ++iter)
          {
             meshBones.insert((uint8)iter->bone);
@@ -247,10 +249,10 @@ void cExporter::CollectMeshes(msModel * pModel,
             WarnMsg1("Mesh uses %d bones\n", meshBones.size());
          }
 
-         std::vector<tVec3> normals;
+         vector<tVec3> normals;
          CollectMeshNormals(pMesh, &normals);
 
-         std::vector<uint16> mappedIndices;
+         vector<uint16> mappedIndices;
 
          int nTris = msMesh_GetTriangleCount(pMesh);
 
@@ -268,7 +270,7 @@ void cExporter::CollectMeshes(msModel * pModel,
                   vertexIndices[k] += meshVertexBase;
                   normalIndices[k] += meshVertexBase;
 
-                  std::pair<uint16, uint16> p = std::make_pair(vertexIndices[k], normalIndices[k]);
+                  pair<uint16, uint16> p = make_pair(vertexIndices[k], normalIndices[k]);
 
                   tVertexMap::iterator f = vertexMap.find(p);
                   if (f != vertexMap.end())
@@ -302,8 +304,8 @@ void cExporter::CollectMeshes(msModel * pModel,
             // Should be only one strip since "stitch strips" was set to true
             Assert(nPrimGroups == 1);
 
-            std::vector<uint16> strippedIndices(pPrimGroups->numIndices);
-            std::copy(&pPrimGroups->indices[0], &pPrimGroups->indices[pPrimGroups->numIndices], strippedIndices.begin());
+            vector<uint16> strippedIndices(pPrimGroups->numIndices);
+            copy(&pPrimGroups->indices[0], &pPrimGroups->indices[pPrimGroups->numIndices], strippedIndices.begin());
 
             //PrimitiveGroup * pPrimGroup = pPrimGroups;
             //for (int j = 0; j < nPrimGroups; ++j, ++pPrimGroup)
@@ -342,7 +344,7 @@ void cExporter::CollectMeshes(msModel * pModel,
    }
 }
 
-void cExporter::CollectMeshVertices(msMesh * pMesh, std::vector<sModelVertex> * pVertices)
+void cExporter::CollectMeshVertices(msMesh * pMesh, vector<sModelVertex> * pVertices)
 {
    int nVertices = msMesh_GetVertexCount(pMesh);
 
@@ -366,7 +368,7 @@ void cExporter::CollectMeshVertices(msMesh * pMesh, std::vector<sModelVertex> * 
    }
 }
 
-void cExporter::CollectMeshNormals(msMesh * pMesh, std::vector<tVec3> * pNormals)
+void cExporter::CollectMeshNormals(msMesh * pMesh, vector<tVec3> * pNormals)
 {
    int nNormals = msMesh_GetVertexNormalCount(pMesh);
 
@@ -380,7 +382,7 @@ void cExporter::CollectMeshNormals(msMesh * pMesh, std::vector<tVec3> * pNormals
    }
 }
 
-void cExporter::CollectModelMaterials(msModel * pModel, std::vector<sModelMaterial> * pMaterials)
+void cExporter::CollectModelMaterials(msModel * pModel, vector<sModelMaterial> * pMaterials)
 {
    int nMaterials = msModel_GetMaterialCount(pModel);
 
@@ -414,7 +416,7 @@ void cExporter::CollectModelMaterials(msModel * pModel, std::vector<sModelMateri
    }
 }
 
-void cExporter::CollectJoints(msModel * pModel, std::vector<cIntermediateJoint> * pTempJoints, std::vector<sModelJoint> * pModelJoints)
+void cExporter::CollectJoints(msModel * pModel, vector<cMs3dJoint> * pTempJoints, vector<sModelJoint> * pModelJoints)
 {
    int nBones = msModel_GetBoneCount(pModel);
 
@@ -422,7 +424,7 @@ void cExporter::CollectJoints(msModel * pModel, std::vector<cIntermediateJoint> 
    {
       pTempJoints->resize(nBones);
 
-      std::map<cStr, int> jointNameMap; // map name to index
+      map<cStr, int> jointNameMap; // map name to index
 
       for (int i = 0; i < nBones; ++i)
       {
@@ -433,13 +435,13 @@ void cExporter::CollectJoints(msModel * pModel, std::vector<cIntermediateJoint> 
             continue;
          }
 
-         (*pTempJoints)[i] = cIntermediateJoint(pBone);
+         (*pTempJoints)[i] = cMs3dJoint(pBone);
 
-         jointNameMap.insert(std::make_pair(pBone->szName, i));
+         jointNameMap.insert(make_pair(pBone->szName, i));
       }
 
-      std::vector<cIntermediateJoint>::iterator iter = pTempJoints->begin();
-      for (; iter != pTempJoints->end(); ++iter)
+      vector<cMs3dJoint>::iterator iter = pTempJoints->begin(), end = pTempJoints->end();
+      for (; iter != end; ++iter)
       {
          sModelJoint modelJoint;
          modelJoint.parentIndex = -1;
@@ -448,7 +450,7 @@ void cExporter::CollectJoints(msModel * pModel, std::vector<cIntermediateJoint> 
 
          if (strlen(iter->GetParentName()) > 0)
          {
-            std::map<cStr, int>::iterator found = jointNameMap.find(iter->GetParentName());
+            map<cStr, int>::iterator found = jointNameMap.find(iter->GetParentName());
             if (found != jointNameMap.end())
             {
                modelJoint.parentIndex = found->second;

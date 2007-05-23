@@ -5,6 +5,8 @@
 
 #include "ms3dmodel/ms3djoint.h"
 
+#include "msLib.h"
+
 #include "tech/dbgalloc.h" // must be last header
 
 
@@ -18,6 +20,36 @@
 cMs3dJoint::cMs3dJoint()
  : m_flags(0)
 {
+}
+
+///////////////////////////////////////
+// TODO: UNTESTED
+
+cMs3dJoint::cMs3dJoint(msBone * pBone)
+ : m_flags(pBone->nFlags)
+{
+   memcpy(m_name, pBone->szName, sizeof(m_name));
+   memcpy(m_parentName, pBone->szParentName, sizeof(m_parentName));
+   memcpy(rotation, pBone->Rotation, sizeof(rotation));
+   memcpy(position, pBone->Position, sizeof(position));
+
+   keyFramesRot.reserve(pBone->nNumRotationKeys);
+   for (int i = 0; i < pBone->nNumRotationKeys; ++i)
+   {
+      sMs3dRotationKeyframe rk;
+      rk.time = pBone->pRotationKeys[i].fTime;
+      memcpy(rk.rotation, pBone->pRotationKeys[i].Rotation, sizeof(rk.rotation));
+      keyFramesRot.push_back(rk);
+   }
+
+   keyFramesTrans.reserve(pBone->nNumPositionKeys);
+   for (int i = 0; i < pBone->nNumPositionKeys; ++i)
+   {
+      sMs3dPositionKeyframe pk;
+      pk.time = pBone->pRotationKeys[i].fTime;
+      memcpy(pk.position, pBone->pPositionKeys[i].Position, sizeof(pk.position));
+      keyFramesTrans.push_back(pk);
+   }
 }
 
 ///////////////////////////////////////

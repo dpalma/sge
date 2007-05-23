@@ -380,13 +380,13 @@ void * ModelMs3dLoad(IReader * pReader)
             }
          }
 
-         AssertMsg(iter->GetKeyFramesRot().size() == iter->GetKeyFramesTrans().size(),
+         AssertMsg(iter->GetRotationKeys().size() == iter->GetPositionKeys().size(),
             _T("Should have been rejected by cMs3dJoint reader"));
 
-         vector<sModelKeyFrame> keyFrames(iter->GetKeyFramesRot().size());
+         vector<sModelKeyFrame> keyFrames(iter->GetRotationKeys().size());
 
-         const vector<sMs3dRotationKeyframe> & keyFramesRot = iter->GetKeyFramesRot();
-         const vector<sMs3dPositionKeyframe> & keyFramesTrans = iter->GetKeyFramesTrans();
+         const vector<sMs3dRotationKeyframe> & keyFramesRot = iter->GetRotationKeys();
+         const vector<sMs3dPositionKeyframe> & keyFramesTrans = iter->GetPositionKeys();
          for (uint j = 0; j < keyFrames.size(); j++)
          {
             if (keyFramesRot[j].time != keyFramesTrans[j].time)

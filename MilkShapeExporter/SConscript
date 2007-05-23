@@ -6,7 +6,6 @@ Import('env')
 sourceFiles = Split("""
    Exporter.cpp
    ExportPreviewDlg.cpp
-   IntermediateJoint.cpp
    msPlugInApp.cpp
    msPlugInImpl.cpp
    StdAfx.cpp
@@ -15,6 +14,7 @@ sourceFiles = Split("""
 libPaths = Split("""
    #MilkShapeExporter
    #allguids
+   #ms3dmodel
    #tech
    #engine
 """)
@@ -22,6 +22,7 @@ libPaths = Split("""
 linkLibs = Split("""
    msModelLib.lib
    allguids.lib
+   ms3dmodel.lib
    tech.lib
    engine.lib
    comdlg32.lib

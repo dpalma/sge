@@ -4,9 +4,9 @@
 #ifndef INCLUDED_EXPORTER_H
 #define INCLUDED_EXPORTER_H
 
-#include "IntermediateJoint.h"
-
 #include "engine/modeltypes.h"
+
+#include "ms3dmodel/ms3djoint.h"
 
 #include "tech/combase.h"
 #include "tech/filespec.h"
@@ -96,7 +96,7 @@ private:
    static void CollectMeshVertices(msMesh * pMesh, std::vector<sModelVertex> * pVertices);
    static void CollectMeshNormals(msMesh * pMesh, std::vector<tVec3> * pNormals);
    static void CollectModelMaterials(msModel * pModel, std::vector<sModelMaterial> * pMaterials);
-   static void CollectJoints(msModel * pModel, std::vector<cIntermediateJoint> * pTempJoints, std::vector<sModelJoint> * pModelJoints);
+   static void CollectJoints(msModel * pModel, std::vector<cMs3dJoint> * pTempJoints, std::vector<sModelJoint> * pModelJoints);
 
 private:
    msModel * m_pModel;
@@ -106,7 +106,7 @@ private:
    std::vector<uint16> m_indices;
    std::vector<sModelMesh> m_modelMeshes;
    std::vector<sModelMaterial> m_materials;
-   std::vector<cIntermediateJoint> m_tempJoints;
+   std::vector<cMs3dJoint> m_tempJoints;
    std::vector<sModelJoint> m_modelJoints;
    std::vector<cExportAnimation> m_animSeqs;
 };

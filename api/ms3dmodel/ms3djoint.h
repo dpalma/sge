@@ -14,6 +14,8 @@
 #pragma once
 #endif
 
+typedef struct msBone msBone;
+
 #pragma pack(push,1)
 
 struct sMs3dRotationKeyframe
@@ -47,6 +49,7 @@ class MS3DMODEL_API cMs3dJoint
 
 public:
    cMs3dJoint();
+   cMs3dJoint(msBone * pBone);
    cMs3dJoint(const cMs3dJoint & other);
    ~cMs3dJoint();
 
@@ -56,8 +59,8 @@ public:
    const char * GetParentName() const;
    const float * GetRotation() const;
    const float * GetPosition() const;
-   const std::vector<sMs3dRotationKeyframe> & GetKeyFramesRot() const;
-   const std::vector<sMs3dPositionKeyframe> & GetKeyFramesTrans() const;
+   const std::vector<sMs3dRotationKeyframe> & GetRotationKeys() const;
+   const std::vector<sMs3dPositionKeyframe> & GetPositionKeys() const;
 
 private:
    byte m_flags;
@@ -99,14 +102,14 @@ inline const float * cMs3dJoint::GetPosition() const
 
 ///////////////////////////////////////
 
-inline const std::vector<sMs3dRotationKeyframe> & cMs3dJoint::GetKeyFramesRot() const
+inline const std::vector<sMs3dRotationKeyframe> & cMs3dJoint::GetRotationKeys() const
 {
    return keyFramesRot;
 }
 
 ///////////////////////////////////////
 
-inline const std::vector<sMs3dPositionKeyframe> & cMs3dJoint::GetKeyFramesTrans() const
+inline const std::vector<sMs3dPositionKeyframe> & cMs3dJoint::GetPositionKeys() const
 {
    return keyFramesTrans;
 }

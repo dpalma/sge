@@ -532,10 +532,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\MilkShapeExporter\IntermediateJoint.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\MilkShapeExporter\msPlugIn.def"
 				>
 			</File>
@@ -602,10 +598,6 @@
 			>
 			<File
 				RelativePath="..\..\MilkShapeExporter\Exporter.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\MilkShapeExporter\IntermediateJoint.h"
 				>
 			</File>
 			<File
