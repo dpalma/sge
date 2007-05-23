@@ -13,6 +13,7 @@
 
 #include "ms3dmodel/ms3djoint.h"
 
+#include <string>
 #include <vector>
 
 #ifdef _MSC_VER
@@ -52,6 +53,10 @@ private:
    float m_currentTime;
    int m_nTotalFrames;
    std::vector<cMs3dJoint> ms3dJoints;
+   std::vector<std::string> m_groupComments;
+   std::vector<std::string> m_materialComments;
+   std::vector<std::string> m_jointComments;
+   std::string m_modelComment;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

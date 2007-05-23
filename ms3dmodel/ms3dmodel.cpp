@@ -113,6 +113,35 @@ static tResult ReadVector(IReader * pReader, std::vector<T> * pVector)
    return S_OK;
 }
 
+void ReadComments(IReader * pReader, vector<string> * pComments)
+{
+   uint nComments = 0;
+   if (pReader->Read(&nComments, sizeof(nComments)) != S_OK
+      || nComments == 0)
+   {
+      return;
+   }
+
+   pComments->reserve(nComments);
+
+   for (uint i = 0; i < nComments; i++)
+   {
+      int index, length;
+      if (pReader->Read(&index, sizeof(index)) == S_OK
+         && pReader->Read(&length, sizeof(length)) == S_OK)
+      {
+         Assert(index == i);
+
+         char * pszTemp = static_cast<char *>(alloca((length + 1) * sizeof(char)));
+         if (pReader->Read(pszTemp, length * sizeof(char)) == S_OK)
+         {
+            pszTemp[length] = 0;
+            pComments->push_back(string(pszTemp));
+         }
+      }
+   }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cMs3dModel
@@ -456,83 +485,13 @@ IModel * cMs3dModel::Read(IReader * pReader)
    //////////////////////////////
    // Read the comments, if present (MilkShape versions 1.7+)
 
-   vector<sModelAnimationDesc> animDescs;
-
    int subVersion = 0;
    if (pReader->Read(&subVersion, sizeof(subVersion)) == S_OK
       && subVersion == 1)
    {
-      {
-         int nGroupComments = 0;
-         if (pReader->Read(&nGroupComments, sizeof(nGroupComments)) == S_OK
-            && nGroupComments > 0)
-         {
-            for (int i = 0; i < nGroupComments; i++)
-            {
-               int index, length;
-               if (pReader->Read(&index, sizeof(index)) != S_OK
-                  || pReader->Read(&length, sizeof(length)) != S_OK)
-               {
-                  return NULL;
-               }
-               
-               char * pszTemp = (char *)alloca((length + 1) * sizeof(char));
-               if (pReader->Read(pszTemp, length * sizeof(char)) != S_OK)
-               {
-                  return NULL;
-               }
-               pszTemp[length] = 0;
-            }
-         }
-      }
-
-      {
-         int nMaterialComments = 0;
-         if (pReader->Read(&nMaterialComments, sizeof(nMaterialComments)) == S_OK
-            && nMaterialComments > 0)
-         {
-            for (int i = 0; i < nMaterialComments; i++)
-            {
-               int index, length;
-               if (pReader->Read(&index, sizeof(index)) != S_OK
-                  || pReader->Read(&length, sizeof(length)) != S_OK)
-               {
-                  return NULL;
-               }
-               
-               char * pszTemp = (char *)alloca((length + 1) * sizeof(char));
-               if (pReader->Read(pszTemp, length * sizeof(char)) != S_OK)
-               {
-                  return NULL;
-               }
-               pszTemp[length] = 0;
-            }
-         }
-      }
-
-      {
-         int nJointComments = 0;
-         if (pReader->Read(&nJointComments, sizeof(nJointComments)) == S_OK
-            && nJointComments > 0)
-         {
-            for (int i = 0; i < nJointComments; i++)
-            {
-               int index, length;
-               if (pReader->Read(&index, sizeof(index)) != S_OK
-                  || pReader->Read(&length, sizeof(length)) != S_OK)
-               {
-                  return NULL;
-               }
-               
-               char * pszTemp = (char *)alloca((length + 1) * sizeof(char));
-               if (pReader->Read(pszTemp, length * sizeof(char)) != S_OK)
-               {
-                  return NULL;
-               }
-               pszTemp[length] = 0;
-            }
-         }
-      }
+      ReadComments(pReader, &m_groupComments);
+      ReadComments(pReader, &m_materialComments);
+      ReadComments(pReader, &m_jointComments);
 
       {
          int hasModelComment = 0;
@@ -540,27 +499,29 @@ IModel * cMs3dModel::Read(IReader * pReader)
             && hasModelComment == 1)
          {
             int length;
-            if (pReader->Read(&length, sizeof(length)) != S_OK)
+            if (pReader->Read(&length, sizeof(length)) == S_OK)
             {
-               return NULL;
+               char * pszTemp = static_cast<char *>(alloca((length + 1) * sizeof(char)));
+               if (pReader->Read(pszTemp, length * sizeof(char)) == S_OK)
+               {
+                  pszTemp[length] = 0;
+                  m_modelComment.assign(pszTemp);
+               }
             }
-            
-            char * pszTemp = (char *)alloca((length + 1) * sizeof(char));
-            if (pReader->Read(pszTemp, length * sizeof(char)) != S_OK)
-            {
-               return NULL;
-            }
-            pszTemp[length] = 0;
-
-            ParseAnimDescs(pszTemp, &animDescs);
          }
       }
    }
 
-   float totalAnimTime = static_cast<float>(m_nTotalFrames) / m_animationFPS;
+   vector<sModelAnimationDesc> animDescs;
+   if (!m_modelComment.empty())
+   {
+      ParseAnimDescs(m_modelComment.c_str(), &animDescs);
+   }
 
    if (!animDescs.empty())
    {
+      float totalAnimTime = static_cast<float>(m_nTotalFrames) / m_animationFPS;
+
       LocalMsg1("%d Animation Sequences\n", animDescs.size());
 
       vector<sModelAnimationDesc>::const_iterator iter, end;
