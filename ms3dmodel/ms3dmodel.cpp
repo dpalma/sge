@@ -7,7 +7,6 @@
 #include "ms3dheader.h"
 #include "vertexmapper.h"
 
-#include "ms3dmodel/ms3djoint.h"
 #include "ms3dmodel/ms3dmodelapi.h"
 
 #include "engine/modelapi.h"
@@ -122,6 +121,9 @@ static tResult ReadVector(IReader * pReader, std::vector<T> * pVector)
 ////////////////////////////////////////
 
 cMs3dModel::cMs3dModel()
+ : m_animationFPS(0)
+ , m_currentTime(0)
+ , m_nTotalFrames(0)
 {
 }
 
@@ -133,7 +135,7 @@ cMs3dModel::~cMs3dModel()
 
 ////////////////////////////////////////
 
-void * cMs3dModel::Read(IReader * pReader)
+IModel * cMs3dModel::Read(IReader * pReader)
 {
    if (pReader == NULL)
    {
@@ -182,9 +184,10 @@ void * cMs3dModel::Read(IReader * pReader)
    // Re-map the vertices based on the triangles because Milkshape file
    // triangles contain some vertex info.
 
+   vector<sModelVertex> vertices;
+
    // TODO: clean up this vertex mapping code !!!!!!!
 
-   vector<sModelVertex> vertices;
    vertices.resize(ms3dVerts.size());
 
    cVertexMapper vertexMapper(ms3dVerts);
@@ -339,31 +342,27 @@ void * cMs3dModel::Read(IReader * pReader)
    //////////////////////////////
    // Read the animation info
 
-   float animationFPS;
-   float currentTime;
-   int nTotalFrames;
-   if (pReader->Read(&animationFPS, sizeof(animationFPS)) != S_OK
-      || pReader->Read(&currentTime, sizeof(currentTime)) != S_OK
-      || pReader->Read(&nTotalFrames, sizeof(nTotalFrames)) != S_OK)
+   if (pReader->Read(&m_animationFPS, sizeof(m_animationFPS)) != S_OK
+      || pReader->Read(&m_currentTime, sizeof(m_currentTime)) != S_OK
+      || pReader->Read(&m_nTotalFrames, sizeof(m_nTotalFrames)) != S_OK)
    {
       return NULL;
    }
 
-   LocalMsg1("%d Animation Frames\n", nTotalFrames);
-   LocalMsg1("Animation FPS = %f\n", animationFPS);
+   LocalMsg1("%d Animation Frames\n", m_nTotalFrames);
+   LocalMsg1("Animation FPS = %f\n", m_animationFPS);
 
    //////////////////////////////
    // Read the joints
 
-   vector<cMs3dJoint> ms3dJoints;
    if (FAILED(ReadVector<cMs3dJoint, uint16>(pReader, &ms3dJoints)))
    {
       return NULL;
    }
 
-   uint nJoints = ms3dJoints.size();
-
    LocalMsg1("%d Joints\n", ms3dJoints.size());
+
+   uint nJoints = ms3dJoints.size();
 
    vector<sModelJoint> joints(nJoints);
    vector< vector<sModelKeyFrame> > jointKeyFrames(nJoints);
@@ -414,7 +413,7 @@ void * cMs3dModel::Read(IReader * pReader)
             keyFrames[j].translation = tVec3(keyFramesTrans[j].position);
             keyFrames[j].rotation = QuatFromEulerAngles(tVec3(keyFramesRot[j].rotation));
 
-            int frame = FloatToInt(static_cast<float>(keyFrames[j].time) * animationFPS);
+            int frame = FloatToInt(static_cast<float>(keyFrames[j].time) * m_animationFPS);
             LocalMsg3("Key frame %d at %.3f is #%d\n", j, keyFrames[j].time, frame);
          }
 
@@ -558,7 +557,7 @@ void * cMs3dModel::Read(IReader * pReader)
       }
    }
 
-   float totalAnimTime = static_cast<float>(nTotalFrames) / animationFPS;
+   float totalAnimTime = static_cast<float>(m_nTotalFrames) / m_animationFPS;
 
    if (!animDescs.empty())
    {
@@ -590,10 +589,10 @@ void * cMs3dModel::Read(IReader * pReader)
             LocalMsg2("Joint %d KeyFrames (size = %d)\n", i, keyFrames.size());
 
             int iStart = -1, iEnd = -1;
-            vector<sModelKeyFrame>::const_iterator kfIter = keyFrames.begin();
-            for (int iKeyFrame = 0; kfIter != keyFrames.end(); iKeyFrame++, kfIter++)
+            vector<sModelKeyFrame>::const_iterator kfIter = keyFrames.begin(), kfEnd = keyFrames.end();
+            for (int iKeyFrame = 0; kfIter != kfEnd; ++iKeyFrame, ++kfIter)
             {
-               uint frame = FloatToInt(static_cast<float>(kfIter->time) * animationFPS);
+               uint frame = FloatToInt(static_cast<float>(kfIter->time) * m_animationFPS);
                if (frame == animDesc.start)
                {
                   iStart = iKeyFrame;
@@ -655,8 +654,7 @@ void * cMs3dModel::Read(IReader * pReader)
    return NULL;
 }
 
-
-///////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////
 
 void * cMs3dModel::Load(IReader * pReader)
 {
@@ -664,7 +662,7 @@ void * cMs3dModel::Load(IReader * pReader)
    return ms3dModel.Read(pReader);
 }
 
-///////////////////////////////////////
+////////////////////////////////////////
 
 void cMs3dModel::Unload(void * pData)
 {
