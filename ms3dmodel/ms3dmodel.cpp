@@ -3,10 +3,8 @@
 
 #include "stdhdr.h"
 
-#include "ms3dgroup.h"
+#include "ms3dmodel.h"
 #include "ms3dheader.h"
-#include "ms3dmaterial.h"
-#include "ms3dtriangle.h"
 #include "vertexmapper.h"
 
 #include "ms3dmodel/ms3djoint.h"
@@ -42,17 +40,19 @@ using namespace std;
 
 ////////////////////////////////////////////////////////////////////////////////
 
-LOG_DEFINE_CHANNEL(ModelMs3d);
+LOG_DEFINE_CHANNEL(Ms3dModel);
 
-#define LocalMsg(msg)                  DebugMsgEx(ModelMs3d,msg)
-#define LocalMsg1(msg,a)               DebugMsgEx1(ModelMs3d,msg,(a))
-#define LocalMsg2(msg,a,b)             DebugMsgEx2(ModelMs3d,msg,(a),(b))
-#define LocalMsg3(msg,a,b,c)           DebugMsgEx3(ModelMs3d,msg,(a),(b),(c))
+#define LocalMsg(msg)                  DebugMsgEx(Ms3dModel,msg)
+#define LocalMsg1(msg,a)               DebugMsgEx1(Ms3dModel,msg,(a))
+#define LocalMsg2(msg,a,b)             DebugMsgEx2(Ms3dModel,msg,(a),(b))
+#define LocalMsg3(msg,a,b,c)           DebugMsgEx3(Ms3dModel,msg,(a),(b),(c))
 
-#define LocalMsgIf(cond,msg)           DebugMsgIfEx(ModelMs3d,(cond),msg)
-#define LocalMsgIf1(cond,msg,a)        DebugMsgIfEx1(ModelMs3d,(cond),msg,(a))
-#define LocalMsgIf2(cond,msg,a,b)      DebugMsgIfEx2(ModelMs3d,(cond),msg,(a),(b))
-#define LocalMsgIf3(cond,msg,a,b,c)    DebugMsgIfEx3(ModelMs3d,(cond),msg,(a),(b),(c))
+#define LocalMsgIf(cond,msg)           DebugMsgIfEx(Ms3dModel,(cond),msg)
+#define LocalMsgIf1(cond,msg,a)        DebugMsgIfEx1(Ms3dModel,(cond),msg,(a))
+#define LocalMsgIf2(cond,msg,a,b)      DebugMsgIfEx2(Ms3dModel,(cond),msg,(a),(b))
+#define LocalMsgIf3(cond,msg,a,b,c)    DebugMsgIfEx3(Ms3dModel,(cond),msg,(a),(b),(c))
+
+////////////////////////////////////////////////////////////////////////////////
 
 static bool ModelVertsEqual(const sModelVertex & vert1, const sModelVertex & vert2)
 {
@@ -114,7 +114,26 @@ static tResult ReadVector(IReader * pReader, std::vector<T> * pVector)
    return S_OK;
 }
 
-void * ModelMs3dLoad(IReader * pReader)
+///////////////////////////////////////////////////////////////////////////////
+//
+// CLASS: cMs3dModel
+//
+
+////////////////////////////////////////
+
+cMs3dModel::cMs3dModel()
+{
+}
+
+////////////////////////////////////////
+
+cMs3dModel::~cMs3dModel()
+{
+}
+
+////////////////////////////////////////
+
+void * cMs3dModel::Read(IReader * pReader)
 {
    if (pReader == NULL)
    {
@@ -142,7 +161,6 @@ void * ModelMs3dLoad(IReader * pReader)
    //////////////////////////////
    // Read the vertices
 
-   vector<cMs3dVertex> ms3dVerts;
    if (ReadVector<cMs3dVertex, uint16>(pReader, &ms3dVerts) != S_OK)
    {
       return NULL;
@@ -153,7 +171,6 @@ void * ModelMs3dLoad(IReader * pReader)
    //////////////////////////////
    // Read the triangles
 
-   vector<cMs3dTriangle> ms3dTris;
    if (ReadVector<cMs3dTriangle, uint16>(pReader, &ms3dTris) != S_OK)
    {
       return NULL;
@@ -256,7 +273,6 @@ void * ModelMs3dLoad(IReader * pReader)
    //////////////////////////////
    // Read the groups
 
-   vector<cMs3dGroup> ms3dGroups;
    if (ReadVector<cMs3dGroup, uint16>(pReader, &ms3dGroups) != S_OK)
    {
       return NULL;
@@ -297,7 +313,6 @@ void * ModelMs3dLoad(IReader * pReader)
    //////////////////////////////
    // Read the materials
 
-   vector<cMs3dMaterial> ms3dMaterials;
    if (FAILED(ReadVector<cMs3dMaterial, uint16>(pReader, &ms3dMaterials)))
    {
       return NULL;
@@ -583,7 +598,7 @@ void * ModelMs3dLoad(IReader * pReader)
                {
                   iStart = iKeyFrame;
                }
-               if (frame >= animDesc.start && LOG_IS_CHANNEL_ENABLED(ModelMs3d))
+               if (frame >= animDesc.start && LOG_IS_CHANNEL_ENABLED(Ms3dModel))
                {
                   LocalMsg1("Time: %f, ", kfIter->time);
                   LogMsgNoFL3(kDebug, "Translation <%f, %f, %f>, ", kfIter->translation.x, kfIter->translation.y, kfIter->translation.z);
@@ -640,9 +655,18 @@ void * ModelMs3dLoad(IReader * pReader)
    return NULL;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+void * cMs3dModel::Load(IReader * pReader)
+{
+   cMs3dModel ms3dModel;
+   return ms3dModel.Read(pReader);
+}
+
 ///////////////////////////////////////
 
-void ModelMs3dUnload(void * pData)
+void cMs3dModel::Unload(void * pData)
 {
    IModel * pModel = reinterpret_cast<IModel*>(pData);
    SafeRelease(pModel);
@@ -657,7 +681,7 @@ tResult Ms3dModelResourceRegister(IResourceManager * pResourceManager)
    {
       return E_POINTER;
    }
-   return pResourceManager->RegisterFormat(kRT_Model, _T("ms3d"), ModelMs3dLoad, NULL, ModelMs3dUnload);
+   return pResourceManager->RegisterFormat(kRT_Model, _T("ms3d"), cMs3dModel::Load, NULL, cMs3dModel::Unload);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -777,7 +801,7 @@ SUITE(Ms3dModel)
       cAutoIPtr<IReader> pReader;
       CHECK_EQUAL(S_OK, MemReaderCreate(g_boxModel, _countof(g_boxModel), false, &pReader));
 
-      cAutoIPtr<IModel> pModel(reinterpret_cast<IModel*>(ModelMs3dLoad(pReader)));
+      cAutoIPtr<IModel> pModel(reinterpret_cast<IModel*>(cMs3dModel::Load(pReader)));
       CHECK(!!pModel);
    }
 }
