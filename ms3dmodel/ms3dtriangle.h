@@ -78,7 +78,7 @@ template <>
 class cReadWriteOps<cMs3dTriangle>
 {
 public:
-   static tResult Read(IReader * pReader, cMs3dTriangle * pVertex);
+   static tResult Read(IReader * pReader, cMs3dTriangle * pTriangle);
 };
 
 

@@ -5,10 +5,6 @@
 
 #include "ms3djoint.h"
 
-#include "tech/matrix4.h"
-#include "tech/vec3.h"
-#include "tech/techhash.h"
-
 #include "tech/dbgalloc.h" // must be last header
 
 
@@ -20,29 +16,41 @@
 ///////////////////////////////////////
 
 cMs3dJoint::cMs3dJoint()
- : flags(0)
+ : m_flags(0)
 {
 }
 
 ///////////////////////////////////////
 
 cMs3dJoint::cMs3dJoint(const cMs3dJoint & other)
- : flags(other.flags)
- , keyFramesRot(other.keyFramesRot.size())
- , keyFramesTrans(other.keyFramesTrans.size())
+ : m_flags(other.m_flags)
 {
-   memcpy(name, other.name, sizeof(name));
-   memcpy(parentName, other.parentName, sizeof(parentName));
+   memcpy(m_name, other.m_name, sizeof(m_name));
+   memcpy(m_parentName, other.m_parentName, sizeof(m_parentName));
    memcpy(rotation, other.rotation, sizeof(rotation));
    memcpy(position, other.position, sizeof(position));
-   std::copy(other.keyFramesRot.begin(), other.keyFramesRot.end(), keyFramesRot.begin());
-   std::copy(other.keyFramesTrans.begin(), other.keyFramesTrans.end(), keyFramesTrans.begin());
+   keyFramesRot.insert(keyFramesRot.begin(), other.keyFramesRot.begin(), other.keyFramesRot.end());
+   keyFramesTrans.insert(keyFramesTrans.begin(), other.keyFramesTrans.begin(), other.keyFramesTrans.end());
 }
 
 ///////////////////////////////////////
 
 cMs3dJoint::~cMs3dJoint()
 {
+}
+
+///////////////////////////////////////
+
+const cMs3dJoint & cMs3dJoint::operator =(const cMs3dJoint & other)
+{
+   m_flags = other.m_flags;
+   memcpy(m_name, other.m_name, sizeof(m_name));
+   memcpy(m_parentName, other.m_parentName, sizeof(m_parentName));
+   memcpy(rotation, other.rotation, sizeof(rotation));
+   memcpy(position, other.position, sizeof(position));
+   keyFramesRot.insert(keyFramesRot.begin(), other.keyFramesRot.begin(), other.keyFramesRot.end());
+   keyFramesTrans.insert(keyFramesTrans.begin(), other.keyFramesTrans.begin(), other.keyFramesTrans.end());
+   return *this;
 }
 
 ///////////////////////////////////////
@@ -59,9 +67,9 @@ tResult cReadWriteOps<cMs3dJoint>::Read(IReader * pReader, cMs3dJoint * pJoint)
       uint16 nKeyFramesRot;
       uint16 nKeyFramesTrans;
 
-      if (pReader->Read(&pJoint->flags, sizeof(pJoint->flags)) != S_OK
-         || pReader->Read(pJoint->name, sizeof(pJoint->name)) != S_OK
-         || pReader->Read(pJoint->parentName, sizeof(pJoint->parentName)) != S_OK
+      if (pReader->Read(&pJoint->m_flags, sizeof(pJoint->m_flags)) != S_OK
+         || pReader->Read(pJoint->m_name, sizeof(pJoint->m_name)) != S_OK
+         || pReader->Read(pJoint->m_parentName, sizeof(pJoint->m_parentName)) != S_OK
          || pReader->Read(pJoint->rotation, sizeof(pJoint->rotation)) != S_OK
          || pReader->Read(pJoint->position, sizeof(pJoint->position)) != S_OK
          || pReader->Read(&nKeyFramesRot) != S_OK
@@ -83,8 +91,8 @@ tResult cReadWriteOps<cMs3dJoint>::Read(IReader * pReader, cMs3dJoint * pJoint)
       pJoint->keyFramesRot.resize(nKeyFramesRot);
       pJoint->keyFramesTrans.resize(nKeyFramesTrans);
 
-      if (pReader->Read(&pJoint->keyFramesRot[0], nKeyFramesRot * sizeof(ms3d_keyframe_rot_t)) != S_OK
-         || pReader->Read(&pJoint->keyFramesTrans[0], nKeyFramesTrans * sizeof(ms3d_keyframe_pos_t)) != S_OK)
+      if (pReader->Read(&pJoint->keyFramesRot[0], nKeyFramesRot * sizeof(sMs3dRotationKeyframe)) != S_OK
+         || pReader->Read(&pJoint->keyFramesTrans[0], nKeyFramesTrans * sizeof(sMs3dPositionKeyframe)) != S_OK)
       {
          break;
       }

@@ -6,8 +6,8 @@
 #include "ms3dgroup.h"
 #include "ms3dheader.h"
 #include "ms3djoint.h"
+#include "ms3dmaterial.h"
 #include "ms3dtriangle.h"
-#include "ms3d.h"
 #include "vertexmapper.h"
 
 #include "ms3dmodel/ms3dmodelapi.h"
@@ -297,34 +297,27 @@ void * ModelMs3dLoad(IReader * pReader)
    //////////////////////////////
    // Read the materials
 
-   uint16 nMaterials;
-   if (pReader->Read(&nMaterials, sizeof(nMaterials)) != S_OK)
+   vector<cMs3dMaterial> ms3dMaterials;
+   if (FAILED(ReadVector<cMs3dMaterial, uint16>(pReader, &ms3dMaterials)))
    {
       return NULL;
    }
 
-   LocalMsg1("%d Materials\n", nMaterials);
+   LocalMsg1("%d Materials\n", ms3dMaterials.size());
 
-   vector<sModelMaterial> materials(nMaterials);
+   vector<sModelMaterial> materials;
 
-   if (nMaterials > 0)
+   if (!ms3dMaterials.empty())
    {
-      for (uint i = 0; i < nMaterials; i++)
+      vector<cMs3dMaterial>::iterator iter = ms3dMaterials.begin(), end = ms3dMaterials.end();
+      for (; iter != end; ++iter)
       {
-         ms3d_material_t ms3dMat;
-         if (pReader->Read(&ms3dMat, sizeof(ms3d_material_t)) != S_OK)
-         {
-            return NULL;
-         }
-
-         memcpy(materials[i].diffuse, ms3dMat.diffuse, sizeof(materials[i].diffuse));
-
-         // MilkShape stores texture file names as "./texture.bmp" so run
-         // the texture name through cFileSpec to fix it up.
+         sModelMaterial m;
+         memcpy(m.diffuse, iter->GetDiffuse(), sizeof(m.diffuse));
          cStr texture;
-         cFileSpec(ms3dMat.texture).GetFileNameNoExt(&texture);
-
-         _tcscpy(materials[i].szTexture, texture.c_str());
+         iter->GetTexture(&texture);
+         _tcscpy(m.szTexture, texture.c_str());
+         materials.push_back(m);
       }
    }
 
@@ -347,35 +340,31 @@ void * ModelMs3dLoad(IReader * pReader)
    //////////////////////////////
    // Read the joints
 
-   uint16 nJoints;
-   if (pReader->Read(&nJoints, sizeof(nJoints)) != S_OK)
+   vector<cMs3dJoint> ms3dJoints;
+   if (FAILED(ReadVector<cMs3dJoint, uint16>(pReader, &ms3dJoints)))
    {
       return NULL;
    }
 
-   LocalMsg1("%d Joints\n", nJoints);
+   uint nJoints = ms3dJoints.size();
+
+   LocalMsg1("%d Joints\n", ms3dJoints.size());
 
    vector<sModelJoint> joints(nJoints);
    vector< vector<sModelKeyFrame> > jointKeyFrames(nJoints);
 
-   if (nJoints > 0)
+   if (!ms3dJoints.empty())
    {
-      vector<cMs3dJoint> ms3dJoints(nJoints);
-
       map<cStr, int> jointNameMap;
-
-      for (uint i = 0; i < nJoints; i++)
-      {
-         if (pReader->Read(&ms3dJoints[i]) != S_OK)
-         {
-            return NULL;
-         }
-
-         jointNameMap.insert(make_pair(ms3dJoints[i].GetName(), i));
-      }
-
       vector<cMs3dJoint>::iterator iter = ms3dJoints.begin();
       vector<cMs3dJoint>::iterator end = ms3dJoints.end();
+      for (uint i = 0; iter != end; iter++, i++)
+      {
+         jointNameMap.insert(make_pair(iter->GetName(), i));
+      }
+
+      iter = ms3dJoints.begin();
+      end = ms3dJoints.end();
       for (uint i = 0; iter != end; iter++, i++)
       {
          LocalMsg1("Joint %d\n", i);
@@ -396,8 +385,8 @@ void * ModelMs3dLoad(IReader * pReader)
 
          vector<sModelKeyFrame> keyFrames(iter->GetKeyFramesRot().size());
 
-         const vector<ms3d_keyframe_rot_t> & keyFramesRot = iter->GetKeyFramesRot();
-         const vector<ms3d_keyframe_pos_t> & keyFramesTrans = iter->GetKeyFramesTrans();
+         const vector<sMs3dRotationKeyframe> & keyFramesRot = iter->GetKeyFramesRot();
+         const vector<sMs3dPositionKeyframe> & keyFramesTrans = iter->GetKeyFramesTrans();
          for (uint j = 0; j < keyFrames.size(); j++)
          {
             if (keyFramesRot[j].time != keyFramesTrans[j].time)

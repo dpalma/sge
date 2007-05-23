@@ -4,10 +4,7 @@
 #ifndef INCLUDED_MS3DJOINT_H
 #define INCLUDED_MS3DJOINT_H
 
-#include "ms3d.h"
-
 #include "tech/readwriteapi.h"
-#include "tech/vec3.h"
 
 #include <vector>
 
@@ -15,6 +12,21 @@
 #pragma once
 #endif
 
+#pragma pack(push,1)
+
+struct sMs3dRotationKeyframe
+{
+   float time;
+   float rotation[3];
+};
+
+struct sMs3dPositionKeyframe
+{
+   float time;
+   float position[3];
+};
+
+#pragma pack(pop)
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -25,50 +37,42 @@ class cMs3dJoint
 {
    friend class cReadWriteOps<cMs3dJoint>;
 
-   void operator =(const cMs3dJoint &);
-
 public:
    cMs3dJoint();
    cMs3dJoint(const cMs3dJoint & other);
    ~cMs3dJoint();
 
-   byte GetFlags() const;
+   const cMs3dJoint & operator =(const cMs3dJoint &);
+
    const char * GetName() const;
    const char * GetParentName() const;
    const float * GetRotation() const;
    const float * GetPosition() const;
-   const std::vector<ms3d_keyframe_rot_t> & GetKeyFramesRot() const;
-   const std::vector<ms3d_keyframe_pos_t> & GetKeyFramesTrans() const;
+   const std::vector<sMs3dRotationKeyframe> & GetKeyFramesRot() const;
+   const std::vector<sMs3dPositionKeyframe> & GetKeyFramesTrans() const;
 
 private:
-   byte flags;
-   char name[32];
-   char parentName[32];
+   byte m_flags;
+   char m_name[32];
+   char m_parentName[32];
    float rotation[3];
    float position[3];
-   std::vector<ms3d_keyframe_rot_t> keyFramesRot;
-   std::vector<ms3d_keyframe_pos_t> keyFramesTrans;
+   std::vector<sMs3dRotationKeyframe> keyFramesRot;
+   std::vector<sMs3dPositionKeyframe> keyFramesTrans;
 };
-
-///////////////////////////////////////
-
-inline byte cMs3dJoint::GetFlags() const
-{
-   return flags;
-}
 
 ///////////////////////////////////////
 
 inline const char * cMs3dJoint::GetName() const
 {
-   return name;
+   return m_name;
 }
 
 ///////////////////////////////////////
 
 inline const char * cMs3dJoint::GetParentName() const
 {
-   return parentName;
+   return m_parentName;
 }
 
 ///////////////////////////////////////
@@ -87,14 +91,14 @@ inline const float * cMs3dJoint::GetPosition() const
 
 ///////////////////////////////////////
 
-inline const std::vector<ms3d_keyframe_rot_t> & cMs3dJoint::GetKeyFramesRot() const
+inline const std::vector<sMs3dRotationKeyframe> & cMs3dJoint::GetKeyFramesRot() const
 {
    return keyFramesRot;
 }
 
 ///////////////////////////////////////
 
-inline const std::vector<ms3d_keyframe_pos_t> & cMs3dJoint::GetKeyFramesTrans() const
+inline const std::vector<sMs3dPositionKeyframe> & cMs3dJoint::GetKeyFramesTrans() const
 {
    return keyFramesTrans;
 }

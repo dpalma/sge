@@ -484,6 +484,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\ms3dmodel\ms3dmaterial.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\ms3dmodel\ms3dtriangle.cpp"
 				>
 			</File>
@@ -545,10 +549,6 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="..\..\ms3dmodel\ms3d.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\ms3dmodel\ms3dflags.h"
 				>
 			</File>
@@ -562,6 +562,10 @@
 			</File>
 			<File
 				RelativePath="..\..\ms3dmodel\ms3djoint.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\ms3dmodel\ms3dmaterial.h"
 				>
 			</File>
 			<File
