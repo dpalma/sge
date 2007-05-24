@@ -8,7 +8,10 @@
 #include "ms3dheader.h"
 #include "vertexmapper.h"
 
+#include "ms3dmodel/ms3dgroup.h"
 #include "ms3dmodel/ms3dmodelapi.h"
+#include "ms3dmodel/ms3dtriangle.h"
+#include "ms3dmodel/ms3dvertex.h"
 
 #include "engine/modelapi.h"
 #include "engine/modeltypes.h"
@@ -421,32 +424,29 @@ IModel * cMs3dModel::Read(IReader * pReader)
    //////////////////////////////
    // Read the vertices
 
+   vector<cMs3dVertex> ms3dVerts;
    if (ReadVector<cMs3dVertex, uint16>(pReader, &ms3dVerts) != S_OK)
    {
       return NULL;
    }
 
-   LocalMsg1("%d Vertices\n", ms3dVerts.size());
-
    //////////////////////////////
    // Read the triangles
 
+   vector<cMs3dTriangle> ms3dTris;
    if (ReadVector<cMs3dTriangle, uint16>(pReader, &ms3dTris) != S_OK)
    {
       return NULL;
    }
 
-   LocalMsg1("%d Triangles\n", ms3dTris.size());
-
    //////////////////////////////
    // Read the groups
 
+   vector<cMs3dGroup> ms3dGroups;
    if (ReadVector<cMs3dGroup, uint16>(pReader, &ms3dGroups) != S_OK)
    {
       return NULL;
    }
-
-   LocalMsg1("%d Groups\n", ms3dGroups.size());
 
    //////////////////////////////
 
@@ -508,13 +508,18 @@ IModel * cMs3dModel::Read(IReader * pReader)
    //////////////////////////////
    // Read the comments, if present (MilkShape versions 1.7+)
 
+   vector<string> groupComments;
+   vector<string> materialComments;
+   vector<string> jointComments;
+   string modelComment;
+
    int subVersion = 0;
    if (pReader->Read(&subVersion, sizeof(subVersion)) == S_OK
       && subVersion == 1)
    {
-      ReadComments(pReader, &m_groupComments);
-      ReadComments(pReader, &m_materialComments);
-      ReadComments(pReader, &m_jointComments);
+      ReadComments(pReader, &groupComments);
+      ReadComments(pReader, &materialComments);
+      ReadComments(pReader, &jointComments);
 
       {
          int hasModelComment = 0;
@@ -528,7 +533,7 @@ IModel * cMs3dModel::Read(IReader * pReader)
                if (pReader->Read(pszTemp, length * sizeof(char)) == S_OK)
                {
                   pszTemp[length] = 0;
-                  m_modelComment.assign(pszTemp);
+                  modelComment.assign(pszTemp);
                }
             }
          }
@@ -536,9 +541,9 @@ IModel * cMs3dModel::Read(IReader * pReader)
    }
 
    vector<sModelAnimationDesc> animDescs;
-   if (!m_modelComment.empty())
+   if (!modelComment.empty())
    {
-      ParseAnimDescs(m_modelComment.c_str(), &animDescs);
+      ParseAnimDescs(modelComment.c_str(), &animDescs);
    }
 
    if (!animDescs.empty())
