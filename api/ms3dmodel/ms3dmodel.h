@@ -6,14 +6,13 @@
 
 #include "ms3dmodeldll.h"
 
-#include "tech/comtools.h"
-
 #include "ms3dgroup.h"
+#include "ms3djoint.h"
 #include "ms3dmaterial.h"
 #include "ms3dtriangle.h"
 #include "ms3dvertex.h"
 
-#include "ms3dmodel/ms3djoint.h"
+#include "tech/comtools.h"
 
 #include <string>
 #include <vector>
@@ -26,6 +25,20 @@ struct sModelVertex;
 
 F_DECLARE_INTERFACE(IModel);
 F_DECLARE_INTERFACE(IReader);
+
+template class MS3DMODEL_API std::allocator<cMs3dVertex>;
+template class MS3DMODEL_API std::allocator<cMs3dTriangle>;
+template class MS3DMODEL_API std::allocator<cMs3dGroup>;
+template class MS3DMODEL_API std::allocator<cMs3dMaterial>;
+template class MS3DMODEL_API std::allocator<cMs3dJoint>;
+template class MS3DMODEL_API std::allocator<std::string>;
+
+template class MS3DMODEL_API std::vector<cMs3dVertex>;
+template class MS3DMODEL_API std::vector<cMs3dTriangle>;
+template class MS3DMODEL_API std::vector<cMs3dGroup>;
+template class MS3DMODEL_API std::vector<cMs3dMaterial>;
+template class MS3DMODEL_API std::vector<cMs3dJoint>;
+template class MS3DMODEL_API std::vector<std::string>;
 
 ///////////////////////////////////////////////////////////////////////////////
 //

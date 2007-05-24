@@ -14,6 +14,10 @@
 #pragma once
 #endif
 
+template class MS3DMODEL_API std::allocator<uint16>;
+
+template class MS3DMODEL_API std::vector<uint16>;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //

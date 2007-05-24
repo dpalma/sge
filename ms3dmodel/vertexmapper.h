@@ -4,7 +4,7 @@
 #ifndef INCLUDED_VERTEXMAPPER_H
 #define INCLUDED_VERTEXMAPPER_H
 
-#include "ms3dvertex.h"
+#include "ms3dmodel/ms3dvertex.h"
 
 #include "engine/modeltypes.h"
 

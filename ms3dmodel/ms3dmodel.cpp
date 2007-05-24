@@ -3,7 +3,8 @@
 
 #include "stdhdr.h"
 
-#include "ms3dmodel.h"
+#include "ms3dmodel/ms3dmodel.h"
+
 #include "ms3dheader.h"
 #include "vertexmapper.h"
 
@@ -142,6 +143,152 @@ void ReadComments(IReader * pReader, vector<string> * pComments)
    }
 }
 
+static void CompileMeshes(const vector<cMs3dVertex> & ms3dVerts,
+                          const vector<cMs3dTriangle> & ms3dTris,
+                          const vector<cMs3dGroup> & ms3dGroups,
+                          vector<sModelVertex> * pModelVertices,
+                          vector<sModelMesh> * pModelMeshes,
+                          vector<uint16> * pModelIndices)
+{
+   //////////////////////////////
+   // Re-map the vertices based on the triangles because Milkshape file
+   // triangles contain some vertex info.
+
+   // TODO: clean up this vertex mapping code !!!!!!!
+
+   pModelVertices->resize(ms3dVerts.size());
+
+   cVertexMapper vertexMapper(ms3dVerts);
+
+   typedef multimap<uint, uint> tVertexMap;
+   tVertexMap vertexMap;
+
+   vector<cMs3dTriangle>::const_iterator iter = ms3dTris.begin(), end = ms3dTris.end();
+   for (; iter != end; ++iter)
+   {
+      for (int k = 0; k < 3; ++k)
+      {
+         vertexMapper.MapVertex(
+            iter->GetVertexIndex(k), 
+            iter->GetVertexNormal(k), 
+            iter->GetS(k), 
+            iter->GetT(k));
+
+         uint index = iter->GetVertexIndex(k);
+         if (vertexMap.find(index) == vertexMap.end())
+         {
+            (*pModelVertices)[index].u = iter->GetS(k);
+            (*pModelVertices)[index].v = 1 - iter->GetT(k);
+            (*pModelVertices)[index].normal = iter->GetVertexNormal(k);
+            (*pModelVertices)[index].pos = ms3dVerts[index].GetPosition();
+            (*pModelVertices)[index].bone = ms3dVerts[index].GetBone();
+            vertexMap.insert(make_pair(index,index));
+         }
+         else
+         {
+            sModelVertex vert = (*pModelVertices)[index];
+            vert.u = iter->GetS(k);
+            vert.v = 1 - iter->GetT(k);
+            vert.normal = iter->GetVertexNormal(k);
+            uint iVertMatch = ~0u;
+            tVertexMap::iterator viter = vertexMap.lower_bound(index);
+            tVertexMap::iterator vend = vertexMap.upper_bound(index);
+            for (; viter != vend; viter++)
+            {
+               uint index2 = viter->second;
+               if (index2 != index)
+               {
+                  const sModelVertex & vert1 = vert;
+                  const sModelVertex & vert2 = (*pModelVertices)[index2];
+                  if ((vert1.normal.x == vert2.normal.x)
+                     && (vert1.normal.y == vert2.normal.y)
+                     && (vert1.normal.z == vert2.normal.z)
+                     && (vert1.u == vert2.u)
+                     && (vert1.v == vert2.v))
+                  {
+                     iVertMatch = index2;
+                     break;
+                  }
+               }
+            }
+            if (iVertMatch == ~0u)
+            {
+               // Not already mapped, but there may be a suitable vertex
+               // elsewhere in the array. Have to look through whole map.
+               tVertexMap::iterator viter = vertexMap.begin();
+               tVertexMap::iterator vend = vertexMap.end();
+               for (; viter != vend; viter++)
+               {
+                  const sModelVertex & vert1 = vert;
+                  const sModelVertex & vert2 = (*pModelVertices)[viter->second];
+                  if (ModelVertsEqual(vert1, vert2))
+                  {
+                     iVertMatch = viter->second;
+                     break;
+                  }
+               }
+               if (iVertMatch == ~0u)
+               {
+                  // Not mapped and no usable vertex already in the array
+                  // so create a new one.
+                  pModelVertices->push_back(vert);
+                  vertexMap.insert(make_pair(index,pModelVertices->size()-1));
+               }
+            }
+         }
+      }
+   }
+
+//   DebugMsg2("Mapped vertex array has %d members (originally %d)\n", vertices.size(), ms3dVerts.size());
+
+   //////////////////////////////
+   // Prepare the groups for the model
+
+   pModelMeshes->resize(ms3dGroups.size());
+
+   for (uint i = 0; i < ms3dGroups.size(); i++)
+   {
+      const cMs3dGroup & group = ms3dGroups[i];
+
+      vector<uint16> mappedIndices;
+      for (uint j = 0; j < group.GetNumTriangles(); j++)
+      {
+         const cMs3dTriangle & tri = ms3dTris[group.GetTriangle(j)];
+         for (int k = 0; k < 3; k++)
+         {
+            mappedIndices.push_back(vertexMapper.MapVertex(
+               tri.GetVertexIndex(k), tri.GetVertexNormal(k), 
+               tri.GetS(k), tri.GetT(k)));
+         }
+      }
+
+      (*pModelMeshes)[i].primitive = kPT_Triangles;
+      (*pModelMeshes)[i].materialIndex = group.GetMaterialIndex();
+      (*pModelMeshes)[i].indexStart = pModelIndices->size();
+      (*pModelMeshes)[i].nIndices = mappedIndices.size();
+
+      pModelIndices->insert(pModelIndices->end(), mappedIndices.begin(), mappedIndices.end());
+   }
+}
+
+static void CompileMaterials(const vector<cMs3dMaterial> & ms3dMaterials,
+                             vector<sModelMaterial> * pModelMaterials)
+{
+   if (!ms3dMaterials.empty())
+   {
+      vector<cMs3dMaterial>::const_iterator iter = ms3dMaterials.begin(), end = ms3dMaterials.end();
+      for (; iter != end; ++iter)
+      {
+         sModelMaterial m;
+         memcpy(m.diffuse, iter->GetDiffuse(), sizeof(m.diffuse));
+         cStr texture;
+         iter->GetTexture(&texture);
+         _tcscpy(m.szTexture, texture.c_str());
+         pModelMaterials->push_back(m);
+      }
+   }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cMs3dModel
@@ -210,99 +357,6 @@ IModel * cMs3dModel::Read(IReader * pReader)
    LocalMsg1("%d Triangles\n", ms3dTris.size());
 
    //////////////////////////////
-   // Re-map the vertices based on the triangles because Milkshape file
-   // triangles contain some vertex info.
-
-   vector<sModelVertex> vertices;
-
-   // TODO: clean up this vertex mapping code !!!!!!!
-
-   vertices.resize(ms3dVerts.size());
-
-   cVertexMapper vertexMapper(ms3dVerts);
-
-   typedef multimap<uint, uint> tVertexMap;
-   tVertexMap vertexMap;
-
-   vector<cMs3dTriangle>::const_iterator iter = ms3dTris.begin(), end = ms3dTris.end();
-   for (; iter != end; ++iter)
-   {
-      for (int k = 0; k < 3; ++k)
-      {
-         vertexMapper.MapVertex(
-            iter->GetVertexIndex(k), 
-            iter->GetVertexNormal(k), 
-            iter->GetS(k), 
-            iter->GetT(k));
-
-         uint index = iter->GetVertexIndex(k);
-         if (vertexMap.find(index) == vertexMap.end())
-         {
-            vertices[index].u = iter->GetS(k);
-            vertices[index].v = 1 - iter->GetT(k);
-            vertices[index].normal = iter->GetVertexNormal(k);
-            vertices[index].pos = ms3dVerts[index].GetPosition();
-            vertices[index].bone = ms3dVerts[index].GetBone();
-            vertexMap.insert(make_pair(index,index));
-         }
-         else
-         {
-            sModelVertex vert = vertices[index];
-            vert.u = iter->GetS(k);
-            vert.v = 1 - iter->GetT(k);
-            vert.normal = iter->GetVertexNormal(k);
-            uint iVertMatch = ~0u;
-            tVertexMap::iterator viter = vertexMap.lower_bound(index);
-            tVertexMap::iterator vend = vertexMap.upper_bound(index);
-            for (; viter != vend; viter++)
-            {
-               uint index2 = viter->second;
-               if (index2 != index)
-               {
-                  const sModelVertex & vert1 = vert;
-                  const sModelVertex & vert2 = vertices[index2];
-                  if ((vert1.normal.x == vert2.normal.x)
-                     && (vert1.normal.y == vert2.normal.y)
-                     && (vert1.normal.z == vert2.normal.z)
-                     && (vert1.u == vert2.u)
-                     && (vert1.v == vert2.v))
-                  {
-                     iVertMatch = index2;
-                     break;
-                  }
-               }
-            }
-            if (iVertMatch == ~0u)
-            {
-               // Not already mapped, but there may be a suitable vertex
-               // elsewhere in the array. Have to look through whole map.
-               tVertexMap::iterator viter = vertexMap.begin();
-               tVertexMap::iterator vend = vertexMap.end();
-               for (; viter != vend; viter++)
-               {
-                  const sModelVertex & vert1 = vert;
-                  const sModelVertex & vert2 = vertices[viter->second];
-                  if (ModelVertsEqual(vert1, vert2))
-                  {
-                     iVertMatch = viter->second;
-                     break;
-                  }
-               }
-               if (iVertMatch == ~0u)
-               {
-                  // Not mapped and no usable vertex already in the array
-                  // so create a new one.
-                  vertices.push_back(vert);
-                  vertexMap.insert(make_pair(index,vertices.size()-1));
-               }
-            }
-         }
-      }
-   }
-
-//   DebugMsg2("Mapped vertex array has %d members (originally %d)\n", vertices.size(), ms3dVerts.size());
-
-   //////////////////////////////
    // Read the groups
 
    if (ReadVector<cMs3dGroup, uint16>(pReader, &ms3dGroups) != S_OK)
@@ -313,34 +367,11 @@ IModel * cMs3dModel::Read(IReader * pReader)
    LocalMsg1("%d Groups\n", ms3dGroups.size());
 
    //////////////////////////////
-   // Prepare the groups for the model
 
-   vector<sModelMesh> meshes2(ms3dGroups.size());
+   vector<sModelVertex> vertices;
+   vector<sModelMesh> meshes2;
    vector<uint16> indices;
-
-   for (uint i = 0; i < ms3dGroups.size(); i++)
-   {
-      const cMs3dGroup & group = ms3dGroups[i];
-
-      vector<uint16> mappedIndices;
-      for (uint j = 0; j < group.GetNumTriangles(); j++)
-      {
-         const cMs3dTriangle & tri = ms3dTris[group.GetTriangle(j)];
-         for (int k = 0; k < 3; k++)
-         {
-            mappedIndices.push_back(vertexMapper.MapVertex(
-               tri.GetVertexIndex(k), tri.GetVertexNormal(k), 
-               tri.GetS(k), tri.GetT(k)));
-         }
-      }
-
-      meshes2[i].primitive = kPT_Triangles;
-      meshes2[i].materialIndex = group.GetMaterialIndex();
-      meshes2[i].indexStart = indices.size();
-      meshes2[i].nIndices = mappedIndices.size();
-
-      indices.insert(indices.end(), mappedIndices.begin(), mappedIndices.end());
-   }
+   CompileMeshes(ms3dVerts, ms3dTris, ms3dGroups, &vertices, &meshes2, &indices);
 
    //////////////////////////////
    // Read the materials
@@ -353,20 +384,7 @@ IModel * cMs3dModel::Read(IReader * pReader)
    LocalMsg1("%d Materials\n", ms3dMaterials.size());
 
    vector<sModelMaterial> materials;
-
-   if (!ms3dMaterials.empty())
-   {
-      vector<cMs3dMaterial>::iterator iter = ms3dMaterials.begin(), end = ms3dMaterials.end();
-      for (; iter != end; ++iter)
-      {
-         sModelMaterial m;
-         memcpy(m.diffuse, iter->GetDiffuse(), sizeof(m.diffuse));
-         cStr texture;
-         iter->GetTexture(&texture);
-         _tcscpy(m.szTexture, texture.c_str());
-         materials.push_back(m);
-      }
-   }
+   CompileMaterials(ms3dMaterials, &materials);
 
    //////////////////////////////
    // Read the animation info
