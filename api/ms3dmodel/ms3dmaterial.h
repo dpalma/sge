@@ -4,6 +4,8 @@
 #ifndef INCLUDED_MS3DMATERIAL_H
 #define INCLUDED_MS3DMATERIAL_H
 
+#include "ms3dmodeldll.h"
+
 #include "tech/readwriteapi.h"
 
 #ifdef _MSC_VER
@@ -16,7 +18,7 @@
 // CLASS: cMs3dMaterial
 //
 
-class cMs3dMaterial
+class MS3DMODEL_API cMs3dMaterial
 {
    friend class cReadWriteOps<cMs3dMaterial>;
 
@@ -61,7 +63,7 @@ inline const float * cMs3dMaterial::GetDiffuse() const
 ///////////////////////////////////////
 
 template <>
-class cReadWriteOps<cMs3dMaterial>
+class MS3DMODEL_API cReadWriteOps<cMs3dMaterial>
 {
 public:
    static tResult Read(IReader * pReader, cMs3dMaterial * pMaterial);

@@ -4,6 +4,8 @@
 #ifndef INCLUDED_MS3DVERTEX_H
 #define INCLUDED_MS3DVERTEX_H
 
+#include "ms3dmodeldll.h"
+
 #include "tech/readwriteapi.h"
 
 #ifdef _MSC_VER
@@ -16,7 +18,7 @@
 // CLASS: cMs3dVertex
 //
 
-class cMs3dVertex
+class MS3DMODEL_API cMs3dVertex
 {
    friend class cReadWriteOps<cMs3dVertex>;
 
@@ -54,7 +56,7 @@ inline int8 cMs3dVertex::GetBone() const
 ///////////////////////////////////////
 
 template <>
-class cReadWriteOps<cMs3dVertex>
+class MS3DMODEL_API cReadWriteOps<cMs3dVertex>
 {
 public:
    static tResult Read(IReader * pReader, cMs3dVertex * pVertex);

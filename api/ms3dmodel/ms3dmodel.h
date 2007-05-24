@@ -4,6 +4,8 @@
 #ifndef INCLUDED_MS3DMODEL_H
 #define INCLUDED_MS3DMODEL_H
 
+#include "ms3dmodeldll.h"
+
 #include "tech/comtools.h"
 
 #include "ms3dgroup.h"
@@ -30,7 +32,7 @@ F_DECLARE_INTERFACE(IReader);
 // CLASS: cMs3dModel
 //
 
-class cMs3dModel
+class MS3DMODEL_API cMs3dModel
 {
    cMs3dModel(const cMs3dModel &);
    const cMs3dModel & operator =(const cMs3dModel &);

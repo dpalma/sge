@@ -4,6 +4,8 @@
 #ifndef INCLUDED_MS3DGROUP_H
 #define INCLUDED_MS3DGROUP_H
 
+#include "ms3dmodeldll.h"
+
 #include "tech/readwriteapi.h"
 
 #include <vector>
@@ -18,7 +20,7 @@
 // CLASS: cMs3dGroup
 //
 
-class cMs3dGroup
+class MS3DMODEL_API cMs3dGroup
 {
    friend class cReadWriteOps<cMs3dGroup>;
 
@@ -80,7 +82,7 @@ inline uint8 cMs3dGroup::GetMaterialIndex() const
 ///////////////////////////////////////
 
 template <>
-class cReadWriteOps<cMs3dGroup>
+class MS3DMODEL_API cReadWriteOps<cMs3dGroup>
 {
 public:
    static tResult Read(IReader * pReader, cMs3dGroup * pGroup);

@@ -4,6 +4,8 @@
 #ifndef INCLUDED_MS3DTRIANGLE_H
 #define INCLUDED_MS3DTRIANGLE_H
 
+#include "ms3dmodeldll.h"
+
 #include "tech/readwriteapi.h"
 
 #ifdef _MSC_VER
@@ -16,7 +18,7 @@
 // CLASS: cMs3dTriangle
 //
 
-class cMs3dTriangle
+class MS3DMODEL_API cMs3dTriangle
 {
    friend class cReadWriteOps<cMs3dTriangle>;
 
@@ -75,7 +77,7 @@ inline float cMs3dTriangle::GetT(int index) const
 ///////////////////////////////////////
 
 template <>
-class cReadWriteOps<cMs3dTriangle>
+class MS3DMODEL_API cReadWriteOps<cMs3dTriangle>
 {
 public:
    static tResult Read(IReader * pReader, cMs3dTriangle * pTriangle);

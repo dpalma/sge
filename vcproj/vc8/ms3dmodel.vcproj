@@ -549,31 +549,7 @@
 			Filter="h;hpp;hxx;hm;inl"
 			>
 			<File
-				RelativePath="..\..\ms3dmodel\ms3dflags.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\ms3dmodel\ms3dgroup.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\ms3dmodel\ms3dheader.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\ms3dmodel\ms3dmaterial.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\ms3dmodel\ms3dmodel.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\ms3dmodel\ms3dtriangle.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\ms3dmodel\ms3dvertex.h"
 				>
 			</File>
 			<File
@@ -589,7 +565,23 @@
 			Name="API"
 			>
 			<File
+				RelativePath="..\..\api\ms3dmodel\ms3dflags.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\ms3dmodel\ms3dgroup.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\api\ms3dmodel\ms3djoint.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\ms3dmodel\ms3dmaterial.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\ms3dmodel\ms3dmodel.h"
 				>
 			</File>
 			<File
@@ -598,6 +590,14 @@
 			</File>
 			<File
 				RelativePath="..\..\api\ms3dmodel\ms3dmodeldll.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\ms3dmodel\ms3dtriangle.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\ms3dmodel\ms3dvertex.h"
 				>
 			</File>
 		</Filter>
