@@ -289,6 +289,88 @@ static void CompileMaterials(const vector<cMs3dMaterial> & ms3dMaterials,
    }
 }
 
+static void CompileJointsAndKeyFrames(float animationFPS, const vector<cMs3dJoint> & ms3dJoints,
+                                      vector<sModelJoint> * pModelJoints,
+                                      vector< vector<sModelKeyFrame> > * pModelKeyFrames)
+{
+   if (!ms3dJoints.empty())
+   {
+      pModelJoints->resize(ms3dJoints.size());
+      pModelKeyFrames->resize(ms3dJoints.size());
+
+      map<cStr, int> jointNameMap;
+      vector<cMs3dJoint>::const_iterator iter = ms3dJoints.begin();
+      vector<cMs3dJoint>::const_iterator end = ms3dJoints.end();
+      for (uint i = 0; iter != end; iter++, i++)
+      {
+         jointNameMap.insert(make_pair(iter->GetName(), i));
+      }
+
+      iter = ms3dJoints.begin();
+      end = ms3dJoints.end();
+      for (uint i = 0; iter != end; iter++, i++)
+      {
+         LocalMsg1("Joint %d\n", i);
+
+         int parentIndex = -1;
+
+         if (strlen(iter->GetParentName()) > 0)
+         {
+            map<cStr, int>::iterator found = jointNameMap.find(iter->GetParentName());
+            if (found != jointNameMap.end())
+            {
+               parentIndex = found->second;
+            }
+         }
+
+         AssertMsg(iter->GetRotationKeys().size() == iter->GetPositionKeys().size(),
+            _T("Should have been rejected by cMs3dJoint reader"));
+
+         vector<sModelKeyFrame> keyFrames(iter->GetRotationKeys().size());
+
+         const vector<sMs3dRotationKeyframe> & keyFramesRot = iter->GetRotationKeys();
+         const vector<sMs3dPositionKeyframe> & keyFramesTrans = iter->GetPositionKeys();
+         for (uint j = 0; j < keyFrames.size(); j++)
+         {
+            if (keyFramesRot[j].time != keyFramesTrans[j].time)
+            {
+               ErrorMsg("Time of rotation key frame not same as translation key frame\n");
+            }
+
+            keyFrames[j].time = keyFramesRot[j].time;
+            keyFrames[j].translation = tVec3(keyFramesTrans[j].position);
+            keyFrames[j].rotation = QuatFromEulerAngles(tVec3(keyFramesRot[j].rotation));
+
+            int frame = FloatToInt(static_cast<float>(keyFrames[j].time) * animationFPS);
+            LocalMsg3("Key frame %d at %.3f is #%d\n", j, keyFrames[j].time, frame);
+         }
+
+         (*pModelKeyFrames)[i].resize(keyFrames.size());
+         copy(keyFrames.begin(), keyFrames.end(), (*pModelKeyFrames)[i].begin());
+
+         (*pModelJoints)[i].localTranslation = tVec3(iter->GetPosition());
+         (*pModelJoints)[i].localRotation = QuatFromEulerAngles(tVec3(iter->GetRotation()));
+         (*pModelJoints)[i].parentIndex = parentIndex;
+      }
+   }
+
+   {
+      int iRootJoint = -1;
+      vector<sModelJoint>::const_iterator iter = (*pModelJoints).begin(), end = (*pModelJoints).end();
+      for (int i = 0; iter != end; ++iter, ++i)
+      {
+         if (iter->parentIndex < 0)
+         {
+            if (iRootJoint >= 0)
+            {
+               ErrorMsg("More than one root joint");
+            }
+            iRootJoint = i;
+         }
+      }
+   }
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cMs3dModel
@@ -409,86 +491,9 @@ IModel * cMs3dModel::Read(IReader * pReader)
 
    LocalMsg1("%d Joints\n", ms3dJoints.size());
 
-   uint nJoints = ms3dJoints.size();
-
-   vector<sModelJoint> joints(nJoints);
-   vector< vector<sModelKeyFrame> > jointKeyFrames(nJoints);
-
-   if (!ms3dJoints.empty())
-   {
-      map<cStr, int> jointNameMap;
-      vector<cMs3dJoint>::iterator iter = ms3dJoints.begin();
-      vector<cMs3dJoint>::iterator end = ms3dJoints.end();
-      for (uint i = 0; iter != end; iter++, i++)
-      {
-         jointNameMap.insert(make_pair(iter->GetName(), i));
-      }
-
-      iter = ms3dJoints.begin();
-      end = ms3dJoints.end();
-      for (uint i = 0; iter != end; iter++, i++)
-      {
-         LocalMsg1("Joint %d\n", i);
-
-         int parentIndex = -1;
-
-         if (strlen(iter->GetParentName()) > 0)
-         {
-            map<cStr, int>::iterator found = jointNameMap.find(iter->GetParentName());
-            if (found != jointNameMap.end())
-            {
-               parentIndex = found->second;
-            }
-         }
-
-         AssertMsg(iter->GetRotationKeys().size() == iter->GetPositionKeys().size(),
-            _T("Should have been rejected by cMs3dJoint reader"));
-
-         vector<sModelKeyFrame> keyFrames(iter->GetRotationKeys().size());
-
-         const vector<sMs3dRotationKeyframe> & keyFramesRot = iter->GetRotationKeys();
-         const vector<sMs3dPositionKeyframe> & keyFramesTrans = iter->GetPositionKeys();
-         for (uint j = 0; j < keyFrames.size(); j++)
-         {
-            if (keyFramesRot[j].time != keyFramesTrans[j].time)
-            {
-               ErrorMsg("Time of rotation key frame not same as translation key frame\n");
-               return NULL;
-            }
-
-            keyFrames[j].time = keyFramesRot[j].time;
-            keyFrames[j].translation = tVec3(keyFramesTrans[j].position);
-            keyFrames[j].rotation = QuatFromEulerAngles(tVec3(keyFramesRot[j].rotation));
-
-            int frame = FloatToInt(static_cast<float>(keyFrames[j].time) * m_animationFPS);
-            LocalMsg3("Key frame %d at %.3f is #%d\n", j, keyFrames[j].time, frame);
-         }
-
-         jointKeyFrames[i].resize(keyFrames.size());
-         copy(keyFrames.begin(), keyFrames.end(), jointKeyFrames[i].begin());
-
-         joints[i].localTranslation = tVec3(iter->GetPosition());
-         joints[i].localRotation = QuatFromEulerAngles(tVec3(iter->GetRotation()));
-         joints[i].parentIndex = parentIndex;
-      }
-   }
-
-   {
-      int iRootJoint = -1;
-      vector<sModelJoint>::const_iterator iter = joints.begin();
-      for (int i = 0; iter != joints.end(); iter++, i++)
-      {
-         if (iter->parentIndex < 0)
-         {
-            if (iRootJoint >= 0)
-            {
-               ErrorMsg("More than one root joint");
-               return NULL;
-            }
-            iRootJoint = i;
-         }
-      }
-   }
+   vector<sModelJoint> joints;
+   vector< vector<sModelKeyFrame> > jointKeyFrames;
+   CompileJointsAndKeyFrames(m_animationFPS, ms3dJoints, &joints, &jointKeyFrames);
 
    cAutoIPtr<IModelSkeleton> pSkeleton;
    if (!joints.empty())
