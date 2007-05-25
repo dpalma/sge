@@ -160,48 +160,56 @@ static void CompileMeshes(const vector<cMs3dVertex> & ms3dVerts,
 
    cVertexMapper vertexMapper(ms3dVerts);
 
-   vector<cMs3dTriangle>::const_iterator iter = ms3dTris.begin(), end = ms3dTris.end();
-   for (; iter != end; ++iter)
    {
-      for (int k = 0; k < 3; ++k)
+      vector<cMs3dTriangle>::const_iterator iter = ms3dTris.begin(), end = ms3dTris.end();
+      for (; iter != end; ++iter)
       {
-         vertexMapper.MapVertex(
-            iter->GetVertexIndex(k), 
-            iter->GetVertexNormal(k), 
-            iter->GetS(k), 
-            iter->GetT(k));
+         for (int k = 0; k < 3; ++k)
+         {
+            vertexMapper.MapVertex(
+               iter->GetVertexIndex(k), 
+               iter->GetVertexNormal(k), 
+               iter->GetS(k), 
+               iter->GetT(k));
+         }
       }
    }
 
-   pModelVertices->assign(vertexMapper.GetMappedVertices().begin(), vertexMapper.GetMappedVertices().end());
+   const std::vector<sModelVertex> & mappedVerts = vertexMapper.GetMappedVertices();
+   pModelVertices->assign(mappedVerts.begin(), mappedVerts.end());
 
    //////////////////////////////
    // Prepare the groups for the model
 
-   pModelMeshes->resize(ms3dGroups.size());
-
-   for (uint i = 0; i < ms3dGroups.size(); i++)
    {
-      const cMs3dGroup & group = ms3dGroups[i];
+      pModelMeshes->resize(ms3dGroups.size());
 
-      vector<uint16> mappedIndices;
-      for (uint j = 0; j < group.GetNumTriangles(); j++)
+      vector<cMs3dGroup>::const_iterator iter = ms3dGroups.begin(), end = ms3dGroups.end();
+      for (uint i = 0; iter != end; ++iter)
       {
-         const cMs3dTriangle & tri = ms3dTris[group.GetTriangle(j)];
-         for (int k = 0; k < 3; k++)
+         const cMs3dGroup & group = *iter;
+
+         vector<uint16> mappedIndices;
+         for (uint j = 0; j < group.GetNumTriangles(); j++)
          {
-            mappedIndices.push_back(vertexMapper.MapVertex(
-               tri.GetVertexIndex(k), tri.GetVertexNormal(k), 
-               tri.GetS(k), tri.GetT(k)));
+            const cMs3dTriangle & tri = ms3dTris[group.GetTriangle(j)];
+            for (int k = 0; k < 3; k++)
+            {
+               uint vertIndex = vertexMapper.MapVertex(
+                  tri.GetVertexIndex(k), tri.GetVertexNormal(k),
+                  tri.GetS(k), tri.GetT(k));
+               Assert(vertIndex < mappedVerts.size());
+               mappedIndices.push_back(vertIndex);
+            }
          }
+
+         (*pModelMeshes)[i].primitive = kPT_Triangles;
+         (*pModelMeshes)[i].materialIndex = group.GetMaterialIndex();
+         (*pModelMeshes)[i].indexStart = pModelIndices->size();
+         (*pModelMeshes)[i].nIndices = mappedIndices.size();
+
+         pModelIndices->insert(pModelIndices->end(), mappedIndices.begin(), mappedIndices.end());
       }
-
-      (*pModelMeshes)[i].primitive = kPT_Triangles;
-      (*pModelMeshes)[i].materialIndex = group.GetMaterialIndex();
-      (*pModelMeshes)[i].indexStart = pModelIndices->size();
-      (*pModelMeshes)[i].nIndices = mappedIndices.size();
-
-      pModelIndices->insert(pModelIndices->end(), mappedIndices.begin(), mappedIndices.end());
    }
 }
 

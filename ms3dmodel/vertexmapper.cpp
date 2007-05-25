@@ -43,8 +43,7 @@ cVertexMapper::cVertexMapper(const vector<cMs3dVertex> & vertices)
    vector<cMs3dVertex>::const_iterator end = vertices.end();
    for (uint i = 0; iter != end; iter++, i++)
    {
-      m_vertices[i].pos = iter->GetPosition();
-      m_vertices[i].bone = iter->GetBone();
+      iter->ToModelVertex(&m_vertices[i]);
    }
 }
 
@@ -122,7 +121,7 @@ SUITE(Ms3dVertexMapper)
    TEST(RemapBasics)
    {
       vector<cMs3dVertex> verts;
-      verts.push_back(cMs3dVertex(kMs3dFlagNone, 1, 1, 1, 0));
+      verts.push_back(cMs3dVertex(1, 1, 1, 0));
 
       cVertexMapper vm(verts);
 
