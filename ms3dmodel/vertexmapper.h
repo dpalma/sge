@@ -25,10 +25,10 @@ class cVertexMapper
 public:
    cVertexMapper(const std::vector<cMs3dVertex> & vertices);
 
+   uint MapVertex(uint originalIndex, float nx, float ny, float nz, float s, float t);
    uint MapVertex(uint originalIndex, const float normal[3], float s, float t);
 
-   const void * GetVertexData() const;
-   uint GetVertexCount() const;
+   const std::vector<sModelVertex> & GetMappedVertices() const;
 
 private:
    uint m_nOriginalVertices;

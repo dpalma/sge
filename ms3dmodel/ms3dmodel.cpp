@@ -34,6 +34,7 @@
 
 #include <algorithm>
 #include <map>
+#include <set>
 #include <vector>
 
 #include "tech/dbgalloc.h" // must be last header
@@ -157,14 +158,7 @@ static void CompileMeshes(const vector<cMs3dVertex> & ms3dVerts,
    // Re-map the vertices based on the triangles because Milkshape file
    // triangles contain some vertex info.
 
-   // TODO: clean up this vertex mapping code !!!!!!!
-
-   pModelVertices->resize(ms3dVerts.size());
-
    cVertexMapper vertexMapper(ms3dVerts);
-
-   typedef multimap<uint, uint> tVertexMap;
-   tVertexMap vertexMap;
 
    vector<cMs3dTriangle>::const_iterator iter = ms3dTris.begin(), end = ms3dTris.end();
    for (; iter != end; ++iter)
@@ -176,73 +170,10 @@ static void CompileMeshes(const vector<cMs3dVertex> & ms3dVerts,
             iter->GetVertexNormal(k), 
             iter->GetS(k), 
             iter->GetT(k));
-
-         uint index = iter->GetVertexIndex(k);
-         if (vertexMap.find(index) == vertexMap.end())
-         {
-            (*pModelVertices)[index].u = iter->GetS(k);
-            (*pModelVertices)[index].v = 1 - iter->GetT(k);
-            (*pModelVertices)[index].normal = iter->GetVertexNormal(k);
-            (*pModelVertices)[index].pos = ms3dVerts[index].GetPosition();
-            (*pModelVertices)[index].bone = ms3dVerts[index].GetBone();
-            vertexMap.insert(make_pair(index,index));
-         }
-         else
-         {
-            sModelVertex vert = (*pModelVertices)[index];
-            vert.u = iter->GetS(k);
-            vert.v = 1 - iter->GetT(k);
-            vert.normal = iter->GetVertexNormal(k);
-            uint iVertMatch = ~0u;
-            tVertexMap::iterator viter = vertexMap.lower_bound(index);
-            tVertexMap::iterator vend = vertexMap.upper_bound(index);
-            for (; viter != vend; viter++)
-            {
-               uint index2 = viter->second;
-               if (index2 != index)
-               {
-                  const sModelVertex & vert1 = vert;
-                  const sModelVertex & vert2 = (*pModelVertices)[index2];
-                  if ((vert1.normal.x == vert2.normal.x)
-                     && (vert1.normal.y == vert2.normal.y)
-                     && (vert1.normal.z == vert2.normal.z)
-                     && (vert1.u == vert2.u)
-                     && (vert1.v == vert2.v))
-                  {
-                     iVertMatch = index2;
-                     break;
-                  }
-               }
-            }
-            if (iVertMatch == ~0u)
-            {
-               // Not already mapped, but there may be a suitable vertex
-               // elsewhere in the array. Have to look through whole map.
-               tVertexMap::iterator viter = vertexMap.begin();
-               tVertexMap::iterator vend = vertexMap.end();
-               for (; viter != vend; viter++)
-               {
-                  const sModelVertex & vert1 = vert;
-                  const sModelVertex & vert2 = (*pModelVertices)[viter->second];
-                  if (ModelVertsEqual(vert1, vert2))
-                  {
-                     iVertMatch = viter->second;
-                     break;
-                  }
-               }
-               if (iVertMatch == ~0u)
-               {
-                  // Not mapped and no usable vertex already in the array
-                  // so create a new one.
-                  pModelVertices->push_back(vert);
-                  vertexMap.insert(make_pair(index,pModelVertices->size()-1));
-               }
-            }
-         }
       }
    }
 
-//   DebugMsg2("Mapped vertex array has %d members (originally %d)\n", vertices.size(), ms3dVerts.size());
+   pModelVertices->assign(vertexMapper.GetMappedVertices().begin(), vertexMapper.GetMappedVertices().end());
 
    //////////////////////////////
    // Prepare the groups for the model

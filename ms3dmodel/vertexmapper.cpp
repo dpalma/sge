@@ -5,9 +5,14 @@
 
 #include "vertexmapper.h"
 
-#include "tech/matrix4.h"
+#include "ms3dmodel/ms3dflags.h"
+
 #include "tech/vec3.h"
 #include "tech/techhash.h"
+
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
+#endif
 
 #include "tech/dbgalloc.h" // must be last header
 
@@ -41,6 +46,14 @@ cVertexMapper::cVertexMapper(const vector<cMs3dVertex> & vertices)
       m_vertices[i].pos = iter->GetPosition();
       m_vertices[i].bone = iter->GetBone();
    }
+}
+
+///////////////////////////////////////
+
+uint cVertexMapper::MapVertex(uint originalIndex, float nx, float ny, float nz, float s, float t)
+{
+   float normal[3] = { nx, ny, nz };
+   return MapVertex(originalIndex, normal, s, t);
 }
 
 ///////////////////////////////////////
@@ -94,17 +107,40 @@ uint cVertexMapper::MapVertex(uint originalIndex, const float normal[3], float s
 
 ///////////////////////////////////////
 
-const void * cVertexMapper::GetVertexData() const
+const std::vector<sModelVertex> & cVertexMapper::GetMappedVertices() const
 {
-   return reinterpret_cast<const void *>(&m_vertices[0]);
+   return m_vertices;
 }
 
-///////////////////////////////////////
 
-uint cVertexMapper::GetVertexCount() const
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_UNITTESTPP
+
+SUITE(Ms3dVertexMapper)
 {
-   return m_vertices.size();
+   TEST(RemapBasics)
+   {
+      vector<cMs3dVertex> verts;
+      verts.push_back(cMs3dVertex(kMs3dFlagNone, 1, 1, 1, 0));
+
+      cVertexMapper vm(verts);
+
+      // First reference to vertex zero
+      CHECK_EQUAL(0, vm.MapVertex(0, .5, .5, .5, .1f, .1f));
+
+      // Refer to vertex zero, but with a different normal
+      CHECK_EQUAL(1, vm.MapVertex(0, .4f, .4f, .4f, .1f, .1f));
+
+      // Refer to vertex zero again, but with a different texture coordinates
+      CHECK_EQUAL(2, vm.MapVertex(0, .5, .5, .5, .2f, .2f));
+
+      // Make sure referring to vertex zero again with same info
+      // as vertex one maps to vertex one
+      CHECK_EQUAL(1, vm.MapVertex(0, .4f, .4f, .4f, .1f, .1f));
+   }
 }
 
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////

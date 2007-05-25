@@ -3,8 +3,8 @@
 
 #include "stdhdr.h"
 
-#include "ms3dvertex.h"
-#include "ms3dflags.h"
+#include "ms3dmodel/ms3dvertex.h"
+#include "ms3dmodel/ms3dflags.h"
 
 #include "tech/dbgalloc.h" // must be last header
 
@@ -22,6 +22,18 @@ cMs3dVertex::cMs3dVertex()
  , m_referenceCount(0)
 {
    memset(m_vertex, 0, sizeof(m_vertex));
+}
+
+///////////////////////////////////////
+
+cMs3dVertex::cMs3dVertex(byte flags, float x, float y, float z, int8 boneId, byte refCount /*=0*/)
+ : m_flags(flags)
+ , m_boneId(boneId)
+ , m_referenceCount(refCount)
+{
+   m_vertex[0] = x;
+   m_vertex[1] = y;
+   m_vertex[2] = z;
 }
 
 ///////////////////////////////////////

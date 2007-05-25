@@ -24,6 +24,7 @@ class MS3DMODEL_API cMs3dVertex
 
 public:
    cMs3dVertex();
+   cMs3dVertex(byte flags, float x, float y, float z, int8 boneId, byte refCount = 0);
    cMs3dVertex(const cMs3dVertex & other);
    ~cMs3dVertex();
 
