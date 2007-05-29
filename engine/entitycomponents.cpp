@@ -10,13 +10,14 @@
 #include "tech/globalobj.h"
 #include "tech/multivar.h"
 #include "tech/statemachinetem.h"
-#include "tech/techhash.h"
 
 #include <tinyxml.h>
 
-#include <algorithm>
+#include <boost/functional/hash.hpp>
 
 #include "tech/dbgalloc.h" // must be last header
+
+using namespace boost;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -42,7 +43,8 @@ tEntityComponentID GenerateEntityComponentID(const tChar * pszComponentName)
    {
       return 0;
    }
-   return reinterpret_cast<tEntityComponentID>(Hash(pszComponentName, _tcslen(pszComponentName) * sizeof(tChar)));
+   size_t len = _tcslen(pszComponentName);
+   return reinterpret_cast<tEntityComponentID>(hash_range(&pszComponentName[0], &pszComponentName[len]));
 }
 
 

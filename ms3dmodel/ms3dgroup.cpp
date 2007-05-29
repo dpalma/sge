@@ -3,11 +3,10 @@
 
 #include "stdhdr.h"
 
-#include "ms3dgroup.h"
+#include "ms3dmodel/ms3dgroup.h"
 
 #include "tech/matrix4.h"
 #include "tech/vec3.h"
-#include "tech/techhash.h"
 
 #include <map>
 
