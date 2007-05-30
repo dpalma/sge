@@ -28,6 +28,9 @@ public:
    uint MapVertex(uint originalIndex, float nx, float ny, float nz, float s, float t);
    uint MapVertex(uint originalIndex, const float normal[3], float s, float t);
 
+   uint MapVertex(uint originalIndex, float nx, float ny, float nz);
+   uint MapVertex(uint originalIndex, const float normal[3]);
+
    const std::vector<sModelVertex> & GetMappedVertices() const;
 
 private:

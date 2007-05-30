@@ -3,7 +3,7 @@
 
 #include "stdhdr.h"
 
-#include "ms3dmaterial.h"
+#include "ms3dmodel/ms3dmaterial.h"
 
 #include "tech/filespec.h"
 

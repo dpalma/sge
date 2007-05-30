@@ -36,13 +36,10 @@ public:
    const cMs3dGroup & operator =(const cMs3dGroup & other);
 
    const char * GetName() const;
-   size_t GetNumTriangles() const;
-   uint GetTriangle(int index) const;
    const std::vector<uint16> & GetTriangles() const;
    uint8 GetMaterialIndex() const;
 
 private:
-   byte flags;
    char name[32];
    std::vector<uint16> triangleIndices;
    uint8 materialIndex;
@@ -53,20 +50,6 @@ private:
 inline const char * cMs3dGroup::GetName() const
 {
    return name;
-}
-
-///////////////////////////////////////
-
-inline size_t cMs3dGroup::GetNumTriangles() const
-{
-   return triangleIndices.size();
-}
-
-///////////////////////////////////////
-
-inline uint cMs3dGroup::GetTriangle(int index) const
-{
-   return triangleIndices[index];
 }
 
 ///////////////////////////////////////

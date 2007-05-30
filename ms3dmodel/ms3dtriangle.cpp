@@ -3,8 +3,8 @@
 
 #include "stdhdr.h"
 
-#include "ms3dtriangle.h"
-#include "ms3dflags.h"
+#include "ms3dmodel/ms3dtriangle.h"
+#include "ms3dmodel/ms3dflags.h"
 
 #include "tech/dbgalloc.h" // must be last header
 

@@ -12,6 +12,8 @@
 
 #include "tech/dbgalloc.h" // must be last header
 
+using namespace std;
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -21,19 +23,17 @@
 ///////////////////////////////////////
 
 cMs3dGroup::cMs3dGroup()
- : flags(0), materialIndex(~0)
+ : materialIndex(~0)
 {
 }
 
 ///////////////////////////////////////
 
 cMs3dGroup::cMs3dGroup(const cMs3dGroup & other)
- : flags(other.flags)
- , triangleIndices(other.triangleIndices.size())
- , materialIndex(other.materialIndex)
+ : materialIndex(other.materialIndex)
 {
    memcpy(name, other.name, sizeof(name));
-   std::copy(other.triangleIndices.begin(), other.triangleIndices.end(), triangleIndices.begin());
+   triangleIndices.insert(triangleIndices.begin(), other.triangleIndices.begin(), other.triangleIndices.end());
 }
 
 ///////////////////////////////////////
@@ -46,11 +46,10 @@ cMs3dGroup::~cMs3dGroup()
 
 const cMs3dGroup & cMs3dGroup::operator =(const cMs3dGroup & other)
 {
-   flags = other.flags;
    materialIndex = other.materialIndex;
    memcpy(name, other.name, sizeof(name));
-   triangleIndices.resize(other.triangleIndices.size()),
-   std::copy(other.triangleIndices.begin(), other.triangleIndices.end(), triangleIndices.begin());
+   triangleIndices.clear();
+   triangleIndices.insert(triangleIndices.begin(), other.triangleIndices.begin(), other.triangleIndices.end());
    return *this;
 }
 
@@ -65,7 +64,8 @@ tResult cReadWriteOps<cMs3dGroup>::Read(IReader * pReader, cMs3dGroup * pGroup)
 
    do
    {
-      if (pReader->Read(&pGroup->flags, sizeof(pGroup->flags)) != S_OK)
+      byte ignoreFlags;
+      if (pReader->Read(&ignoreFlags, sizeof(ignoreFlags)) != S_OK)
          break;
 
       if (pReader->Read(pGroup->name, sizeof(pGroup->name)) != S_OK)

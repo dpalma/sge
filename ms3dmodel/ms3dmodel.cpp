@@ -190,9 +190,11 @@ static void CompileMeshes(const vector<cMs3dVertex> & ms3dVerts,
          const cMs3dGroup & group = *iter;
 
          vector<uint16> mappedIndices;
-         for (uint j = 0; j < group.GetNumTriangles(); j++)
+         const std::vector<uint16> & tris = group.GetTriangles();
+         vector<uint16>::const_iterator iter2 = tris.begin(), end2 = tris.end();
+         for (; iter2 != end2; ++iter2)
          {
-            const cMs3dTriangle & tri = ms3dTris[group.GetTriangle(j)];
+            const cMs3dTriangle & tri = ms3dTris[*iter2];
             for (int k = 0; k < 3; k++)
             {
                uint vertIndex = vertexMapper.MapVertex(

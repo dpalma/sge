@@ -106,6 +106,54 @@ uint cVertexMapper::MapVertex(uint originalIndex, const float normal[3], float s
 
 ///////////////////////////////////////
 
+uint cVertexMapper::MapVertex(uint originalIndex, float nx, float ny, float nz)
+{
+   float normal[3] = { nx, ny, nz };
+   return MapVertex(originalIndex, normal);
+}
+
+///////////////////////////////////////
+
+uint cVertexMapper::MapVertex(uint originalIndex, const float normal[3])
+{
+   Assert(originalIndex < m_nOriginalVertices);
+   Assert(m_nOriginalVertices == m_haveVertex.size());
+
+   if (!m_haveVertex[originalIndex])
+   {
+      m_haveVertex[originalIndex] = true;
+      m_vertices[originalIndex].normal = normal;
+      return originalIndex;
+   }
+   else if (m_vertices[originalIndex].normal == normal)
+   {
+      return originalIndex;
+   }
+   else
+   {
+      sModelVertex newVertex = m_vertices[originalIndex];
+      newVertex.normal = normal;
+      uint h = Hash(&newVertex, sizeof(newVertex));
+      map<uint, uint>::iterator f = m_remap.find(h);
+      if (f != m_remap.end())
+      {
+         Assert(f->second < m_vertices.size());
+         return f->second;
+      }
+      else
+      {
+         // TODO: Tacking the the duplicated vertex onto the end
+         // is totally not optimal with respect to vertex caches
+         m_vertices.push_back(newVertex);
+         size_t newIndex = m_vertices.size() - 1;
+         m_remap.insert(make_pair(h, newIndex));
+         return newIndex;
+      }
+   }
+}
+
+///////////////////////////////////////
+
 const std::vector<sModelVertex> & cVertexMapper::GetMappedVertices() const
 {
    return m_vertices;
@@ -118,7 +166,7 @@ const std::vector<sModelVertex> & cVertexMapper::GetMappedVertices() const
 
 SUITE(Ms3dVertexMapper)
 {
-   TEST(RemapBasics)
+   TEST(RemapByNormalAndTexCoords)
    {
       vector<cMs3dVertex> verts;
       verts.push_back(cMs3dVertex(1, 1, 1, 0));
@@ -137,6 +185,23 @@ SUITE(Ms3dVertexMapper)
       // Make sure referring to vertex zero again with same info
       // as vertex one maps to vertex one
       CHECK_EQUAL(1, vm.MapVertex(0, .4f, .4f, .4f, .1f, .1f));
+   }
+
+   TEST(RemapByNormalOnly)
+   {
+      vector<cMs3dVertex> verts;
+      verts.push_back(cMs3dVertex(1, 1, 1, .05f, .05f, -1));
+
+      cVertexMapper vm(verts);
+
+      // First reference to vertex zero
+      CHECK_EQUAL(0, vm.MapVertex(0, .5, .5, .5));
+
+      // Refer to vertex zero, but with a different normal
+      CHECK_EQUAL(1, vm.MapVertex(0, .4f, .4f, .4f));
+
+      // Refer to vertex zero again with same info
+      CHECK_EQUAL(1, vm.MapVertex(0, .4f, .4f, .4f));
    }
 }
 
