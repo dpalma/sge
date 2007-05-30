@@ -6,8 +6,11 @@
 
 #include "ms3dmodeldll.h"
 
+#include "ms3dgroup.h"
 #include "ms3djoint.h"
 #include "ms3dmaterial.h"
+#include "ms3dtriangle.h"
+#include "ms3dvertex.h"
 
 #include "tech/comtools.h"
 
@@ -22,11 +25,26 @@ struct sModelVertex;
 F_DECLARE_INTERFACE(IModel);
 F_DECLARE_INTERFACE(IReader);
 
-template class MS3DMODEL_API std::allocator<cMs3dMaterial>;
-template class MS3DMODEL_API std::allocator<cMs3dJoint>;
+///////////////////////////////////////////////////////////////////////////////
 
-template class MS3DMODEL_API std::vector<cMs3dMaterial>;
-template class MS3DMODEL_API std::vector<cMs3dJoint>;
+struct sMs3dComment
+{
+   int index;
+   std::string comment;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+
+#define MS3DMODEL_EXPORT_VECTOR(type) \
+   template class MS3DMODEL_API std::allocator<type>; \
+   template class MS3DMODEL_API std::vector<type>
+
+MS3DMODEL_EXPORT_VECTOR(cMs3dGroup);
+MS3DMODEL_EXPORT_VECTOR(cMs3dJoint);
+MS3DMODEL_EXPORT_VECTOR(cMs3dMaterial);
+MS3DMODEL_EXPORT_VECTOR(cMs3dTriangle);
+MS3DMODEL_EXPORT_VECTOR(cMs3dVertex);
+MS3DMODEL_EXPORT_VECTOR(sMs3dComment);
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -42,17 +60,26 @@ public:
    cMs3dModel();
    ~cMs3dModel();
 
-   IModel * Read(IReader * pReader);
+   tResult Read(IReader * pReader);
+
+   IModel * CreateModel();
 
    static void * Load(IReader * pReader);
    static void Unload(void * pData);
 
 private:
-   std::vector<cMs3dMaterial> ms3dMaterials;
+   std::vector<cMs3dVertex> m_ms3dVerts;
+   std::vector<cMs3dTriangle> m_ms3dTris;
+   std::vector<cMs3dGroup> m_ms3dGroups;
+   std::vector<cMs3dMaterial> m_ms3dMaterials;
    float m_animationFPS;
    float m_currentTime;
    int m_nTotalFrames;
-   std::vector<cMs3dJoint> ms3dJoints;
+   std::vector<cMs3dJoint> m_ms3dJoints;
+   std::vector<sMs3dComment> m_groupComments;
+   std::vector<sMs3dComment> m_materialComments;
+   std::vector<sMs3dComment> m_jointComments;
+   std::string m_modelComment;
 };
 
 ///////////////////////////////////////////////////////////////////////////////

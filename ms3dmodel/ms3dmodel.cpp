@@ -8,10 +8,7 @@
 #include "ms3dheader.h"
 #include "vertexmapper.h"
 
-#include "ms3dmodel/ms3dgroup.h"
 #include "ms3dmodel/ms3dmodelapi.h"
-#include "ms3dmodel/ms3dtriangle.h"
-#include "ms3dmodel/ms3dvertex.h"
 
 #include "engine/modelapi.h"
 #include "engine/modeltypes.h"
@@ -35,7 +32,6 @@
 #include <algorithm>
 #include <map>
 #include <set>
-#include <vector>
 
 #include "tech/dbgalloc.h" // must be last header
 
@@ -57,34 +53,6 @@ LOG_DEFINE_CHANNEL(Ms3dModel);
 #define LocalMsgIf3(cond,msg,a,b,c)    DebugMsgIfEx3(Ms3dModel,(cond),msg,(a),(b),(c))
 
 ////////////////////////////////////////////////////////////////////////////////
-
-static bool ModelVertsEqual(const sModelVertex & vert1, const sModelVertex & vert2)
-{
-   if ((vert1.u == vert2.u)
-      && (vert1.v == vert2.v)
-      && (vert1.normal.x == vert2.normal.x)
-      && (vert1.normal.y == vert2.normal.y)
-      && (vert1.normal.z == vert2.normal.z)
-      && (vert1.pos.x == vert2.pos.x)
-      && (vert1.pos.y == vert2.pos.y)
-      && (vert1.pos.z == vert2.pos.z)
-      && (vert1.bone == vert2.bone))
-   {
-      return true;
-   }
-   return false;
-}
-
-static void MatrixFromAngles(tVec3 angles, tMatrix4 * pMatrix)
-{
-   tMatrix4 rotX, rotY, rotZ, temp1, temp2;
-   MatrixRotateX(Rad2Deg(angles.x), &rotX);
-   MatrixRotateY(Rad2Deg(angles.y), &rotY);
-   MatrixRotateZ(Rad2Deg(angles.z), &rotZ);
-   temp1 = rotZ;
-   temp1.Multiply(rotY, &temp2);
-   temp2.Multiply(rotX, pMatrix);
-}
 
 template <typename T, typename SIZE_T>
 static tResult ReadVector(IReader * pReader, std::vector<T> * pVector)
@@ -118,7 +86,7 @@ static tResult ReadVector(IReader * pReader, std::vector<T> * pVector)
    return S_OK;
 }
 
-void ReadComments(IReader * pReader, vector<string> * pComments)
+void ReadComments(IReader * pReader, vector<sMs3dComment> * pComments)
 {
    uint nComments = 0;
    if (pReader->Read(&nComments, sizeof(nComments)) != S_OK
@@ -127,21 +95,20 @@ void ReadComments(IReader * pReader, vector<string> * pComments)
       return;
    }
 
-   pComments->reserve(nComments);
-
    for (uint i = 0; i < nComments; i++)
    {
       int index, length;
       if (pReader->Read(&index, sizeof(index)) == S_OK
          && pReader->Read(&length, sizeof(length)) == S_OK)
       {
-         Assert(index == i);
-
          char * pszTemp = static_cast<char *>(alloca((length + 1) * sizeof(char)));
          if (pReader->Read(pszTemp, length * sizeof(char)) == S_OK)
          {
             pszTemp[length] = 0;
-            pComments->push_back(string(pszTemp));
+            sMs3dComment comment;
+            comment.index = index;
+            comment.comment = string(pszTemp);
+            pComments->push_back(comment);
          }
       }
    }
@@ -337,130 +304,68 @@ cMs3dModel::~cMs3dModel()
 
 ////////////////////////////////////////
 
-IModel * cMs3dModel::Read(IReader * pReader)
+tResult cMs3dModel::Read(IReader * pReader)
 {
    if (pReader == NULL)
    {
-      return NULL;
+      return E_POINTER;
    }
 
    LocalMsg("Loading MS3D file...\n");
 
-   //////////////////////////////
    // Read the header
-
    cMs3dHeader header;
    if (pReader->Read(&header) != S_OK)
    {
       ErrorMsg("Error reading MS3D file header\n");
-      return NULL;
+      return E_FAIL;
    }
 
    if (!header.EqualTo(cMs3dHeader::gm_ms3dHeader))
    {
       ErrorMsg("Bad MS3D file header\n");
-      return NULL;
+      return E_FAIL;
    }
 
-   //////////////////////////////
-   // Read the vertices
-
-   vector<cMs3dVertex> ms3dVerts;
-   if (ReadVector<cMs3dVertex, uint16>(pReader, &ms3dVerts) != S_OK)
+   if (ReadVector<cMs3dVertex, uint16>(pReader, &m_ms3dVerts) != S_OK
+      || ReadVector<cMs3dTriangle, uint16>(pReader, &m_ms3dTris) != S_OK
+      || ReadVector<cMs3dGroup, uint16>(pReader, &m_ms3dGroups) != S_OK)
    {
-      return NULL;
+      return E_FAIL;
    }
 
-   //////////////////////////////
-   // Read the triangles
-
-   vector<cMs3dTriangle> ms3dTris;
-   if (ReadVector<cMs3dTriangle, uint16>(pReader, &ms3dTris) != S_OK)
+   if (FAILED(ReadVector<cMs3dMaterial, uint16>(pReader, &m_ms3dMaterials)))
    {
-      return NULL;
+      return E_FAIL;
    }
 
-   //////////////////////////////
-   // Read the groups
-
-   vector<cMs3dGroup> ms3dGroups;
-   if (ReadVector<cMs3dGroup, uint16>(pReader, &ms3dGroups) != S_OK)
-   {
-      return NULL;
-   }
-
-   //////////////////////////////
-
-   vector<sModelVertex> vertices;
-   vector<sModelMesh> meshes2;
-   vector<uint16> indices;
-   CompileMeshes(ms3dVerts, ms3dTris, ms3dGroups, &vertices, &meshes2, &indices);
-
-   //////////////////////////////
-   // Read the materials
-
-   if (FAILED(ReadVector<cMs3dMaterial, uint16>(pReader, &ms3dMaterials)))
-   {
-      return NULL;
-   }
-
-   LocalMsg1("%d Materials\n", ms3dMaterials.size());
-
-   vector<sModelMaterial> materials;
-   CompileMaterials(ms3dMaterials, &materials);
-
-   //////////////////////////////
    // Read the animation info
-
    if (pReader->Read(&m_animationFPS, sizeof(m_animationFPS)) != S_OK
       || pReader->Read(&m_currentTime, sizeof(m_currentTime)) != S_OK
       || pReader->Read(&m_nTotalFrames, sizeof(m_nTotalFrames)) != S_OK)
    {
-      return NULL;
+      return E_FAIL;
    }
 
    LocalMsg1("%d Animation Frames\n", m_nTotalFrames);
    LocalMsg1("Animation FPS = %f\n", m_animationFPS);
 
-   //////////////////////////////
    // Read the joints
-
-   if (FAILED(ReadVector<cMs3dJoint, uint16>(pReader, &ms3dJoints)))
+   if (FAILED(ReadVector<cMs3dJoint, uint16>(pReader, &m_ms3dJoints)))
    {
-      return NULL;
+      return E_FAIL;
    }
 
-   LocalMsg1("%d Joints\n", ms3dJoints.size());
+   LocalMsg1("%d Joints\n", m_ms3dJoints.size());
 
-   vector<sModelJoint> joints;
-   vector< vector<sModelKeyFrame> > jointKeyFrames;
-   CompileJointsAndKeyFrames(m_animationFPS, ms3dJoints, &joints, &jointKeyFrames);
-
-   cAutoIPtr<IModelSkeleton> pSkeleton;
-   if (!joints.empty())
-   {
-      if (ModelSkeletonCreate(&joints[0], joints.size(), &pSkeleton) != S_OK)
-      {
-         ErrorMsg("Failed to create skeleton for model\n");
-         return NULL;
-      }
-   }
-
-   //////////////////////////////
    // Read the comments, if present (MilkShape versions 1.7+)
-
-   vector<string> groupComments;
-   vector<string> materialComments;
-   vector<string> jointComments;
-   string modelComment;
-
    int subVersion = 0;
    if (pReader->Read(&subVersion, sizeof(subVersion)) == S_OK
       && subVersion == 1)
    {
-      ReadComments(pReader, &groupComments);
-      ReadComments(pReader, &materialComments);
-      ReadComments(pReader, &jointComments);
+      ReadComments(pReader, &m_groupComments);
+      ReadComments(pReader, &m_materialComments);
+      ReadComments(pReader, &m_jointComments);
 
       {
          int hasModelComment = 0;
@@ -474,17 +379,46 @@ IModel * cMs3dModel::Read(IReader * pReader)
                if (pReader->Read(pszTemp, length * sizeof(char)) == S_OK)
                {
                   pszTemp[length] = 0;
-                  modelComment.assign(pszTemp);
+                  m_modelComment.assign(pszTemp);
                }
             }
          }
       }
    }
 
-   vector<sModelAnimationDesc> animDescs;
-   if (!modelComment.empty())
+   return S_OK;
+}
+
+////////////////////////////////////////
+
+IModel * cMs3dModel::CreateModel()
+{
+   vector<sModelVertex> vertices;
+   vector<sModelMesh> meshes2;
+   vector<uint16> indices;
+   CompileMeshes(m_ms3dVerts, m_ms3dTris, m_ms3dGroups, &vertices, &meshes2, &indices);
+
+   vector<sModelMaterial> materials;
+   CompileMaterials(m_ms3dMaterials, &materials);
+
+   vector<sModelJoint> joints;
+   vector< vector<sModelKeyFrame> > jointKeyFrames;
+   CompileJointsAndKeyFrames(m_animationFPS, m_ms3dJoints, &joints, &jointKeyFrames);
+
+   cAutoIPtr<IModelSkeleton> pSkeleton;
+   if (!joints.empty())
    {
-      ParseAnimDescs(modelComment.c_str(), &animDescs);
+      if (ModelSkeletonCreate(&joints[0], joints.size(), &pSkeleton) != S_OK)
+      {
+         ErrorMsg("Failed to create skeleton for model\n");
+         return NULL;
+      }
+   }
+
+   vector<sModelAnimationDesc> animDescs;
+   if (!m_modelComment.empty())
+   {
+      ParseAnimDescs(m_modelComment.c_str(), &animDescs);
    }
 
    if (!animDescs.empty())
@@ -589,7 +523,11 @@ IModel * cMs3dModel::Read(IReader * pReader)
 void * cMs3dModel::Load(IReader * pReader)
 {
    cMs3dModel ms3dModel;
-   return ms3dModel.Read(pReader);
+   if (ms3dModel.Read(pReader) == S_OK)
+   {
+      return ms3dModel.CreateModel();
+   }
+   return NULL;
 }
 
 ////////////////////////////////////////
