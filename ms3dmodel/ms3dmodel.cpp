@@ -114,12 +114,12 @@ void ReadComments(IReader * pReader, vector<sMs3dComment> * pComments)
    }
 }
 
-static void CompileMeshes(const vector<cMs3dVertex> & ms3dVerts,
-                          const vector<cMs3dTriangle> & ms3dTris,
-                          const vector<cMs3dGroup> & ms3dGroups,
-                          vector<sModelVertex> * pModelVertices,
-                          vector<sModelMesh> * pModelMeshes,
-                          vector<uint16> * pModelIndices)
+void CompileMeshes(const vector<cMs3dVertex> & ms3dVerts,
+                   const vector<cMs3dTriangle> & ms3dTris,
+                   const vector<cMs3dGroup> & ms3dGroups,
+                   vector<sModelVertex> * pModelVertices,
+                   vector<sModelMesh> * pModelMeshes,
+                   vector<uint16> * pModelIndices)
 {
    //////////////////////////////
    // Re-map the vertices based on the triangles because Milkshape file
@@ -182,15 +182,15 @@ static void CompileMeshes(const vector<cMs3dVertex> & ms3dVerts,
    }
 }
 
-static void CompileMaterials(const vector<cMs3dMaterial> & ms3dMaterials,
-                             vector<sModelMaterial> * pModelMaterials)
+void CompileMaterials(const vector<cMs3dMaterial> & ms3dMaterials,
+                      vector<sModelMaterial> * pModelMaterials)
 {
    if (!ms3dMaterials.empty())
    {
       vector<cMs3dMaterial>::const_iterator iter = ms3dMaterials.begin(), end = ms3dMaterials.end();
       for (; iter != end; ++iter)
       {
-         sModelMaterial m;
+         sModelMaterial m = {0};
          memcpy(m.diffuse, iter->GetDiffuse(), sizeof(m.diffuse));
          cStr texture;
          iter->GetTexture(&texture);
@@ -200,9 +200,9 @@ static void CompileMaterials(const vector<cMs3dMaterial> & ms3dMaterials,
    }
 }
 
-static void CompileJointsAndKeyFrames(float animationFPS, const vector<cMs3dJoint> & ms3dJoints,
-                                      vector<sModelJoint> * pModelJoints,
-                                      vector< vector<sModelKeyFrame> > * pModelKeyFrames)
+void CompileJointsAndKeyFrames(float animationFPS, const vector<cMs3dJoint> & ms3dJoints,
+                               vector<sModelJoint> * pModelJoints,
+                               vector< vector<sModelKeyFrame> > * pModelKeyFrames)
 {
    if (!ms3dJoints.empty())
    {

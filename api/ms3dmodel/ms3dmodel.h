@@ -20,6 +20,10 @@
 #pragma once
 #endif
 
+struct sModelJoint;
+struct sModelKeyFrame;
+struct sModelMaterial;
+struct sModelMesh;
 struct sModelVertex;
 
 F_DECLARE_INTERFACE(IModel);
@@ -47,6 +51,22 @@ MS3DMODEL_EXPORT_VECTOR(cMs3dVertex);
 MS3DMODEL_EXPORT_VECTOR(sMs3dComment);
 
 ///////////////////////////////////////////////////////////////////////////////
+
+MS3DMODEL_API void CompileMeshes(const std::vector<cMs3dVertex> & ms3dVerts,
+                                 const std::vector<cMs3dTriangle> & ms3dTris,
+                                 const std::vector<cMs3dGroup> & ms3dGroups,
+                                 std::vector<sModelVertex> * pModelVertices,
+                                 std::vector<sModelMesh> * pModelMeshes,
+                                 std::vector<uint16> * pModelIndices);
+
+MS3DMODEL_API void CompileMaterials(const std::vector<cMs3dMaterial> & ms3dMaterials,
+                                    std::vector<sModelMaterial> * pModelMaterials);
+
+MS3DMODEL_API void CompileJointsAndKeyFrames(float animationFPS, const std::vector<cMs3dJoint> & ms3dJoints,
+                                             std::vector<sModelJoint> * pModelJoints,
+                                             std::vector< std::vector<sModelKeyFrame> > * pModelKeyFrames);
+
+///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cMs3dModel
 //
@@ -66,6 +86,15 @@ public:
 
    static void * Load(IReader * pReader);
    static void Unload(void * pData);
+
+   inline float GetAnimationFPS() const { return m_animationFPS; }
+   inline int GetAnimationTotalFrameCount() const { return m_nTotalFrames; }
+   inline const std::vector<cMs3dVertex> & GetVertices() const { return m_ms3dVerts; }
+   inline const std::vector<cMs3dTriangle> & GetTriangles() const { return m_ms3dTris; }
+   inline const std::vector<cMs3dGroup> & GetGroups() const { return m_ms3dGroups; }
+   inline const std::vector<cMs3dMaterial> & GetMaterials() const { return m_ms3dMaterials; }
+   inline const std::vector<cMs3dJoint> & GetJoints() const { return m_ms3dJoints; }
+   inline const std::string & GetModelComment() const { return m_modelComment; }
 
 private:
    std::vector<cMs3dVertex> m_ms3dVerts;
