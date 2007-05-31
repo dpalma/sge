@@ -90,7 +90,7 @@ interface IWriter : IUnknown
    virtual tResult Seek(long pos, eSeekOrigin origin) = 0;
 
    template <typename T>
-   tResult Write(T value)
+   tResult Write(const T & value)
    {
       return cReadWriteOps<T>::Write(this, value);
    }
