@@ -11,6 +11,7 @@
 
 #include "tech/configapi.h"
 #include "tech/dictionaryapi.h"
+#include "tech/filepath.h"
 #include "tech/filespec.h"
 #include "tech/globalobj.h"
 #include "tech/readwriteapi.h"
@@ -303,6 +304,15 @@ int _tmain(int argc, tChar * argv[])
 
       if (ConvertModel(cFileSpec(inputModel.c_str()), outputModel) == S_OK)
       {
+         cFilePath outputPath;
+         outputModel.GetPath(&outputPath);
+
+         UseGlobal(ResourceManager);
+         pResourceManager->AddDirectory(outputPath.CStr());
+
+         IModel * pModel = NULL;
+         pResourceManager->Load(outputModel.GetFileName(), kRT_Model, NULL, reinterpret_cast<void**>(&pModel));
+
          result = EXIT_SUCCESS;
       }
    }
