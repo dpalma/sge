@@ -115,6 +115,7 @@ static void MainTerm()
 class cModelAnimation
 {
 public:
+   cModelAnimation();
    cModelAnimation(eModelAnimationType type, const vector< vector<sModelKeyFrame> > & keyFrameVectors);
 
    eModelAnimationType GetAnimationType() const { return m_type; }
@@ -123,6 +124,12 @@ public:
    eModelAnimationType m_type;
    vector< vector<sModelKeyFrame> > m_keyFrameVectors;
 };
+
+////////////////////////////////////////
+
+cModelAnimation::cModelAnimation()
+{
+}
 
 ////////////////////////////////////////
 
@@ -201,7 +208,7 @@ static tResult ConvertModel(const cFileSpec & ms3dModelName, const cFileSpec & o
 
    const vector<cMs3dJoint> & ms3dJoints = ms3dModel.GetJoints();
 
-   vector<cModelAnimation> modelAnimations;
+   vector<cModelAnimation> modelAnimations(animDescs.size());
 
    vector<sModelAnimationDesc>::iterator iter = animDescs.begin(), end = animDescs.end();
    for (; iter != end; ++iter)
@@ -250,7 +257,9 @@ static tResult ConvertModel(const cFileSpec & ms3dModelName, const cFileSpec & o
          }
       }
 
-      modelAnimations.push_back(cModelAnimation(iter->type, animKeyFrames));
+      cModelAnimation & modelAnimation = modelAnimations[iter - animDescs.begin()];
+      modelAnimation.m_type = iter->type;
+      modelAnimation.m_keyFrameVectors.swap(animKeyFrames);
    }
 
    cAutoIPtr<IWriter> pWriter;
@@ -277,7 +286,12 @@ static tResult ConvertModel(const cFileSpec & ms3dModelName, const cFileSpec & o
       vector<cModelAnimation>::const_iterator iter = modelAnimations.begin(), end = modelAnimations.end();
       for (; iter != end; ++iter)
       {
-         result = pWriter->Write(cModelChunk<cModelAnimation>(MODEL_ANIMATION_SEQUENCE_CHUNK, *iter));
+         cModelChunk<cModelAnimation> animChunk(MODEL_ANIMATION_SEQUENCE_CHUNK, *iter);
+         result = pWriter->Write(animChunk);
+         if (result != S_OK)
+         {
+            break;
+         }
       }
    }
 

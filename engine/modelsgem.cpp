@@ -181,7 +181,7 @@ void * ModelSgemLoad(IReader * pReader)
                pSkeleton->AddAnimation(animType, pAnim);
             }
 
-            for_each(interpolators.begin(), interpolators.end(), mem_fn(&IUnknown::Release));
+            for_each(interpolators.begin(), interpolators.end(), mem_fn(&IModelKeyFrameInterpolator::Release));
          }
       }
       else

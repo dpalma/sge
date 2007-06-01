@@ -65,12 +65,21 @@ tResult cReadWriteOps< std::vector<T> >::Read(IReader * pReader, std::vector<T> 
    }
    uint nValues = 0;
    tResult result = pReader->Read(&nValues);
-   if ((nValues > 0) && (result == S_OK))
+   if (result == S_OK)
    {
-      pValues->resize(nValues);
-      for (uint i = 0; (i < nValues) && (result == S_OK); ++i)
+      if (nValues > 0)
       {
-         result = pReader->Read(&((*pValues)[i]));
+         pValues->resize(nValues);
+         std::vector<T>::iterator iter = pValues->begin(), end = pValues->end();
+         for (; iter != end; ++iter)
+         {
+            T & t = *iter;
+            result = pReader->Read(&t);
+            if (result != S_OK)
+            {
+               break;
+            }
+         }
       }
    }
    return result;
@@ -86,9 +95,10 @@ tResult cReadWriteOps< std::vector<T> >::Write(IWriter * pWriter, const std::vec
    tResult result = pWriter->Write(static_cast<uint>(values.size()));
    if (result == S_OK)
    {
-      for (uint i = 0; i < values.size(); ++i)
+      std::vector<T>::const_iterator iter = values.begin(), end = values.end();
+      for (; iter != end; ++iter)
       {
-         result = pWriter->Write(values[i]);
+         result = pWriter->Write(*iter);
          if (result != S_OK)
          {
             break;
