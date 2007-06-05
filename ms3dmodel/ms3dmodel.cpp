@@ -204,64 +204,65 @@ void CompileJointsAndKeyFrames(float animationFPS, const vector<cMs3dJoint> & ms
                                vector<sModelJoint> * pModelJoints,
                                vector< vector<sModelKeyFrame> > * pModelKeyFrames)
 {
-   if (!ms3dJoints.empty())
+   if (ms3dJoints.empty())
    {
-      pModelJoints->resize(ms3dJoints.size());
-      pModelKeyFrames->resize(ms3dJoints.size());
+      return;
+   }
 
-      map<cStr, int> jointNameMap;
-      vector<cMs3dJoint>::const_iterator iter = ms3dJoints.begin();
-      vector<cMs3dJoint>::const_iterator end = ms3dJoints.end();
-      for (uint i = 0; iter != end; iter++, i++)
+   map<cStr, int> jointNameMap;
+   vector<cMs3dJoint>::const_iterator iter = ms3dJoints.begin();
+   vector<cMs3dJoint>::const_iterator end = ms3dJoints.end();
+   for (uint i = 0; iter != end; ++iter, ++i)
+   {
+      jointNameMap.insert(make_pair(iter->GetName(), i));
+   }
+
+   pModelJoints->resize(ms3dJoints.size());
+   pModelKeyFrames->resize(ms3dJoints.size());
+
+   iter = ms3dJoints.begin();
+   end = ms3dJoints.end();
+   for (uint i = 0; iter != end; ++iter, ++i)
+   {
+      LocalMsg1("Joint %d\n", i);
+
+      sModelJoint & modelJoint = (*pModelJoints)[i];
+
+      int parentIndex = -1;
+      if (strlen(iter->GetParentName()) > 0)
       {
-         jointNameMap.insert(make_pair(iter->GetName(), i));
+         map<cStr, int>::iterator found = jointNameMap.find(iter->GetParentName());
+         if (found != jointNameMap.end())
+         {
+            parentIndex = found->second;
+         }
       }
 
-      iter = ms3dJoints.begin();
-      end = ms3dJoints.end();
-      for (uint i = 0; iter != end; iter++, i++)
+      modelJoint.localTranslation = tVec3(iter->GetPosition());
+      modelJoint.localRotation = QuatFromEulerAngles(tVec3(iter->GetRotation()));
+      modelJoint.parentIndex = parentIndex;
+
+      AssertMsg(iter->GetRotationKeys().size() == iter->GetPositionKeys().size(),
+         _T("Should have been rejected by cMs3dJoint reader"));
+
+      vector<sModelKeyFrame> & keyFrames = (*pModelKeyFrames)[i];
+      keyFrames.resize(iter->GetRotationKeys().size());
+
+      const vector<sMs3dRotationKeyframe> & keyFramesRot = iter->GetRotationKeys();
+      const vector<sMs3dPositionKeyframe> & keyFramesTrans = iter->GetPositionKeys();
+      for (uint j = 0; j < keyFrames.size(); j++)
       {
-         LocalMsg1("Joint %d\n", i);
-
-         int parentIndex = -1;
-
-         if (strlen(iter->GetParentName()) > 0)
+         if (keyFramesRot[j].time != keyFramesTrans[j].time)
          {
-            map<cStr, int>::iterator found = jointNameMap.find(iter->GetParentName());
-            if (found != jointNameMap.end())
-            {
-               parentIndex = found->second;
-            }
+            ErrorMsg("Time of rotation key frame not same as translation key frame\n");
          }
 
-         AssertMsg(iter->GetRotationKeys().size() == iter->GetPositionKeys().size(),
-            _T("Should have been rejected by cMs3dJoint reader"));
+         keyFrames[j].time = keyFramesRot[j].time;
+         keyFrames[j].translation = tVec3(keyFramesTrans[j].position);
+         keyFrames[j].rotation = QuatFromEulerAngles(tVec3(keyFramesRot[j].rotation));
 
-         vector<sModelKeyFrame> keyFrames(iter->GetRotationKeys().size());
-
-         const vector<sMs3dRotationKeyframe> & keyFramesRot = iter->GetRotationKeys();
-         const vector<sMs3dPositionKeyframe> & keyFramesTrans = iter->GetPositionKeys();
-         for (uint j = 0; j < keyFrames.size(); j++)
-         {
-            if (keyFramesRot[j].time != keyFramesTrans[j].time)
-            {
-               ErrorMsg("Time of rotation key frame not same as translation key frame\n");
-            }
-
-            keyFrames[j].time = keyFramesRot[j].time;
-            keyFrames[j].translation = tVec3(keyFramesTrans[j].position);
-            keyFrames[j].rotation = QuatFromEulerAngles(tVec3(keyFramesRot[j].rotation));
-
-            int frame = FloatToInt(static_cast<float>(keyFrames[j].time) * animationFPS);
-            LocalMsg3("Key frame %d at %.3f is #%d\n", j, keyFrames[j].time, frame);
-         }
-
-         (*pModelKeyFrames)[i].resize(keyFrames.size());
-         copy(keyFrames.begin(), keyFrames.end(), (*pModelKeyFrames)[i].begin());
-
-         (*pModelJoints)[i].localTranslation = tVec3(iter->GetPosition());
-         (*pModelJoints)[i].localRotation = QuatFromEulerAngles(tVec3(iter->GetRotation()));
-         (*pModelJoints)[i].parentIndex = parentIndex;
+         int frame = FloatToInt(static_cast<float>(keyFrames[j].time) * animationFPS);
+         LocalMsg3("Key frame %d at %.3f is #%d\n", j, keyFrames[j].time, frame);
       }
    }
 

@@ -184,6 +184,7 @@ public:
    cModelChunk();
    cModelChunk(uint chunkId);
    cModelChunk(uint chunkId, const T & chunkData);
+   cModelChunk(const cModelChunk & other);
 
    uint GetChunkId() const { return m_chunkHeader.chunkId; }
    uint GetChunkLength() const { return m_chunkHeader.chunkLength; }
@@ -225,6 +226,16 @@ cModelChunk<T>::cModelChunk(uint chunkId, const T & chunkData)
 {
    m_chunkHeader.chunkId = chunkId;
    m_chunkHeader.chunkLength = 0;
+}
+
+////////////////////////////////////////
+
+template <typename T>
+cModelChunk<T>::cModelChunk(const cModelChunk & other)
+ : m_bNoChunkData(other.m_bNoChunkData)
+ , m_chunkData(other.m_chunkData)
+{
+   memcpy(&m_chunkHeader, &other.m_chunkHeader, sizeof(m_chunkHeader));
 }
 
 
