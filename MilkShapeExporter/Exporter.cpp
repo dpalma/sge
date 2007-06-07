@@ -7,6 +7,7 @@
 #include "resource.h"
 
 #include "engine/modelapi.h"
+#include "engine/modelreadwrite.h"
 
 #include "render/renderapi.h"
 

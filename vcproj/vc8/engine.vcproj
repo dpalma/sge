@@ -532,6 +532,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\engine\modelreadwrite.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\engine\modelsgem.cpp"
 				>
 			</File>
@@ -726,6 +730,10 @@
 			</File>
 			<File
 				RelativePath="..\..\api\engine\modelapi.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\api\engine\modelreadwrite.h"
 				>
 			</File>
 			<File

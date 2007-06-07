@@ -7,7 +7,7 @@
 
 #include "engine/engineapi.h"
 #include "engine/modelapi.h"
-#include "engine/modeltypes.h"
+#include "engine/modelreadwrite.h"
 
 #include "tech/configapi.h"
 #include "tech/dictionaryapi.h"

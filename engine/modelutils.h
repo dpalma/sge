@@ -8,6 +8,7 @@
 #include "engine/modeltypes.h"
 
 #include "tech/axisalignedbox.h"
+#include "tech/techstring.h"
 
 #ifdef _MSC_VER
 #pragma once

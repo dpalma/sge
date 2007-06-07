@@ -375,6 +375,9 @@
 				RelativePath="..\..\engine\modelanim.cpp">
 			</File>
 			<File
+				RelativePath="..\..\engine\modelreadwrite.cpp">
+			</File>
+			<File
 				RelativePath="..\..\engine\modelsgem.cpp">
 			</File>
 			<File
@@ -484,9 +487,6 @@
 				RelativePath="..\..\engine\modelutils.h">
 			</File>
 			<File
-				RelativePath="..\..\engine\renderer.h">
-			</File>
-			<File
 				RelativePath="..\..\engine\saveloadmanager.h">
 			</File>
 			<File
@@ -521,6 +521,9 @@
 			</File>
 			<File
 				RelativePath="..\..\api\engine\modelapi.h">
+			</File>
+			<File
+				RelativePath="..\..\api\engine\modelreadwrite.h">
 			</File>
 			<File
 				RelativePath="..\..\api\engine\modeltypes.h">

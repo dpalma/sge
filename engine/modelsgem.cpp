@@ -5,6 +5,8 @@
 
 #include "model.h"
 
+#include "engine/modelreadwrite.h"
+
 #include "render/renderapi.h"
 
 #include "tech/globalobj.h"

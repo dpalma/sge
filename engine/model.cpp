@@ -5,6 +5,8 @@
 
 #include "model.h"
 
+#include "tech/techstring.h"
+
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
 #endif
