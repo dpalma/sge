@@ -7,7 +7,15 @@
 
 #include "tech/readwriteutils.h"
 
+#ifdef HAVE_UNITTESTPP
+#include "UnitTest++.h"
+#endif
+
+#include <vector>
+
 #include "tech/dbgalloc.h" // must be last header
+
+using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -206,5 +214,67 @@ tResult cReadWriteOps<sModelKeyFrame>::Write(IWriter * pWriter, const sModelKeyF
    return E_FAIL;
 }
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+#ifdef HAVE_UNITTESTPP
+
+static bool operator ==(const sModelKeyFrame & keyFrame1, const sModelKeyFrame & keyFrame2)
+{
+   return keyFrame1.time == keyFrame2.time
+      && keyFrame1.translation.x == keyFrame2.translation.x
+      && keyFrame1.translation.y == keyFrame2.translation.y
+      && keyFrame1.translation.z == keyFrame2.translation.z
+      && keyFrame1.rotation.x == keyFrame2.rotation.x
+      && keyFrame1.rotation.y == keyFrame2.rotation.y
+      && keyFrame1.rotation.z == keyFrame2.rotation.z
+      && keyFrame1.rotation.w == keyFrame2.rotation.w;
+}
+
+SUITE(ModelReadWrite)
+{
+   TEST(ReadWriteArrayOfArraysOfKeyFrames)
+   {
+      static const uint nAnims = 10;
+      static const uint nKeyFrames = 20;
+
+      vector< vector<sModelKeyFrame> > keyFrameVectors;
+      keyFrameVectors.resize(nAnims);
+
+      vector< vector<sModelKeyFrame> >::iterator iter = keyFrameVectors.begin(), end = keyFrameVectors.end();
+      for (; iter != end; ++iter)
+      {
+         iter->resize(nKeyFrames);
+         vector<sModelKeyFrame>::iterator iter2 = iter->begin(), end2 = iter->end();
+         for (; iter2 != end2; ++iter2)
+         {
+            float index = static_cast<float>(iter2 - iter->begin());
+            iter2->rotation = tQuat(0, 1, 0, index);
+            iter2->translation = tVec3(0, 0, index);
+            iter2->time = index;
+         }
+      }
+
+      byte mem[sizeof(sModelKeyFrame) * nKeyFrames * nAnims + 64];
+
+      {
+         cAutoIPtr<IWriter> pWriter;
+         CHECK_EQUAL(S_OK, MemWriterCreate(&mem[0], sizeof(mem), &pWriter));
+         CHECK_EQUAL(S_OK, pWriter->Write(keyFrameVectors));
+      }
+
+      {
+         cAutoIPtr<IReader> pReader;
+         CHECK_EQUAL(S_OK, MemReaderCreate(&mem[0], sizeof(mem), false, &pReader));
+
+         vector< vector<sModelKeyFrame> > readKeyFrameVectors;
+         CHECK_EQUAL(S_OK, pReader->Read(&readKeyFrameVectors));
+
+         CHECK(keyFrameVectors == readKeyFrameVectors);
+      }
+   }
+}
+
+#endif // HAVE_UNITTESTPP
 
 ///////////////////////////////////////////////////////////////////////////////
