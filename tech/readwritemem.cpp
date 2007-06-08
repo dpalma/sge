@@ -348,6 +348,7 @@ SUITE(ReadWriteMem)
          cAutoIPtr<IWriter> pWriter;
          CHECK_EQUAL(S_OK, MemWriterCreate(&mem[0], sizeof(mem), &pWriter));
          pWriter->Write(writeInt);
+         pWriter->Write(writeString);
          pWriter->Write(writeFloat);
       }
 

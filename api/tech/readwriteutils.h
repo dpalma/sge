@@ -73,6 +73,7 @@ tResult cReadWriteOps< std::basic_string<T> >::Read(IReader * pReader, std::basi
    tResult result = pReader->Read(&len);
    if ((result == S_OK) && (len > 0))
    {
+      WarnMsgIf1(len > 1024 * 1024, "Huge length, %d, encountered reading string\n", len);
       pS->resize(len);
       std::basic_string<T>::iterator iter = pS->begin(), end = pS->end();
       for (; iter != end; ++iter)
