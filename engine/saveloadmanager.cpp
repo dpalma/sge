@@ -7,6 +7,7 @@
 
 #include "tech/readwriteutils.h"
 #include "tech/techhash.h"
+#include "tech/techstring.h"
 #include "tech/toposort.h"
 
 #include <boost/bind.hpp>

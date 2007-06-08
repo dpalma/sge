@@ -28,7 +28,9 @@ public:
    virtual tResult Tell(ulong * pPos);
    virtual tResult Seek(long pos, eSeekOrigin origin);
 
-   virtual tResult Read(cStr * pValue, tChar stop);
+   virtual tResult ReadLine(std::string * pLine);
+   virtual tResult ReadLine(std::wstring * pLine);
+
    virtual tResult Read(void * pv, size_t cb, size_t * pcbRead = NULL);
 
 private:
@@ -51,7 +53,6 @@ public:
    virtual tResult Tell(ulong * pPos);
    virtual tResult Seek(long pos, eSeekOrigin origin);
 
-   virtual tResult Write(const tChar * value);
    virtual tResult Write(const void * pv, size_t cb, size_t * pcbWritten = NULL);
 
 private:

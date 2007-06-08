@@ -6,7 +6,8 @@
 
 #include "techdll.h"
 #include "comtools.h"
-#include "techstring.h"
+
+#include <string>
 
 #ifdef _MSC_VER
 #pragma once
@@ -24,6 +25,7 @@ enum eSeekOrigin
    kSO_Cur,
 };
 
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // TEMPLATE: cReadWriteOps
@@ -33,15 +35,11 @@ template <typename T>
 class cReadWriteOps
 {
 public:
-   ////////////////////////////////////
-
    static tResult Read(IReader * pReader, T * pValue)
    {
       Assert(!"Cannot use default cReadWriteOps<>::Read()!");
       return E_NOTIMPL;
    }
-
-   ////////////////////////////////////
 
    static tResult Write(IWriter * pWriter, T value)
    {
@@ -49,6 +47,7 @@ public:
       return E_NOTIMPL;
    }
 };
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -66,18 +65,13 @@ interface IReader : IUnknown
       return cReadWriteOps<T>::Read(this, pValue);
    }
 
-   tResult Read(int * pValue);
-   tResult Read(uint * pValue);
-   tResult Read(long * pValue);
-   tResult Read(ulong * pValue);
-   tResult Read(short * pValue);
-   tResult Read(ushort * pValue);
-   tResult Read(byte * pValue);
+   virtual tResult ReadLine(std::string * pLine) = 0;
+   virtual tResult ReadLine(std::wstring * pLine) = 0;
 
-   virtual tResult Read(cStr * pValue, tChar stop) = 0;
    virtual tResult Read(void * pValue, size_t cbValue,
                         size_t * pcbRead = NULL) = 0;
 };
+
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -95,23 +89,10 @@ interface IWriter : IUnknown
       return cReadWriteOps<T>::Write(this, value);
    }
 
-   tResult Write(int value);
-   tResult Write(uint value);
-   tResult Write(long value);
-   tResult Write(ulong value);
-   tResult Write(short value);
-   tResult Write(ushort value);
-   tResult Write(byte value);
-
-   virtual tResult Write(const tChar * value) = 0;
    virtual tResult Write(const void * pValue, size_t cbValue,
                          size_t * pcbWritten = NULL) = 0;
-
-   inline tResult Write(tChar * value)
-   {
-      return Write(static_cast<const tChar *>(value));
-   }
 };
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // Explicit template instantiations for basic types
@@ -228,156 +209,48 @@ inline tResult cReadWriteOps<char>::Write(IWriter * pWriter, char value)
    return pWriter->Write(&value, sizeof(value));
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
-template <>
-class cReadWriteOps<cStr>
-{
-public:
-   static tResult Read(IReader * pReader, cStr * pValue);
-   static tResult Write(IWriter * pWriter, const cStr & value);
-};
-
 ///////////////////////////////////////
 
-inline tResult cReadWriteOps<cStr>::Read(IReader * pReader, cStr * pValue)
+template <>
+inline tResult cReadWriteOps<wchar_t>::Read(IReader * pReader, wchar_t * pValue)
 {
-   cStr::size_type length = 0;
-   if (pReader->Read(&length) == S_OK)
-   {
-      pValue->resize(length);
-      return pReader->Read(&(*pValue)[0], length * sizeof(cStr::value_type));
-   }
-   return E_FAIL;
+   return pReader->Read(pValue, sizeof(*pValue));
+}
+
+template <>
+inline tResult cReadWriteOps<wchar_t>::Write(IWriter * pWriter, wchar_t value)
+{
+   return pWriter->Write(&value, sizeof(value));
 }
 
 ///////////////////////////////////////
 
-inline tResult cReadWriteOps<cStr>::Write(IWriter * pWriter, const cStr & value)
+template <>
+inline tResult cReadWriteOps<float>::Read(IReader * pReader, float * pValue)
 {
-   if (pWriter->Write(value.length()) == S_OK
-      && pWriter->Write((void*)value.c_str(), value.length() * sizeof(cStr::value_type)) == S_OK)
-   {
-      return S_OK;
-   }
-   return E_FAIL;
+   return pReader->Read(pValue, sizeof(*pValue));
 }
-
-///////////////////////////////////////////////////////////////////////////////
-// IReader inline functions
-
-inline tResult IReader::Read(int * pValue)
-{
-   return cReadWriteOps<int>::Read(this, pValue);
-}
-
-inline tResult IReader::Read(uint * pValue)
-{
-   return cReadWriteOps<uint>::Read(this, pValue);
-}
-
-inline tResult IReader::Read(long * pValue)
-{
-   return cReadWriteOps<long>::Read(this, pValue);
-}
-
-inline tResult IReader::Read(ulong * pValue)
-{
-   return cReadWriteOps<ulong>::Read(this, pValue);
-}
-
-inline tResult IReader::Read(short * pValue)
-{
-   return cReadWriteOps<short>::Read(this, pValue);
-}
-
-inline tResult IReader::Read(ushort * pValue)
-{
-   return cReadWriteOps<ushort>::Read(this, pValue);
-}
-
-inline tResult IReader::Read(byte * pValue)
-{
-   return cReadWriteOps<byte>::Read(this, pValue);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// IWriter inline functions
-
-inline tResult IWriter::Write(int value)
-{
-   return cReadWriteOps<int>::Write(this, value);
-}
-
-inline tResult IWriter::Write(uint value)
-{
-   return cReadWriteOps<uint>::Write(this, value);
-}
-
-inline tResult IWriter::Write(long value)
-{
-   return cReadWriteOps<long>::Write(this, value);
-}
-
-inline tResult IWriter::Write(ulong value)
-{
-   return cReadWriteOps<ulong>::Write(this, value);
-}
-
-inline tResult IWriter::Write(short value)
-{
-   return cReadWriteOps<short>::Write(this, value);
-}
-
-inline tResult IWriter::Write(ushort value)
-{
-   return cReadWriteOps<ushort>::Write(this, value);
-}
-
-inline tResult IWriter::Write(byte value)
-{
-   return cReadWriteOps<byte>::Write(this, value);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cReadWriteOps<float>
-//
 
 template <>
-class cReadWriteOps<float>
+inline tResult cReadWriteOps<float>::Write(IWriter * pWriter, float value)
 {
-public:
-   static tResult Read(IReader * pReader, float * pValue)
-   {
-      return pReader->Read(pValue, sizeof(float));
-   }
+   return pWriter->Write(&value, sizeof(value));
+}
 
-   static tResult Write(IWriter * pWriter, float value)
-   {
-      return pWriter->Write(&value, sizeof(float));
-   }
-};
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// CLASS: cReadWriteOps<double>
-//
+///////////////////////////////////////
 
 template <>
-class cReadWriteOps<double>
+inline tResult cReadWriteOps<double>::Read(IReader * pReader, double * pValue)
 {
-public:
-   static tResult Read(IReader * pReader, double * pValue)
-   {
-      return pReader->Read(pValue, sizeof(double));
-   }
+   return pReader->Read(pValue, sizeof(*pValue));
+}
 
-   static tResult Write(IWriter * pWriter, double value)
-   {
-      return pWriter->Write(&value, sizeof(double));
-   }
-};
+template <>
+inline tResult cReadWriteOps<double>::Write(IWriter * pWriter, double value)
+{
+   return pWriter->Write(&value, sizeof(value));
+}
+
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -390,6 +263,7 @@ TECH_API tResult FileReaderCreate(const cFileSpec & file, eFileMode mode, IReade
 TECH_API tResult FileWriterCreate(const cFileSpec & file, eFileMode mode, IWriter * * ppWriter);
 
 TECH_API tResult MemReaderCreate(const byte * pMem, size_t memSize, bool bOwn, IReader * * ppReader);
+TECH_API tResult MemWriterCreate(byte * pMem, size_t memSize, IWriter * * ppWriter);
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -401,15 +275,10 @@ interface IMD5Writer : IWriter
 {
    virtual void InitializeMD5() = 0;
    virtual tResult FinalizeMD5(byte digest[16]) = 0;
-
-   template <typename T>
-   tResult Write(T value)
-   {
-      return cReadWriteOps<T>::Write(this, value);
-   }
 };
 
 TECH_API tResult MD5WriterCreate(IWriter * pWriter, IMD5Writer * * ppWriter);
+
 
 ///////////////////////////////////////////////////////////////////////////////
 

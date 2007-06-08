@@ -119,6 +119,7 @@ tResult cReadWriteOps<GUID>::Write(IWriter * pWriter, const GUID & guid)
    return E_FAIL;
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cAutoBuffer

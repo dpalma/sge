@@ -66,17 +66,6 @@ tResult cMD5Writer::Seek(long pos, eSeekOrigin origin)
 
 ////////////////////////////////////////
 
-tResult cMD5Writer::Write(const char * value)
-{
-   if (m_bUpdateMD5)
-   {
-      m_md5.Update(const_cast<byte*>(reinterpret_cast<const byte*>(value)), strlen(value));
-   }
-   return m_pWriter->Write(value);
-}
-
-////////////////////////////////////////
-
 tResult cMD5Writer::Write(const void * pValue, size_t cbValue, size_t * pcbWritten)
 {
    if (m_bUpdateMD5)

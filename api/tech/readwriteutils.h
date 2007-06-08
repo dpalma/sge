@@ -9,6 +9,7 @@
 #include "readwriteapi.h"
 #include "vec3.h"
 
+#include <string>
 #include <vector>
 
 #ifdef _MSC_VER
@@ -44,6 +45,73 @@ public:
    static tResult Read(IReader * pReader, GUID * pGUID);
    static tResult Write(IWriter * pWriter, const GUID & guid);
 };
+
+
+////////////////////////////////////////////////////////////////////////////////
+// Read and write STL strings
+
+template <typename T>
+class cReadWriteOps< std::basic_string<T> >
+{
+public:
+   static tResult Read(IReader * pReader, std::basic_string<T> * pS);
+   static tResult Write(IWriter * pWriter, const std::basic_string<T> & s);
+};
+
+template <typename T>
+tResult cReadWriteOps< std::basic_string<T> >::Read(IReader * pReader, std::basic_string<T> * pS)
+{
+   if (pReader == NULL || pS == NULL)
+   {
+      return E_POINTER;
+   }
+
+   pS->clear();
+
+   std::basic_string<T>::size_type len = 0;
+
+   tResult result = pReader->Read(&len);
+   if ((result == S_OK) && (len > 0))
+   {
+      pS->resize(len);
+      std::basic_string<T>::iterator iter = pS->begin(), end = pS->end();
+      for (; iter != end; ++iter)
+      {
+         T & t = *iter;
+         result = pReader->Read(&t);
+         if (result != S_OK)
+         {
+            break;
+         }
+      }
+   }
+
+   return result;
+}
+
+template <typename T>
+tResult cReadWriteOps< std::basic_string<T> >::Write(IWriter * pWriter, const std::basic_string<T> & s)
+{
+   if (pWriter == NULL)
+   {
+      return E_POINTER;
+   }
+   tResult result = pWriter->Write(s.length());
+   if (result == S_OK)
+   {
+      std::basic_string<T>::const_iterator iter = s.begin(), end = s.end();
+      for (; iter != end; ++iter)
+      {
+         result = pWriter->Write(*iter);
+         if (result != S_OK)
+         {
+            break;
+         }
+      }
+   }
+   return result;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////
 // Read and write STL vectors

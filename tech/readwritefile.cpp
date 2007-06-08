@@ -9,6 +9,13 @@
 
 #include "tech/dbgalloc.h" // must be last header
 
+
+///////////////////////////////////////////////////////////////////////////////
+
+static const char szLineDelimiters[] = "\r\n";
+static const wchar_t wszLineDelimiters[] = L"\r\n";
+
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cFileReader
@@ -91,9 +98,9 @@ tResult cFileReader::Seek(long pos, eSeekOrigin origin)
 
 ///////////////////////////////////////
 
-tResult cFileReader::Read(cStr * pValue, tChar stop)
+tResult cFileReader::ReadLine(std::string * pLine)
 {
-   if (pValue == NULL)
+   if (pLine == NULL)
    {
       return E_POINTER;
    }
@@ -103,30 +110,47 @@ tResult cFileReader::Read(cStr * pValue, tChar stop)
       return E_FAIL;
    }
 
-   ulong pos;
-   if (FAILED(Tell(&pos)))
+   for (char c = fgetc(m_fp); c != EOF; c = fgetc(m_fp))
    {
-      return E_FAIL;
+      if (strchr(szLineDelimiters, c) != NULL)
+      {
+         break;
+      }
+
+      pLine->push_back(c);
    }
-
-   uint len = 0;
-   for (char c = _fgettc(m_fp); c != stop && c != EOF; c = _fgettc(m_fp))
-   {
-      len++;
-   }
-   Seek(pos, kSO_Set);
-
-   tChar * pszBuffer = reinterpret_cast<tChar*>(alloca((len + 1) * sizeof(tChar)));
-
-   size_t nRead = fread(pszBuffer, 1, len + 1, m_fp);
 
    if (ferror(m_fp))
    {
       return E_FAIL;
    }
 
-   pszBuffer[len] = 0; // ensure always null-terminated
-   *pValue = pszBuffer;
+   return feof(m_fp) ? S_FALSE : S_OK;
+}
+
+///////////////////////////////////////
+
+tResult cFileReader::ReadLine(std::wstring * pLine)
+{
+   if (pLine == NULL)
+   {
+      return E_POINTER;
+   }
+
+   if (m_fp == NULL)
+   {
+      return E_FAIL;
+   }
+
+   for (wchar_t c = fgetwc(m_fp); (wcschr(wszLineDelimiters, c) == NULL) && (c != EOF); c = fgetwc(m_fp))
+   {
+      pLine->push_back(c);
+   }
+
+   if (ferror(m_fp))
+   {
+      return E_FAIL;
+   }
 
    return feof(m_fp) ? S_FALSE : S_OK;
 }
@@ -261,21 +285,6 @@ tResult cFileWriter::Seek(long pos, eSeekOrigin origin)
        (fseek(m_fp, pos, StdioSeekOrigin(origin)) == 0))
    {
       return S_OK;
-   }
-   return E_FAIL;
-}
-
-///////////////////////////////////////
-
-tResult cFileWriter::Write(const tChar * value)
-{
-   if (m_fp != NULL)
-   {
-      size_t nBytes = _tcslen(value) * sizeof(tChar);
-      if (fwrite(value, nBytes, 1, m_fp) == 1)
-      {
-         return S_OK;
-      }
    }
    return E_FAIL;
 }

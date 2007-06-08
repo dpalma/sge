@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "dictionarystore.h"
+
 #include "tech/readwriteapi.h"
 
 #ifdef HAVE_UNITTESTPP
@@ -14,6 +15,8 @@
 #include <list>
 
 #include "tech/dbgalloc.h" // must be last header
+
+using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -127,7 +130,7 @@ tResult cDictionaryTextStore::Load(IDictionary * pDictionary)
    if (!!pReader)
    {
       cStr line;
-      while (pReader->Read(&line, '\n') == S_OK)
+      while (pReader->ReadLine(&line) == S_OK)
       {
          cStr key, value, comment;
          if (ParseDictionaryLine(line.c_str(), &key, &value, &comment)
@@ -136,6 +139,7 @@ tResult cDictionaryTextStore::Load(IDictionary * pDictionary)
             DebugMsgEx2(DictionaryStore, "Read dictionary entry '%s' = '%s'\n", key.c_str(), value.c_str());
             pDictionary->Set(key.c_str(), value.c_str());
          }
+         line.clear();
       }
       result = S_OK;
    }
@@ -161,11 +165,11 @@ tResult cDictionaryTextStore::Save(IDictionary * pDictionary)
    tResult result = S_FALSE;
 
    cStr temp;
-   std::list<cStr> keys;
+   list<cStr> keys;
    if (pDictionary->GetKeys(&keys) == S_OK)
    {
-      std::list<cStr>::iterator iter;
-      for (iter = keys.begin(); iter != keys.end(); iter++)
+      list<cStr>::iterator iter = keys.begin(), end = keys.end();
+      for (; iter != end; ++iter)
       {
          cStr value;
          tPersistence persist;
@@ -173,7 +177,8 @@ tResult cDictionaryTextStore::Save(IDictionary * pDictionary)
          {
             if (persist == kPermanent)
             {
-               pWriter->Write(Sprintf(&temp, _T("%s=%s\n"), iter->c_str(), value.c_str()).c_str());
+               Sprintf(&temp, _T("%s=%s\n"), iter->c_str(), value.c_str());
+               pWriter->Write(temp.c_str(), temp.length() * sizeof(cStr::value_type));
             }
          }
       }
@@ -273,7 +278,7 @@ tResult cDictionaryIniStore::Load(IDictionary * pDictionary)
    cStr line;
    bool bInSection = false;
 
-   while (pReader->Read(&line, _T('\n')) == S_OK)
+   while (pReader->ReadLine(&line) == S_OK)
    {
       cStr section;
       if (ParseIniSectionLine(line.c_str(), &section, NULL))

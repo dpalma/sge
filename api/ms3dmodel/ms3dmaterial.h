@@ -7,6 +7,7 @@
 #include "ms3dmodeldll.h"
 
 #include "tech/readwriteapi.h"
+#include "tech/techstring.h"
 
 #ifdef _MSC_VER
 #pragma once
