@@ -211,6 +211,8 @@ inline tResult cReadWriteOps<char>::Write(IWriter * pWriter, char value)
 
 ///////////////////////////////////////
 
+// For, Visual C++ or lower, the wchar_t type is covered by the ushort overload of Read/Write
+#if _MSC_VER > 1310
 template <>
 inline tResult cReadWriteOps<wchar_t>::Read(IReader * pReader, wchar_t * pValue)
 {
@@ -222,6 +224,7 @@ inline tResult cReadWriteOps<wchar_t>::Write(IWriter * pWriter, wchar_t value)
 {
    return pWriter->Write(&value, sizeof(value));
 }
+#endif
 
 ///////////////////////////////////////
 
