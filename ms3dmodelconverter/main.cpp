@@ -169,6 +169,54 @@ tResult cReadWriteOps<cModelAnimation>::Write(IWriter * pWriter, const cModelAni
 
 ///////////////////////////////////////////////////////////////////////////////
 
+static tResult ExtractAnimation(const sModelAnimationDesc & animDesc,
+                                float animFps,
+                                const vector< vector<sModelKeyFrame> > & keyFrames,
+                                cModelAnimation * pAnim)
+{
+   if (pAnim == NULL)
+   {
+      return E_POINTER;
+   }
+
+   pAnim->m_type = animDesc.type;
+
+   vector< vector<sModelKeyFrame> > & animKeyFrames = pAnim->m_keyFrameVectors;
+   animKeyFrames.resize(keyFrames.size());
+
+   vector< vector<sModelKeyFrame> >::const_iterator iter2 = keyFrames.begin(), end2 = keyFrames.end();
+   for (; iter2 != end2; ++iter2)
+   {
+      const vector<sModelKeyFrame> & jointKeyFrames = *iter2;
+
+      vector<sModelKeyFrame> & jointAnimKeyFrames = animKeyFrames[iter2 - keyFrames.begin()];
+
+      int iStart = -1, iEnd = -1;
+      for (uint j = 0; j < jointKeyFrames.size(); ++j)
+      {
+         const sModelKeyFrame & keyFrame = jointKeyFrames[j];
+         uint frame = FloatToInt(keyFrame.time * animFps);
+         if (frame == animDesc.start)
+         {
+            iStart = j;
+         }
+         if (frame >= animDesc.start)
+         {
+            jointAnimKeyFrames.push_back(keyFrame);
+         }
+         if (frame >= animDesc.end)
+         {
+            iEnd = j;
+            break;
+         }
+      }
+   }
+
+   return S_OK;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
 static tResult ConvertModel(const cFileSpec & ms3dModelName, const cFileSpec & outputModelName)
 {
    tResult result = E_FAIL;
@@ -203,6 +251,8 @@ static tResult ConvertModel(const cFileSpec & ms3dModelName, const cFileSpec & o
       ms3dModel.GetAnimationFPS(), ms3dModel.GetJoints(),
       &joints, &keyFrames);
 
+   Assert(joints.size() == keyFrames.size());
+
    vector<sModelAnimationDesc> animDescs;
    ParseAnimDescs(ms3dModel.GetModelComment().c_str(), &animDescs);
 
@@ -213,53 +263,8 @@ static tResult ConvertModel(const cFileSpec & ms3dModelName, const cFileSpec & o
    vector<sModelAnimationDesc>::iterator iter = animDescs.begin(), end = animDescs.end();
    for (; iter != end; ++iter)
    {
-      vector< vector<sModelKeyFrame> > animKeyFrames(joints.size());
-
-      vector<cMs3dJoint>::const_iterator iter2 = ms3dJoints.begin(), end2 = ms3dJoints.end();
-      for (; iter2 != end2; ++iter2)
-      {
-         const vector<sMs3dRotationKeyframe> & rotKeys = iter2->GetRotationKeys();
-         const vector<sMs3dPositionKeyframe> & posKeys = iter2->GetPositionKeys();
-
-         if (rotKeys.size() != posKeys.size())
-         {
-            continue;
-         }
-
-         vector<sModelKeyFrame> & jointAnimKeyFrames = animKeyFrames[iter2 - ms3dJoints.begin()];
-         jointAnimKeyFrames.reserve(iter->end - iter->start + 1);
-
-         int iStart = -1, iEnd = -1;
-         for (uint j = 0; j < rotKeys.size(); ++j)
-         {
-            const sMs3dRotationKeyframe & rotKey = rotKeys[j];
-            const sMs3dPositionKeyframe & posKey = posKeys[j];
-            uint rotFrame = FloatToInt(rotKey.time);
-            uint posFrame = FloatToInt(posKey.time);
-            Assert(rotFrame == posFrame);
-            if (rotFrame == iter->start)
-            {
-               iStart = j;
-            }
-            if (rotFrame >= iter->start)
-            {
-               sModelKeyFrame keyFrame;
-               keyFrame.time = rotKey.time / ms3dModel.GetAnimationFPS();
-               keyFrame.translation = tVec3(posKey.position);
-               keyFrame.rotation = QuatFromEulerAngles(tVec3(rotKey.rotation));
-               jointAnimKeyFrames.push_back(keyFrame);
-            }
-            if (rotFrame >= iter->end)
-            {
-               iEnd = j;
-               break;
-            }
-         }
-      }
-
       cModelAnimation & modelAnimation = modelAnimations[iter - animDescs.begin()];
-      modelAnimation.m_type = iter->type;
-      modelAnimation.m_keyFrameVectors.swap(animKeyFrames);
+      ExtractAnimation(*iter, ms3dModel.GetAnimationFPS(), keyFrames, &modelAnimation);
    }
 
    cAutoIPtr<IWriter> pWriter;
