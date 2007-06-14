@@ -123,9 +123,12 @@ void * ModelSgemLoad(IReader * pReader)
    LocalMsg1("%d Joints\n", joints.size());
 
    cAutoIPtr<IModelSkeleton> pSkeleton;
-   if (ModelSkeletonCreate(&joints[0], joints.size(), &pSkeleton) != S_OK)
+   if (!joints.empty())
    {
-      return NULL;
+      if (ModelSkeletonCreate(&joints[0], joints.size(), &pSkeleton) != S_OK)
+      {
+         return NULL;
+      }
    }
 
    //////////////////////////////
