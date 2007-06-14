@@ -2,7 +2,7 @@
 <?xml version="1.0" encoding="utf-8" ?> 
 <entity name="Zombie">
    
-   <render model="zombie.ms3d">
+   <render model="zombie.sgem">
    </render>
    
    <position></position>
