@@ -6,6 +6,8 @@
 
 #include "techdll.h"
 
+#include "combase.h"
+
 #ifdef _MSC_VER
 #pragma once
 #endif
@@ -36,9 +38,6 @@ public:
    const cColor & operator +=(const cColor & other);
    const cColor & operator -=(const cColor & other);
 
-   bool GetHSV(float hsv[3]) const;
-   bool SetHSV(const float hsv[3]);
-
    inline const value_type * GetPointer() const { return rgba; }
 
    union
@@ -50,6 +49,10 @@ public:
       value_type rgba[4];
    };
 };
+
+TECH_API tResult RGBToHSV(const float rgb[3], float hsv[3]);
+
+TECH_API tResult HSVToRGB(const float hsv[3], float rgb[3]);
 
 
 ///////////////////////////////////////////////////////////////////////////////

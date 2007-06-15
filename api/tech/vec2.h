@@ -57,18 +57,18 @@ inline cVec2<T>::cVec2()
 
 template <typename T>
 inline cVec2<T>::cVec2(value_type xx, value_type yy)
+: x(xx)
+, y(yy)
 {
-   x = xx;
-   y = yy;
 }
 
 ///////////////////////////////////////
 
 template <typename T>
 inline cVec2<T>::cVec2(const cVec2 & other)
+: x(other.x)
+, y(other.y)
 {
-   x = other.x;
-   y = other.y;
 }
 
 ///////////////////////////////////////
@@ -197,39 +197,10 @@ inline cVec2<T> operator /(const cVec2<T> & a, typename cVec2<T>::value_type div
 }
 
 ///////////////////////////////////////
-
-template <typename T>
-inline typename cVec2<T>::value_type Vec2DistanceSqr(const cVec2<T> & v1, const cVec2<T> & v2)
-{
-   return sqr(v2.x - v1.x) + sqr(v2.y - v1.y);
-}
-
-///////////////////////////////////////
-
-template <typename T>
-inline T Vec2Distance(const cVec2<T> & v1, const cVec2<T> & v2)
-{
-   Assert(!"Don't use default version of Vec2Distance");
-   return 0;
-}
-
-template <>
-inline double Vec2Distance(const cVec2<double> & v1, const cVec2<double> & v2)
-{
-   return sqrt(Vec2DistanceSqr(v1, v2));
-}
-
-template <>
-inline float Vec2Distance(const cVec2<float> & v1, const cVec2<float> & v2)
-{
-   return sqrtf(Vec2DistanceSqr(v1, v2));
-}
-
-///////////////////////////////////////
 // Assumes 'u' is in the range [0..1]
 
 template <typename T>
-inline cVec2<T> Vec2Lerp(const cVec2<T> & v1, const cVec2<T> & v2, T u)
+inline cVec2<T> Lerp(const cVec2<T> & v1, const cVec2<T> & v2, T u)
 {
    return (v1 * (1 - u)) + (v2 * u);
 }
@@ -270,4 +241,3 @@ typedef class TECH_API cVec2<float> tVec2;
 ///////////////////////////////////////////////////////////////////////////////
 
 #endif // !INCLUDED_VEC2_H
-

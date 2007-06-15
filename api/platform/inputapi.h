@@ -6,7 +6,7 @@
 
 #include "platformdll.h"
 #include "tech/comtools.h"
-#include "tech/vec2.h"
+#include "tech/point2.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -52,7 +52,7 @@ struct sInputEvent
    long key;
    int modifierKeys;
    bool down;
-   cVec2<int> point;
+   cPoint2<int> point;
    double time;
 };
 

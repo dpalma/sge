@@ -401,7 +401,7 @@ bool cGUIEventRouter<T>::HandleMouseEventClicking(const sInputEvent * pInputEven
       }
 
       // Test for the start of a drag
-      int distSqr = Vec2DistanceSqr(pInputEvent->point, m_armedAtPoint);
+      int distSqr = DistanceSqr(pInputEvent->point, m_armedAtPoint);
       if ((enterLeaveEventCode == kGUIEventMouseLeave) || (distSqr >= kDragThresholdSqr))
       {
          Assert(!m_pDragSource);

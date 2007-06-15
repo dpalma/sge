@@ -140,35 +140,35 @@ const cColor & cColor::operator -=(const cColor & other)
    return *this;
 }
 
-////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
-bool cColor::GetHSV(float hsv[3]) const
+tResult RGBToHSV(const float rgb[3], float hsv[3])
 {
-   if (hsv == NULL)
+   if (rgb == NULL || hsv == NULL)
    {
-      return false;
+      return E_POINTER;
    }
-   value_type mn = Min(r, Min(g, b));
-   value_type mx = Max(r, Max(g, b));
-   value_type h = -1, s = 0, v = mx;
+   float mn = Min(rgb[0], Min(rgb[1], rgb[2]));
+   float mx = Max(rgb[0], Max(rgb[1], rgb[2]));
+   float h = -1, s = 0, v = mx;
    if (mx != 0)
    {
-      value_type delta = mx - mn;
+      float delta = mx - mn;
       s = delta / mx;
-      if (r == mx)
+      if (rgb[0] == mx)
       {
          // between yellow & magenta
-         h = (g - b) / delta;
+         h = (rgb[1] - rgb[2]) / delta;
       }
-      else if (g == mx)
+      else if (rgb[1] == mx)
       {
          // between cyan & yellow
-         h = 2 + (b - r) / delta;
+         h = 2 + (rgb[2] - rgb[0]) / delta;
       }
       else
       {
          // between magenta & cyan
-         h = 4 + (r - g) / delta;
+         h = 4 + (rgb[0] - rgb[1]) / delta;
       }
       h *= 60;
       if (h < 0)
@@ -179,60 +179,60 @@ bool cColor::GetHSV(float hsv[3]) const
    hsv[0] = h;
    hsv[1] = s;
    hsv[2] = v;
-   return true;
+   return S_OK;
 }
 
-////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 
-bool cColor::SetHSV(const float hsv[3])
+tResult HSVToRGB(const float hsv[3], float rgb[3])
 {
-   if (hsv == NULL)
+   if (hsv == NULL || rgb == NULL)
    {
-      return false;
+      return E_POINTER;
    }
    if (hsv[1] == 0)
    {
       // achromatic (grey)
-      r = g = b = hsv[2];
+      rgb[0] = rgb[1] = rgb[2] = hsv[2];
       return true;
    }
-   value_type h = hsv[0] / 60; // sector 0 to 5
+   float h = hsv[0] / 60; // sector 0 to 5
    int i = FloatToInt(floor(h));
-   value_type f = h - i; // factorial part of h
-   value_type p = hsv[2] * (1 - hsv[1]);
-   value_type q = hsv[2] * (1 - hsv[1] * f);
-   value_type t = hsv[2] * (1 - hsv[1] * (1 - f));
+   float f = h - i; // factorial part of h
+   float p = hsv[2] * (1 - hsv[1]);
+   float q = hsv[2] * (1 - hsv[1] * f);
+   float t = hsv[2] * (1 - hsv[1] * (1 - f));
    switch (i)
    {
       case 0:
-         r = hsv[2];
-         g = t;
-         b = p;
+         rgb[0] = hsv[2];
+         rgb[1] = t;
+         rgb[2] = p;
          break;
       case 1:
-         r = q;
-         g = hsv[2];
-         b = p;
+         rgb[0] = q;
+         rgb[1] = hsv[2];
+         rgb[2] = p;
          break;
       case 2:
-         r = p;
-         g = hsv[2];
-         b = t;
+         rgb[0] = p;
+         rgb[1] = hsv[2];
+         rgb[2] = t;
          break;
       case 3:
-         r = p;
-         g = q;
-         b = hsv[2];
+         rgb[0] = p;
+         rgb[1] = q;
+         rgb[2] = hsv[2];
          break;
       case 4:
-         r = t;
-         g = p;
-         b = hsv[2];
+         rgb[0] = t;
+         rgb[1] = p;
+         rgb[2] = hsv[2];
          break;
       default:	// case 5:
-         r = hsv[2];
-         g = p;
-         b = q;
+         rgb[0] = hsv[2];
+         rgb[1] = p;
+         rgb[2] = q;
          break;
    }
    return true;

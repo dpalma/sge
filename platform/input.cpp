@@ -321,7 +321,7 @@ bool cInput::DispatchInputEvent(int x, int y, long key, bool down, double time)
    event.key = key;
    event.modifierKeys = modifierKeys;
    event.down = down;
-   event.point = cVec2<int>(x, y);
+   event.point = cPoint2<int>(x, y);
    event.time = time;
 
    bool bGotToModalListeners = false;

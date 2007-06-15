@@ -342,8 +342,8 @@ TEST_FIXTURE(cGUIEventRouterFixture, RemoveElementFromEventHandler)
 
    static const sInputEvent inputEvents[] =
    {
-      { kDelete, kMK_None, true, cVec2<int>(0,0), .01 },
-      { kDelete, kMK_None, false, cVec2<int>(0,0), .02 },
+      { kDelete, kMK_None, true, cPoint2<int>(0,0), .01 },
+      { kDelete, kMK_None, false, cPoint2<int>(0,0), .02 },
    };
 
    for (int i = 0; i < _countof(inputEvents); ++i)
@@ -366,8 +366,8 @@ TEST_FIXTURE(cGUIEventRouterFixture, MouseEnter)
 
    static const sInputEvent inputEvents[] =
    {
-      { kMouseMove, kMK_None, false, cVec2<int>(0,0), .01 }, // outside
-      { kMouseMove, kMK_None, false, cVec2<int>(1,1), .02 }, // inside
+      { kMouseMove, kMK_None, false, cPoint2<int>(0,0), .01 }, // outside
+      { kMouseMove, kMK_None, false, cPoint2<int>(1,1), .02 }, // inside
    };
 
    for (int i = 0; i < _countof(inputEvents); ++i)
@@ -391,9 +391,9 @@ TEST_FIXTURE(cGUIEventRouterFixture, MouseEnterLeave)
 
    static const sInputEvent inputEvents[] =
    {
-      { kMouseMove, kMK_None, false, cVec2<int>(0,0), .01 }, // outside
-      { kMouseMove, kMK_None, false, cVec2<int>(1,1), .02 }, // inside
-      { kMouseMove, kMK_None, false, cVec2<int>(0,0), .03 }, // outside
+      { kMouseMove, kMK_None, false, cPoint2<int>(0,0), .01 }, // outside
+      { kMouseMove, kMK_None, false, cPoint2<int>(1,1), .02 }, // inside
+      { kMouseMove, kMK_None, false, cPoint2<int>(0,0), .03 }, // outside
    };
 
    for (int i = 0; i < _countof(inputEvents); ++i)
@@ -420,10 +420,10 @@ TEST_FIXTURE(cGUIEventRouterFixture, MouseWheel)
 
    static const sInputEvent inputEvents[] =
    {
-      { kMouseWheelDown, kMK_None, true, cVec2<int>(0,0), .01 }, // outside
-      { kMouseWheelDown, kMK_None, false, cVec2<int>(0,0), .02 }, // outside
-      { kMouseWheelUp, kMK_None, true, cVec2<int>(1,1), .03 }, // inside
-      { kMouseWheelUp, kMK_None, false, cVec2<int>(1,1), .04 }, // inside
+      { kMouseWheelDown, kMK_None, true, cPoint2<int>(0,0), .01 }, // outside
+      { kMouseWheelDown, kMK_None, false, cPoint2<int>(0,0), .02 }, // outside
+      { kMouseWheelUp, kMK_None, true, cPoint2<int>(1,1), .03 }, // inside
+      { kMouseWheelUp, kMK_None, false, cPoint2<int>(1,1), .04 }, // inside
    };
 
    // TODO: Should mouse wheel events go to the focussed element?
@@ -446,8 +446,8 @@ TEST_FIXTURE(cGUIEventRouterFixture, SimplestPossibleClick)
    // Element at position (1,1); size 1x1 pixels
    CHECK_EQUAL(S_OK, CreateTestElement<cGUITestElement>(_T("clickElement"), tGUIPoint(1,1), tGUISize(1,1)));
 
-   static const sInputEvent mouseDownEvent = { kMouseLeft, kMK_None, true,  cVec2<int>(1,1), .01 };
-   static const sInputEvent mouseUpEvent   = { kMouseLeft, kMK_None, false, cVec2<int>(1,1), .02 };
+   static const sInputEvent mouseDownEvent = { kMouseLeft, kMK_None, true,  cPoint2<int>(1,1), .01 };
+   static const sInputEvent mouseUpEvent   = { kMouseLeft, kMK_None, false, cPoint2<int>(1,1), .02 };
 
    HandleInputEvent(&mouseDownEvent);
    HandleInputEvent(&mouseUpEvent);
@@ -468,11 +468,11 @@ TEST_FIXTURE(cGUIEventRouterFixture, CancelClick)
 
    static const sInputEvent inputEvents[] =
    {
-      { kMouseMove, kMK_None, false, cVec2<int>(0,0), .01 }, // outside
-      { kMouseMove, kMK_None, false, cVec2<int>(1,1), .02 }, // inside
-      { kMouseLeft, kMK_None, true,  cVec2<int>(1,1), .03 }, // inside, mouse down
-      { kMouseMove, kMK_None, false, cVec2<int>(0,0), .04 }, // outside, mouse still down
-      { kMouseLeft, kMK_None, false, cVec2<int>(0,0), .05 }, // outside, mouse up
+      { kMouseMove, kMK_None, false, cPoint2<int>(0,0), .01 }, // outside
+      { kMouseMove, kMK_None, false, cPoint2<int>(1,1), .02 }, // inside
+      { kMouseLeft, kMK_None, true,  cPoint2<int>(1,1), .03 }, // inside, mouse down
+      { kMouseMove, kMK_None, false, cPoint2<int>(0,0), .04 }, // outside, mouse still down
+      { kMouseLeft, kMK_None, false, cPoint2<int>(0,0), .05 }, // outside, mouse up
    };
 
    for (int i = 0; i < _countof(inputEvents); ++i)
@@ -499,8 +499,8 @@ TEST_FIXTURE(cGUIEventRouterFixture, KeyEventNoFocus)
 
    static const sInputEvent inputEvents[] =
    {
-      { 't', kMK_None, true, cVec2<int>(0,0), .01 },
-      { 't', kMK_None, false, cVec2<int>(0,0), .02 },
+      { 't', kMK_None, true, cPoint2<int>(0,0), .01 },
+      { 't', kMK_None, false, cPoint2<int>(0,0), .02 },
    };
 
    for (int i = 0; i < _countof(inputEvents); ++i)
@@ -524,8 +524,8 @@ TEST_FIXTURE(cGUIEventRouterFixture, KeyEventFocus)
 
    static const sInputEvent inputEvents[] =
    {
-      { 't', kMK_None, true, cVec2<int>(0,0), .01 },
-      { 't', kMK_None, false, cVec2<int>(0,0), .02 },
+      { 't', kMK_None, true, cPoint2<int>(0,0), .01 },
+      { 't', kMK_None, false, cPoint2<int>(0,0), .02 },
    };
 
    for (int i = 0; i < _countof(inputEvents); ++i)
@@ -547,15 +547,15 @@ TEST_FIXTURE(cGUIEventRouterFixture, SimpleDrag)
 
    static const sInputEvent inputEvents[] =
    {
-      { kMouseMove, kMK_None, false, cVec2<int>(0,0), .01 }, // move, outside
-      { kMouseMove, kMK_None, false, cVec2<int>(1,1), .02 }, // move, inside
-      { kMouseLeft, kMK_None, true,  cVec2<int>(1,1), .03 }, // mouse down
-      { kMouseMove, kMK_None, false, cVec2<int>(2,1), .04 }, // mouse still down, inside
-      { kMouseMove, kMK_None, false, cVec2<int>(3,1), .05 }, // move, outside (drag begins)
-      { kMouseMove, kMK_None, false, cVec2<int>(2,1), .06 }, // drag, inside
-      { kMouseMove, kMK_None, false, cVec2<int>(3,1), .07 }, // drag, outside
-      { kMouseMove, kMK_None, false, cVec2<int>(2,1), .08 }, // drag, inside
-      { kMouseLeft, kMK_None, false, cVec2<int>(2,1), .09 }, // mouse up
+      { kMouseMove, kMK_None, false, cPoint2<int>(0,0), .01 }, // move, outside
+      { kMouseMove, kMK_None, false, cPoint2<int>(1,1), .02 }, // move, inside
+      { kMouseLeft, kMK_None, true,  cPoint2<int>(1,1), .03 }, // mouse down
+      { kMouseMove, kMK_None, false, cPoint2<int>(2,1), .04 }, // mouse still down, inside
+      { kMouseMove, kMK_None, false, cPoint2<int>(3,1), .05 }, // move, outside (drag begins)
+      { kMouseMove, kMK_None, false, cPoint2<int>(2,1), .06 }, // drag, inside
+      { kMouseMove, kMK_None, false, cPoint2<int>(3,1), .07 }, // drag, outside
+      { kMouseMove, kMK_None, false, cPoint2<int>(2,1), .08 }, // drag, inside
+      { kMouseLeft, kMK_None, false, cPoint2<int>(2,1), .09 }, // mouse up
    };
 
    for (int i = 0; i < _countof(inputEvents); ++i)

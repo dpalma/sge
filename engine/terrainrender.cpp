@@ -649,10 +649,10 @@ void cTerrainRenderer::cTerrainModelListener::OnTerrainElevationChange(HTERRAINV
 
 ////////////////////////////////////////
 
-static float SplatTexelWeight(const tVec2 & pt1, const tVec2 & pt2)
+static float SplatTexelWeight(const cPoint2<float> & pt1, const cPoint2<float> & pt2)
 {
    static const float kOneOver175Sqr = 1.0f / (1.75f * 1.75f);
-   return 1 - (Vec2DistanceSqr(pt1, pt2) * kOneOver175Sqr);
+   return 1 - (DistanceSqr(pt1, pt2) * kOneOver175Sqr);
 }
 
 template <typename T>
@@ -682,51 +682,51 @@ static const float g_splatTexelWeights[4][9] =
 {
    {
       // from upper left texel (-.25, -.25)
-      STW(tVec2(-.25,-.25), tVec2(-1,-1)), // top left
-      STW(tVec2(-.25,-.25), tVec2( 0,-1)), // top mid
-      STW(tVec2(-.25,-.25), tVec2( 1,-1)), // top right
-      STW(tVec2(-.25,-.25), tVec2(-1, 0)), // left
-      STW(tVec2(-.25,-.25), tVec2( 0, 0)), // 
-      STW(tVec2(-.25,-.25), tVec2( 1, 0)), // right
-      STW(tVec2(-.25,-.25), tVec2(-1, 1)), // bottom left
-      STW(tVec2(-.25,-.25), tVec2( 0, 1)), // bottom mid
-      STW(tVec2(-.25,-.25), tVec2( 1, 1)), // bottom right (could be zero)
+      STW(cPoint2<float>(-.25,-.25), cPoint2<float>(-1,-1)), // top left
+      STW(cPoint2<float>(-.25,-.25), cPoint2<float>( 0,-1)), // top mid
+      STW(cPoint2<float>(-.25,-.25), cPoint2<float>( 1,-1)), // top right
+      STW(cPoint2<float>(-.25,-.25), cPoint2<float>(-1, 0)), // left
+      STW(cPoint2<float>(-.25,-.25), cPoint2<float>( 0, 0)), // 
+      STW(cPoint2<float>(-.25,-.25), cPoint2<float>( 1, 0)), // right
+      STW(cPoint2<float>(-.25,-.25), cPoint2<float>(-1, 1)), // bottom left
+      STW(cPoint2<float>(-.25,-.25), cPoint2<float>( 0, 1)), // bottom mid
+      STW(cPoint2<float>(-.25,-.25), cPoint2<float>( 1, 1)), // bottom right (could be zero)
    },
    {
       // from upper right texel (+.25, -.25)
-      STW(tVec2(.25,-.25), tVec2(-1,-1)), // top left
-      STW(tVec2(.25,-.25), tVec2( 0,-1)), // top mid
-      STW(tVec2(.25,-.25), tVec2( 1,-1)), // top right
-      STW(tVec2(.25,-.25), tVec2(-1, 0)), // left
-      STW(tVec2(.25,-.25), tVec2( 0, 0)), // 
-      STW(tVec2(.25,-.25), tVec2( 1, 0)), // right
-      STW(tVec2(.25,-.25), tVec2(-1, 1)), // bottom left (could be zero)
-      STW(tVec2(.25,-.25), tVec2( 0, 1)), // bottom mid
-      STW(tVec2(.25,-.25), tVec2( 1, 1)), // bottom right
+      STW(cPoint2<float>(.25,-.25), cPoint2<float>(-1,-1)), // top left
+      STW(cPoint2<float>(.25,-.25), cPoint2<float>( 0,-1)), // top mid
+      STW(cPoint2<float>(.25,-.25), cPoint2<float>( 1,-1)), // top right
+      STW(cPoint2<float>(.25,-.25), cPoint2<float>(-1, 0)), // left
+      STW(cPoint2<float>(.25,-.25), cPoint2<float>( 0, 0)), // 
+      STW(cPoint2<float>(.25,-.25), cPoint2<float>( 1, 0)), // right
+      STW(cPoint2<float>(.25,-.25), cPoint2<float>(-1, 1)), // bottom left (could be zero)
+      STW(cPoint2<float>(.25,-.25), cPoint2<float>( 0, 1)), // bottom mid
+      STW(cPoint2<float>(.25,-.25), cPoint2<float>( 1, 1)), // bottom right
    },
    {
       // from lower left texel (-.25, +.25)
-      STW(tVec2(-.25,.25), tVec2(-1,-1)), // top left
-      STW(tVec2(-.25,.25), tVec2( 0,-1)), // top mid
-      STW(tVec2(-.25,.25), tVec2( 1,-1)), // top right (could be zero)
-      STW(tVec2(-.25,.25), tVec2(-1, 0)), // left
-      STW(tVec2(-.25,.25), tVec2( 0, 0)), // 
-      STW(tVec2(-.25,.25), tVec2( 1, 0)), // right
-      STW(tVec2(-.25,.25), tVec2(-1, 1)), // bottom left
-      STW(tVec2(-.25,.25), tVec2( 0, 1)), // bottom mid
-      STW(tVec2(-.25,.25), tVec2( 1, 1)), // bottom right
+      STW(cPoint2<float>(-.25,.25), cPoint2<float>(-1,-1)), // top left
+      STW(cPoint2<float>(-.25,.25), cPoint2<float>( 0,-1)), // top mid
+      STW(cPoint2<float>(-.25,.25), cPoint2<float>( 1,-1)), // top right (could be zero)
+      STW(cPoint2<float>(-.25,.25), cPoint2<float>(-1, 0)), // left
+      STW(cPoint2<float>(-.25,.25), cPoint2<float>( 0, 0)), // 
+      STW(cPoint2<float>(-.25,.25), cPoint2<float>( 1, 0)), // right
+      STW(cPoint2<float>(-.25,.25), cPoint2<float>(-1, 1)), // bottom left
+      STW(cPoint2<float>(-.25,.25), cPoint2<float>( 0, 1)), // bottom mid
+      STW(cPoint2<float>(-.25,.25), cPoint2<float>( 1, 1)), // bottom right
    },
    {
       // from lower right texel (+.25, +.25)
-      STW(tVec2(.25,.25), tVec2(-1,-1)), // top left (could be zero)
-      STW(tVec2(.25,.25), tVec2( 0,-1)), // top mid
-      STW(tVec2(.25,.25), tVec2( 1,-1)), // top right
-      STW(tVec2(.25,.25), tVec2(-1, 0)), // left
-      STW(tVec2(.25,.25), tVec2( 0, 0)), // 
-      STW(tVec2(.25,.25), tVec2( 1, 0)), // right
-      STW(tVec2(.25,.25), tVec2(-1, 1)), // bottom left
-      STW(tVec2(.25,.25), tVec2( 0, 1)), // bottom mid
-      STW(tVec2(.25,.25), tVec2( 1, 1)), // bottom right
+      STW(cPoint2<float>(.25,.25), cPoint2<float>(-1,-1)), // top left (could be zero)
+      STW(cPoint2<float>(.25,.25), cPoint2<float>( 0,-1)), // top mid
+      STW(cPoint2<float>(.25,.25), cPoint2<float>( 1,-1)), // top right
+      STW(cPoint2<float>(.25,.25), cPoint2<float>(-1, 0)), // left
+      STW(cPoint2<float>(.25,.25), cPoint2<float>( 0, 0)), // 
+      STW(cPoint2<float>(.25,.25), cPoint2<float>( 1, 0)), // right
+      STW(cPoint2<float>(.25,.25), cPoint2<float>(-1, 1)), // bottom left
+      STW(cPoint2<float>(.25,.25), cPoint2<float>( 0, 1)), // bottom mid
+      STW(cPoint2<float>(.25,.25), cPoint2<float>( 1, 1)), // bottom right
    },
 };
 
@@ -1066,16 +1066,16 @@ tResult cTerrainChunk::BuildVertexBuffer(const cRange<uint> xRange,
                pQuadVertexMap->insert(std::make_pair(hQuad, iVert));
             }
 
-            m_vertices[iVert+0].uv1 = tVec2(0,0);
-            m_vertices[iVert+1].uv1 = tVec2(1,0);
-            m_vertices[iVert+2].uv1 = tVec2(1,1);
-            m_vertices[iVert+3].uv1 = tVec2(0,1);
+            m_vertices[iVert+0].uv1 = cVec2<float>(0,0);
+            m_vertices[iVert+1].uv1 = cVec2<float>(1,0);
+            m_vertices[iVert+2].uv1 = cVec2<float>(1,1);
+            m_vertices[iVert+3].uv1 = cVec2<float>(0,1);
 
             for (int j = 0; j < 4; j++)
             {
                m_vertices[iVert+j].pos = corners[j];
 
-               m_vertices[iVert+j].uv2 = tVec2(
+               m_vertices[iVert+j].uv2 = cVec2<float>(
                   (corners[j].x - rangeStart.x) * oneOverChunkExtentX,
                   (corners[j].z - rangeStart.z) * oneOverChunkExtentZ);
             }

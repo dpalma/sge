@@ -4,7 +4,7 @@
 #ifndef INCLUDED_RECT_H
 #define INCLUDED_RECT_H
 
-#include "vec2.h"
+#include "point2.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -37,35 +37,35 @@ public:
    T GetHeight() const;
 
    template <typename U>
-   inline cVec2<U> GetTopLeft(cVec2<U> * pVec = NULL) const
+   inline cPoint2<U> GetTopLeft(cPoint2<U> * pVec = NULL) const
    {
       return (pVec != NULL)
-         ? (*pVec = cVec2<U>(static_cast<U>(left), static_cast<U>(top)))
-         : cVec2<U>(static_cast<U>(left), static_cast<U>(top));
+         ? (*pVec = cPoint2<U>(static_cast<U>(left), static_cast<U>(top)))
+         : cPoint2<U>(static_cast<U>(left), static_cast<U>(top));
    }
 
    template <typename U>
-   inline cVec2<U> GetTopRight(cVec2<U> * pVec = NULL) const
+   inline cPoint2<U> GetTopRight(cPoint2<U> * pVec = NULL) const
    {
       return (pVec != NULL)
-         ? (*pVec = cVec2<U>(static_cast<U>(right), static_cast<U>(top)))
-         : cVec2<U>(static_cast<U>(right), static_cast<U>(top));
+         ? (*pVec = cPoint2<U>(static_cast<U>(right), static_cast<U>(top)))
+         : cPoint2<U>(static_cast<U>(right), static_cast<U>(top));
    }
 
    template <typename U>
-   inline cVec2<U> GetBottomLeft(cVec2<U> * pVec = NULL) const
+   inline cPoint2<U> GetBottomLeft(cPoint2<U> * pVec = NULL) const
    {
       return (pVec != NULL)
-         ? (*pVec = cVec2<U>(static_cast<U>(left), static_cast<U>(bottom)))
-         : cVec2<U>(static_cast<U>(left), static_cast<U>(bottom));
+         ? (*pVec = cPoint2<U>(static_cast<U>(left), static_cast<U>(bottom)))
+         : cPoint2<U>(static_cast<U>(left), static_cast<U>(bottom));
    }
 
    template <typename U>
-   inline cVec2<U> GetBottomRight(cVec2<U> * pVec = NULL) const
+   inline cPoint2<U> GetBottomRight(cPoint2<U> * pVec = NULL) const
    {
       return (pVec != NULL)
-         ? (*pVec = cVec2<U>(static_cast<U>(right), static_cast<U>(bottom)))
-         : cVec2<U>(static_cast<U>(right), static_cast<U>(bottom));
+         ? (*pVec = cPoint2<U>(static_cast<U>(right), static_cast<U>(bottom)))
+         : cPoint2<U>(static_cast<U>(right), static_cast<U>(bottom));
    }
 
    union

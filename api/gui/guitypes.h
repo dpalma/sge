@@ -7,9 +7,9 @@
 #include "guidll.h"
 
 #include "tech/color.h"
+#include "tech/point2.h"
 #include "tech/rect.h"
 #include "tech/techstring.h"
-#include "tech/vec2.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -20,9 +20,9 @@
 typedef cStr tGUIString;
 typedef tChar tGUIChar;
 
-typedef tVec2 tGUIPoint;
+typedef cPoint2<float> tGUIPoint;
 
-typedef cVec2<int> tScreenPoint;
+typedef cPoint2<int> tScreenPoint;
 
 template <typename T> class cGUISize;
 typedef float tGUISizeType;

@@ -9,10 +9,10 @@
 #include "tech/filespec.h"
 #include "tech/filepath.h"
 #include "tech/globalobj.h"
+#include "tech/point2.h"
 #include "tech/readwriteapi.h"
 #include "tech/resourceapi.h"
 #include "tech/techmath.h"
-#include "tech/vec2.h"
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -72,14 +72,14 @@ void ImageSolidCircle(IImage * pImage, uint x, uint y, uint radius, const byte r
    uint xStart = (x >= radius) ? x - radius : radius - x;
    uint xEnd = Min(x + radius, imageWidth);
 
-   cVec2<uint> center(x, y);
+   cPoint2<uint> center(x, y);
    int rSqr = radius * radius;
 
    for (uint j = yStart; j <= yEnd; ++j)
    {
       for (uint i = xStart; i <= xEnd; ++i)
       {
-         int dSqr = Vec2DistanceSqr(cVec2<uint>(i, j), center);
+         int dSqr = DistanceSqr(cPoint2<uint>(i, j), center);
          if (dSqr < rSqr)
          {
             pImage->SetPixel(i, j, rgba);
@@ -121,10 +121,10 @@ void ImageGradientRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uin
 
    uint cornerRadiusSqr = cornerRadius * cornerRadius;
 
-   cVec2<uint> topLeftCenter(x + cornerRadius, y + cornerRadius);
-   cVec2<uint> topRightCenter(x + w - cornerRadius - 1, y + cornerRadius);
-   cVec2<uint> bottomRightCenter(x + w - cornerRadius - 1, y + h - cornerRadius - 1);
-   cVec2<uint> bottomLeftCenter(x + cornerRadius, y + h - cornerRadius - 1);
+   cPoint2<uint> topLeftCenter(x + cornerRadius, y + cornerRadius);
+   cPoint2<uint> topRightCenter(x + w - cornerRadius - 1, y + cornerRadius);
+   cPoint2<uint> bottomRightCenter(x + w - cornerRadius - 1, y + h - cornerRadius - 1);
+   cPoint2<uint> bottomLeftCenter(x + cornerRadius, y + h - cornerRadius - 1);
 
    for (uint j = y; j < (y + h); ++j)
    {
@@ -132,7 +132,7 @@ void ImageGradientRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uin
 
       for (uint i = x; i < (x + w); ++i)
       {
-         cVec2<uint> ij(i, j);
+         cPoint2<uint> ij(i, j);
 
          float fracX = static_cast<float>(i - x) / w;
 
@@ -172,7 +172,7 @@ void ImageGradientRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uin
 
          if (i < topLeftCenter.x && j < topLeftCenter.y)
          {
-            uint dSqr = Vec2DistanceSqr(ij, topLeftCenter);
+            uint dSqr = DistanceSqr(ij, topLeftCenter);
             if (dSqr < cornerRadiusSqr || cornerRadiusSqr == 0)
             {
                pImage->SetPixel(i, j, cRGBA(color.GetPointer()));
@@ -180,7 +180,7 @@ void ImageGradientRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uin
          }
          else if (i >= topRightCenter.x && j < topRightCenter.y)
          {
-            uint dSqr = Vec2DistanceSqr(ij, topRightCenter);
+            uint dSqr = DistanceSqr(ij, topRightCenter);
             if (dSqr < cornerRadiusSqr || cornerRadiusSqr == 0)
             {
                pImage->SetPixel(i, j, cRGBA(color.GetPointer()));
@@ -188,7 +188,7 @@ void ImageGradientRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uin
          }
          else if (i >= bottomRightCenter.x && j >= bottomRightCenter.y)
          {
-            uint dSqr = Vec2DistanceSqr(ij, bottomRightCenter);
+            uint dSqr = DistanceSqr(ij, bottomRightCenter);
             if (dSqr < cornerRadiusSqr || cornerRadiusSqr == 0)
             {
                pImage->SetPixel(i, j, cRGBA(color.GetPointer()));
@@ -196,7 +196,7 @@ void ImageGradientRoundRect(IImage * pImage, uint x, uint y, uint w, uint h, uin
          }
          else if (i < bottomLeftCenter.x && j >= bottomLeftCenter.y)
          {
-            uint dSqr = Vec2DistanceSqr(ij, bottomLeftCenter);
+            uint dSqr = DistanceSqr(ij, bottomLeftCenter);
             if (dSqr < cornerRadiusSqr || cornerRadiusSqr == 0)
             {
                pImage->SetPixel(i, j, cRGBA(color.GetPointer()));
