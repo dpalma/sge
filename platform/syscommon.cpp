@@ -19,7 +19,9 @@
 
 #include "tech/dbgalloc.h" // must be last header
 
+#ifdef HAVE_UNITTESTPP
 using namespace UnitTest;
+#endif
 
 LOG_DEFINE_CHANNEL(VerboseUnitTests);
 
