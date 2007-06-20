@@ -8,6 +8,7 @@
 #include "platform/sys.h"
 
 #include "tech/configapi.h"
+#include "tech/frustum.h"
 #include "tech/ray.h"
 
 #include <GL/glew.h>
@@ -17,6 +18,62 @@
 static const float kDefaultFov = 70;
 static const float kDefaultZNear = 1;
 static const float kDefaultZFar = 2000;
+
+
+// REFERENCES
+// http://www2.ravensoft.com/users/ggribb/plane%20extraction.pdf
+
+
+///////////////////////////////////////////////////////////////////////////////
+
+void ExtractFrustumPlanes(const tMatrix4 & viewProjection, cFrustum * pFrustum)
+{
+   tPlane planes[kMaxFrustumPlanes];
+
+   // Determine the left plane
+   planes[kFP_Left].a = viewProjection.m[3] + viewProjection.m[0];
+   planes[kFP_Left].b = viewProjection.m[7] + viewProjection.m[4];
+   planes[kFP_Left].c = viewProjection.m[11] + viewProjection.m[8];
+   planes[kFP_Left].d = viewProjection.m[15] + viewProjection.m[12];
+   planes[kFP_Left].Normalize();
+
+   // Determine the right plane
+   planes[kFP_Right].a = viewProjection.m[3] - viewProjection.m[0];
+   planes[kFP_Right].b = viewProjection.m[7] - viewProjection.m[4];
+   planes[kFP_Right].c = viewProjection.m[11] - viewProjection.m[8];
+   planes[kFP_Right].d = viewProjection.m[15] - viewProjection.m[12];
+   planes[kFP_Right].Normalize();
+
+   // Determine the bottom plane
+   planes[kFP_Bottom].a = viewProjection.m[3] + viewProjection.m[1];
+   planes[kFP_Bottom].b = viewProjection.m[7] + viewProjection.m[5];
+   planes[kFP_Bottom].c = viewProjection.m[11] + viewProjection.m[9];
+   planes[kFP_Bottom].d = viewProjection.m[15] + viewProjection.m[13];
+   planes[kFP_Bottom].Normalize();
+
+   // Determine the top plane
+   planes[kFP_Top].a = viewProjection.m[3] - viewProjection.m[1];
+   planes[kFP_Top].b = viewProjection.m[7] - viewProjection.m[5];
+   planes[kFP_Top].c = viewProjection.m[11] - viewProjection.m[9];
+   planes[kFP_Top].d = viewProjection.m[15] - viewProjection.m[13];
+   planes[kFP_Top].Normalize();
+
+   // Determine the near plane
+   planes[kFP_Near].a = viewProjection.m[3] + viewProjection.m[2];
+   planes[kFP_Near].b = viewProjection.m[7] + viewProjection.m[6];
+   planes[kFP_Near].c = viewProjection.m[11] + viewProjection.m[10];
+   planes[kFP_Near].d = viewProjection.m[15] + viewProjection.m[14];
+   planes[kFP_Near].Normalize();
+
+   // Determine the far plane
+   planes[kFP_Far].a = viewProjection.m[3] - viewProjection.m[2];
+   planes[kFP_Far].b = viewProjection.m[7] - viewProjection.m[6];
+   planes[kFP_Far].c = viewProjection.m[11] - viewProjection.m[10];
+   planes[kFP_Far].d = viewProjection.m[15] - viewProjection.m[14];
+   planes[kFP_Far].Normalize();
+
+   *pFrustum = cFrustum(planes);
+}
 
 
 ////////////////////////////////////////////////////////////////////////////////
