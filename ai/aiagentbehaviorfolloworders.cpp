@@ -76,7 +76,7 @@ tResult cAIAgentBehaviorFollowOrders::HandleMessage(IAIAgent * pAgent, IAIAgentM
          if (GetVec3(pMessage, &point))
          {
             cAutoIPtr<IAIAgentTask> pTask;
-            if (AIAgentTaskMoveToCreate(point, &pTask) == S_OK)
+            if (AIAgentTaskMoveToCreate(point.v, &pTask) == S_OK)
             {
                pAgent->SetActiveTask(pTask);
             }

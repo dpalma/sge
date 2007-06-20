@@ -114,7 +114,7 @@ void cAxisAlignedBox<T>::GetCentroid(cPoint3<T> * pCentroid) const
 {
    if (pCentroid != NULL)
    {
-      *pCentroid = cPoint3((m_mins.x + m_maxs.x) / 2, (m_mins.y + m_maxs.y) / 2, (m_mins.z + m_maxs.z) / 2);
+      *pCentroid = cPoint3<T>((m_mins.x + m_maxs.x) / 2, (m_mins.y + m_maxs.y) / 2, (m_mins.z + m_maxs.z) / 2);
    }
 }
 

@@ -17,7 +17,7 @@
 
 ////////////////////////////////////////
 
-cAIAgentTaskMoveTo::cAIAgentTaskMoveTo(const tVec3 & point)
+cAIAgentTaskMoveTo::cAIAgentTaskMoveTo(const float point[3])
  : tStateMachine(&m_movingState)
  , m_movingState(&cAIAgentTaskMoveTo::OnEnterMoving,
                  &cAIAgentTaskMoveTo::OnExitMoving,
@@ -25,7 +25,7 @@ cAIAgentTaskMoveTo::cAIAgentTaskMoveTo(const tVec3 & point)
  , m_arrivedState(&cAIAgentTaskMoveTo::OnEnterArrived,
                   &cAIAgentTaskMoveTo::OnExitArrived,
                   &cAIAgentTaskMoveTo::OnUpdateArrived)
- , m_moveGoal(point)
+ , m_moveGoal((point != NULL) ? point : cPoint3<float>(0,0,0))
  , m_lastDistSqr(999999)
  , m_bJustStarted(true)
 {
@@ -81,13 +81,13 @@ void cAIAgentTaskMoveTo::OnUpdateMoving(const tAgentDoublePair & adp)
       m_bJustStarted = false;
    }
 
-   tVec3 curPos;
-   if (pLocationProvider->GetPosition(&curPos) != S_OK)
+   cPoint3<float> curPos;
+   if (pLocationProvider->GetPosition(curPos.xyz) != S_OK)
    {
       return;
    }
 
-   float distSqr = Vec3DistanceSqr(curPos, m_moveGoal);
+   float distSqr = DistanceSqr(curPos, m_moveGoal);
 
    if (AlmostEqual(curPos.x, m_moveGoal.x)
       && AlmostEqual(curPos.z, m_moveGoal.z))
@@ -107,11 +107,16 @@ void cAIAgentTaskMoveTo::OnUpdateMoving(const tAgentDoublePair & adp)
       }
       m_lastDistSqr = distSqr;
 
-      tVec3 dir = m_moveGoal - curPos;
+      tVec3 dir(m_moveGoal.x - curPos.x, m_moveGoal.y - curPos.y, m_moveGoal.z - curPos.z);
       dir.Normalize();
 
-      curPos += (dir * 10.0f * static_cast<float>(adp.second)); // second member of pair is elapsed time
-      pLocationProvider->SetPosition(curPos);
+      tVec3 scaledDir(dir * 10.0f * static_cast<float>(adp.second)); // second member of pair is elapsed time
+
+      curPos.x += scaledDir.x;
+      curPos.y += scaledDir.y;
+      curPos.z += scaledDir.z;
+
+      pLocationProvider->SetPosition(curPos.xyz);
 
       static const tVec3 axis(0,0,1);
 
@@ -140,9 +145,9 @@ void cAIAgentTaskMoveTo::OnUpdateArrived(const tAgentDoublePair &)
 
 ////////////////////////////////////////
 
-tResult AIAgentTaskMoveToCreate(const tVec3 & point, IAIAgentTask * * ppTask)
+tResult AIAgentTaskMoveToCreate(const float point[3], IAIAgentTask * * ppTask)
 {
-   if (ppTask == NULL)
+   if (point == NULL || ppTask == NULL)
    {
       return E_POINTER;
    }

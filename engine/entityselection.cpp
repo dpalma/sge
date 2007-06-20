@@ -276,7 +276,7 @@ namespace
    public:
       virtual tResult GetBoundingBox(tAxisAlignedBox * pBBox) const
       {
-         *pBBox = tAxisAlignedBox(tVec3(0,0,0),tVec3(1,1,1));
+         *pBBox = tAxisAlignedBox(cPoint3<float>(0,0,0),cPoint3<float>(1,1,1));
          return S_OK;
       }
       virtual void Render(uint flags) {}

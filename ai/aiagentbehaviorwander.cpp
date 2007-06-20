@@ -137,7 +137,7 @@ void cAIAgentBehaviorWander::OnHandleMessageIdle(const tAgentMessagePair & amp)
          if (GetWanderPoint(&point))
          {
             cAutoIPtr<IAIAgentTask> pTask;
-            if (AIAgentTaskMoveToCreate(point, &pTask) == S_OK)
+            if (AIAgentTaskMoveToCreate(point.v, &pTask) == S_OK)
             {
                amp.first->SetActiveTask(pTask);
             }

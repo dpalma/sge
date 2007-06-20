@@ -334,28 +334,31 @@ TEST(RayIntersectsPlane)
 TEST(RayIntersectsAxisAlignedBox)
 {
    float maxDim = -FLT_MAX;
-   tVec3 min(static_cast<float>(rand()), static_cast<float>(rand()), static_cast<float>(rand()));
-   tVec3 max(static_cast<float>(rand()), static_cast<float>(rand()), static_cast<float>(rand()));
+   cPoint3<float> min(static_cast<float>(rand()), static_cast<float>(rand()), static_cast<float>(rand()));
+   cPoint3<float> max(static_cast<float>(rand()), static_cast<float>(rand()), static_cast<float>(rand()));
    for (int i = 0; i < 3; i++)
    {
-      if (min.v[i] > max.v[i])
+      if (min.xyz[i] > max.xyz[i])
       {
-         float temp = min.v[i];
-         min.v[i] = max.v[i];
-         max.v[i] = temp;
+         float temp = min.xyz[i];
+         min.xyz[i] = max.xyz[i];
+         max.xyz[i] = temp;
       }
-      if ((max.v[i] - min.v[i]) > maxDim)
+      if ((max.xyz[i] - min.xyz[i]) > maxDim)
       {
-         maxDim = max.v[i] - min.v[i];
+         maxDim = max.xyz[i] - min.xyz[i];
       }
    }
    tAxisAlignedBox box(min, max);
-   tVec3 centroid;
+   cPoint3<float> centroid;
    box.GetCentroid(&centroid);
    // determine a point way out there in space for the ray origin
    tVec3 dir(static_cast<float>(rand()), static_cast<float>(rand()), static_cast<float>(rand()));
    dir.Normalize();
-   tVec3 origin = centroid + (dir * (maxDim * 2));
+   tVec3 origin(
+      centroid.x + (dir.x * (maxDim * 2)),
+      centroid.y + (dir.y * (maxDim * 2)),
+      centroid.z + (dir.z * (maxDim * 2)));
    // point the ray back toward the center of the box
    dir.x = -dir.x;
    dir.y = -dir.y;

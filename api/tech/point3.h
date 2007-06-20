@@ -24,7 +24,7 @@ public:
 
    cPoint3();
    cPoint3(value_type xx, value_type yy, value_type zz);
-   cPoint3(const value_type v[3]);
+   cPoint3(const value_type xyz[3]);
    cPoint3(const_reference other);
 
    const_reference operator =(const_reference other);
@@ -63,10 +63,10 @@ inline cPoint3<T>::cPoint3(value_type xx, value_type yy, value_type zz)
 ///////////////////////////////////////
 
 template <typename T>
-inline cPoint3<T>::cPoint3(const value_type v[3])
-: x(v[0])
-, y(v[1])
-, z(v[2])
+inline cPoint3<T>::cPoint3(const value_type xyz[3])
+: x(xyz[0])
+, y(xyz[1])
+, z(xyz[2])
 {
 }
 

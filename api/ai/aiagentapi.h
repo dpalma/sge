@@ -157,8 +157,8 @@ interface IAIAgentAnimationProvider : IUnknown
 
 interface IAIAgentLocationProvider : IUnknown
 {
-   virtual tResult SetPosition(const tVec3 & position) = 0;
-   virtual tResult GetPosition(tVec3 * pPosition) const = 0;
+   virtual tResult SetPosition(const float position[3]) = 0;
+   virtual tResult GetPosition(float position[3]) const = 0;
 
    virtual tResult SetOrientation(const tQuat & orientation) = 0;
    virtual tResult GetOrientation(tQuat * pOrientation) const = 0;
@@ -207,7 +207,7 @@ interface IAIAgentTask : IUnknown
 ////////////////////////////////////////
 
 AI_API tResult AIAgentTaskStandCreate(IAIAgentTask * * ppTask);
-AI_API tResult AIAgentTaskMoveToCreate(const tVec3 & point, IAIAgentTask * * ppTask);
+AI_API tResult AIAgentTaskMoveToCreate(const float point[3], IAIAgentTask * * ppTask);
 
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -6,6 +6,7 @@
 
 #include "ai/aiagentapi.h"
 
+#include "tech/point3.h"
 #include "tech/statemachine.h"
 #include "tech/vec3.h"
 
@@ -27,7 +28,7 @@ class cAIAgentTaskMoveTo : public cComObject<IMPLEMENTS(IAIAgentTask)>
                          , public cStateMachine<cAIAgentTaskMoveTo, const tAgentDoublePair &>
 {
 public:
-   cAIAgentTaskMoveTo(const tVec3 & point);
+   cAIAgentTaskMoveTo(const float point[3]);
    ~cAIAgentTaskMoveTo();
 
    virtual tResult Update(IAIAgent * pAgent, double time);
@@ -44,7 +45,7 @@ private:
    tState m_movingState;
    tState m_arrivedState;
 
-   tVec3 m_moveGoal;
+   cPoint3<float> m_moveGoal;
    float m_lastDistSqr;
 
    bool m_bJustStarted;

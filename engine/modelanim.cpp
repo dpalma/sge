@@ -134,7 +134,7 @@ tResult cModelKeyFrameInterpolator::Interpolate(double time, tVec3 * pTrans, tQu
          {
             double u = (time - prev->time) / (iter->time - prev->time);
             *pRot = QuatSlerp(prev->rotation, iter->rotation, static_cast<float>(u));
-            *pTrans = Vec3Lerp(prev->translation, iter->translation, (tVec3::value_type)u);
+            *pTrans = Lerp(prev->translation, iter->translation, (tVec3::value_type)u);
          }
 
          return S_OK;

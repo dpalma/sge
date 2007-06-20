@@ -125,22 +125,26 @@ cEntityPositionComponent::~cEntityPositionComponent()
 
 ///////////////////////////////////////
 
-tResult cEntityPositionComponent::SetPosition(const tVec3 & position)
+tResult cEntityPositionComponent::SetPosition(const float position[3])
 {
-   m_position = position;
+   if (position == NULL)
+   {
+      return E_POINTER;
+   }
+   memcpy(m_position.v, position, sizeof(float) * 3);
    m_updateWorldTransform |= kUpdateTranslation;
    return S_OK;
 }
 
 ///////////////////////////////////////
 
-tResult cEntityPositionComponent::GetPosition(tVec3 * pPosition) const
+tResult cEntityPositionComponent::GetPosition(float position[3]) const
 {
-   if (pPosition == NULL)
+   if (position == NULL)
    {
       return E_POINTER;
    }
-   *pPosition = m_position;
+   memcpy(position, m_position.v, sizeof(float) * 3);
    return S_OK;
 }
 

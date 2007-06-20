@@ -33,8 +33,8 @@ public:
    cEntityPositionComponent();
    ~cEntityPositionComponent();
 
-   virtual tResult SetPosition(const tVec3 & position);
-   virtual tResult GetPosition(tVec3 * pPosition) const;
+   virtual tResult SetPosition(const float position[3]);
+   virtual tResult GetPosition(float position[3]) const;
 
    virtual tResult SetOrientation(const tQuat & orientation);
    virtual tResult GetOrientation(tQuat * pOrientation) const;

@@ -121,7 +121,7 @@ tResult cEntityManager::SpawnEntity(const tChar * pszEntity, const tVec3 & posit
       cAutoIPtr<IEntityPositionComponent> pPosition;
       if (pEntity->GetComponent(IID_IEntityPositionComponent, &pPosition) == S_OK)
       {
-         pPosition->SetPosition(position);
+         pPosition->SetPosition(position.v);
       }
 
       if (pEntityId != NULL)
@@ -276,7 +276,7 @@ tResult cEntityManager::RayCast(const cRay & ray, IEntity * * ppEntity) const
       if (pEntity->GetComponent(IID_IEntityPositionComponent, &pPosition) == S_OK)
       {
          tVec3 position;
-         if (pPosition->GetPosition(&position) == S_OK)
+         if (pPosition->GetPosition(position.v) == S_OK)
          {
             cAutoIPtr<IEntityRenderComponent> pRender;
             if (pEntity->GetComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
@@ -315,7 +315,7 @@ tResult cEntityManager::BoxCast(const tAxisAlignedBox & box, IEnumEntities * * p
       if (pEntity->GetComponent(IID_IEntityPositionComponent, &pPosition) == S_OK)
       {
          tVec3 position;
-         if (pPosition->GetPosition(&position) == S_OK)
+         if (pPosition->GetPosition(position.v) == S_OK)
          {
             cAutoIPtr<IEntityRenderComponent> pRender;
             if (pEntity->GetComponent(IID_IEntityRenderComponent, &pRender) == S_OK)
@@ -431,7 +431,7 @@ tResult cEntityManager::Save(IWriter * pWriter)
 
       cStr typeName;
       tVec3 position;
-      if ((*iter)->GetTypeName(&typeName) == S_OK && !typeName.empty() && pPosition->GetPosition(&position) == S_OK)
+      if ((*iter)->GetTypeName(&typeName) == S_OK && !typeName.empty() && pPosition->GetPosition(position.v) == S_OK)
       {
          if (pWriter->Write(typeName) != S_OK
             || pWriter->Write(position) != S_OK)
