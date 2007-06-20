@@ -39,7 +39,7 @@ const sVertexElement g_blendedVert[] =
 
 static void CalculateBBox(uint nVertices, const sModelVertex * pVertices, tAxisAlignedBox * pBBox)
 {
-   tVec3 mins(FLT_MAX, FLT_MAX, FLT_MAX), maxs(-FLT_MAX, -FLT_MAX, -FLT_MAX);
+   cPoint3<float> mins(FLT_MAX, FLT_MAX, FLT_MAX), maxs(-FLT_MAX, -FLT_MAX, -FLT_MAX);
    const sModelVertex * pVertex = pVertices;
    for (uint i = 0; i < nVertices; ++i, ++pVertex)
    {

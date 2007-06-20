@@ -4,6 +4,7 @@
 #ifndef INCLUDED_PLANE_H
 #define INCLUDED_PLANE_H
 
+#include "point3.h"
 #include "vec3.h"
 
 #ifdef _MSC_VER
@@ -64,7 +65,17 @@ cPlane<T>::cPlane(const cVec3<T> & normal, value_type dist)
 template <typename T>
 void cPlane<T>::Normalize()
 {
-   value_type t = 1.0f / sqrtf(a * a + b * b + c * c);
+   double t = 1.0 / sqrt(a * a + b * b + c * c);
+   a *= t;
+   b *= t;
+   c *= t;
+   d *= t;
+}
+
+template <>
+void cPlane<float>::Normalize()
+{
+   float t = 1.0f / sqrtf(a * a + b * b + c * c);
    a *= t;
    b *= t;
    c *= t;

@@ -6,7 +6,7 @@
 
 #include "techdll.h"
 
-#include "vec3.h"
+#include "point3.h"
 
 #ifdef _MSC_VER
 #pragma once
@@ -22,16 +22,16 @@ class cAxisAlignedBox
 {
 public:
    cAxisAlignedBox();
-   cAxisAlignedBox(const cVec3<T> & mins, const cVec3<T> & maxs);
+   cAxisAlignedBox(const cPoint3<T> & mins, const cPoint3<T> & maxs);
    cAxisAlignedBox(const cAxisAlignedBox & other);
    ~cAxisAlignedBox();
 
    const cAxisAlignedBox & operator =(const cAxisAlignedBox & other);
 
-   const cVec3<T> & GetMins() const;
-   const cVec3<T> & GetMaxs() const;
+   const cPoint3<T> & GetMins() const;
+   const cPoint3<T> & GetMaxs() const;
 
-   void GetCentroid(cVec3<T> * pCentroid) const;
+   void GetCentroid(cPoint3<T> * pCentroid) const;
 
    T GetVolume() const;
 
@@ -43,10 +43,10 @@ public:
 
    cAxisAlignedBox Union(const cAxisAlignedBox & other) const;
 
-   void Offset(const cVec3<T> & offset);
+   void Offset(const T offset[3]);
 
 private:
-   cVec3<T> m_mins, m_maxs;
+   cPoint3<T> m_mins, m_maxs;
 };
 
 ////////////////////////////////////////
@@ -59,7 +59,7 @@ cAxisAlignedBox<T>::cAxisAlignedBox()
 ////////////////////////////////////////
 
 template <typename T>
-cAxisAlignedBox<T>::cAxisAlignedBox(const cVec3<T> & mins, const cVec3<T> & maxs)
+cAxisAlignedBox<T>::cAxisAlignedBox(const cPoint3<T> & mins, const cPoint3<T> & maxs)
  : m_mins(mins)
  , m_maxs(maxs)
 {
@@ -94,7 +94,7 @@ const cAxisAlignedBox<T> & cAxisAlignedBox<T>::operator =(const cAxisAlignedBox 
 ////////////////////////////////////////
 
 template <typename T>
-inline const cVec3<T> & cAxisAlignedBox<T>::GetMins() const
+inline const cPoint3<T> & cAxisAlignedBox<T>::GetMins() const
 {
    return m_mins;
 }
@@ -102,7 +102,7 @@ inline const cVec3<T> & cAxisAlignedBox<T>::GetMins() const
 ////////////////////////////////////////
 
 template <typename T>
-inline const cVec3<T> & cAxisAlignedBox<T>::GetMaxs() const
+inline const cPoint3<T> & cAxisAlignedBox<T>::GetMaxs() const
 {
    return m_maxs;
 }
@@ -110,11 +110,11 @@ inline const cVec3<T> & cAxisAlignedBox<T>::GetMaxs() const
 ////////////////////////////////////////
 
 template <typename T>
-void cAxisAlignedBox<T>::GetCentroid(cVec3<T> * pCentroid) const
+void cAxisAlignedBox<T>::GetCentroid(cPoint3<T> * pCentroid) const
 {
    if (pCentroid != NULL)
    {
-      *pCentroid = tVec3((m_mins.x + m_maxs.x) / 2, (m_mins.y + m_maxs.y) / 2, (m_mins.z + m_maxs.z) / 2);
+      *pCentroid = cPoint3((m_mins.x + m_maxs.x) / 2, (m_mins.y + m_maxs.y) / 2, (m_mins.z + m_maxs.z) / 2);
    }
 }
 
@@ -153,8 +153,8 @@ template <typename T>
 bool cAxisAlignedBox<T>::Intersects(const cAxisAlignedBox & other, cAxisAlignedBox * pIntersection) const
 {
    cAxisAlignedBox<T> intersection(
-      cVec3<T>(Max(m_mins.x, other.m_mins.x), Max(m_mins.y, other.m_mins.y), Max(m_mins.z, other.m_mins.z)),
-      cVec3<T>(Min(m_maxs.x, other.m_maxs.x), Min(m_maxs.y, other.m_maxs.y), Min(m_maxs.z, other.m_maxs.z)));
+      cPoint3<T>(Max(m_mins.x, other.m_mins.x), Max(m_mins.y, other.m_mins.y), Max(m_mins.z, other.m_mins.z)),
+      cPoint3<T>(Min(m_maxs.x, other.m_maxs.x), Min(m_maxs.y, other.m_maxs.y), Min(m_maxs.z, other.m_maxs.z)));
    if (intersection.GetMins().x < intersection.GetMaxs().x
       || intersection.GetMins().y < intersection.GetMaxs().y
       || intersection.GetMins().z < intersection.GetMaxs().z)
@@ -174,14 +174,14 @@ template <typename T>
 cAxisAlignedBox<T> cAxisAlignedBox<T>::Union(const cAxisAlignedBox & other) const
 {
    return cAxisAlignedBox<T>(
-      cVec3<T>(Min(m_mins.x, other.m_mins.x), Min(m_mins.y, other.m_mins.y), Min(m_mins.z, other.m_mins.z)),
-      cVec3<T>(Max(m_maxs.x, other.m_maxs.x), Max(m_maxs.y, other.m_maxs.y), Max(m_maxs.z, other.m_maxs.z)));
+      cPoint3<T>(Min(m_mins.x, other.m_mins.x), Min(m_mins.y, other.m_mins.y), Min(m_mins.z, other.m_mins.z)),
+      cPoint3<T>(Max(m_maxs.x, other.m_maxs.x), Max(m_maxs.y, other.m_maxs.y), Max(m_maxs.z, other.m_maxs.z)));
 }
 
-////////////////////////////////////////
+//////////////////////////////////////
 
 template <typename T>
-void cAxisAlignedBox<T>::Offset(const cVec3<T> & offset)
+void cAxisAlignedBox<T>::Offset(const T offset[3])
 {
    m_mins += offset;
    m_maxs += offset;

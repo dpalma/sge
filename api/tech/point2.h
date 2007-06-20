@@ -37,7 +37,7 @@ public:
       {
          value_type x, y;
       };
-      value_type p[2];
+      value_type xy[2];
    };
 };
 

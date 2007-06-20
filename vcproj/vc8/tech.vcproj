@@ -949,6 +949,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\api\tech\point3.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\api\tech\quat.h"
 				>
 			</File>

@@ -284,7 +284,7 @@ tResult cEntityManager::RayCast(const cRay & ray, IEntity * * ppEntity) const
                tAxisAlignedBox bbox;
                if (pRender->GetBoundingBox(&bbox) == S_OK)
                {
-                  bbox.Offset(position);
+                  bbox.Offset(position.v);
 
                   if (ray.IntersectsAxisAlignedBox(bbox))
                   {
@@ -323,7 +323,7 @@ tResult cEntityManager::BoxCast(const tAxisAlignedBox & box, IEnumEntities * * p
                tAxisAlignedBox bbox;
                if (pRender->GetBoundingBox(&bbox) == S_OK)
                {
-                  bbox.Offset(position);
+                  bbox.Offset(position.v);
                   if (bbox.Intersects(box))
                   {
                      // Don't AddRef--it will be done in tEntityListEnum::Create

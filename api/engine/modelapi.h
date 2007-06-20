@@ -10,6 +10,7 @@
 
 #include "tech/matrix4.h"
 #include "tech/matrix34.h"
+#include "tech/point3.h"
 #include "tech/quat.h"
 #include "tech/vec3.h"
 
@@ -177,7 +178,7 @@ interface IModel : IUnknown
    virtual tResult GetSkeleton(IModelSkeleton * * ppSkeleton) = 0;
 };
 
-ENGINE_API tResult ModelCreateBox(const tVec3 & mins, const tVec3 & maxs, const float color[4], IModel * * ppModel);
+ENGINE_API tResult ModelCreateBox(const cPoint3<float> & mins, const cPoint3<float> & maxs, const float color[4], IModel * * ppModel);
 
 ENGINE_API tResult ModelCreate(const sModelVertex * pVerts, size_t nVerts,
                                const uint16 * pIndices, size_t nIndices,

@@ -107,8 +107,8 @@ bool cFrustum::SphereInFrustum(const tVec3 & center, float radius) const
 
 bool cFrustum::BoxInFrustum(const tAxisAlignedBox & box) const
 {
-   const tVec3 & maxs = box.GetMaxs();
-   const tVec3 & mins = box.GetMins();
+   const cPoint3<float> & maxs = box.GetMaxs();
+   const cPoint3<float> & mins = box.GetMins();
    for (int p = 0; p < 6; p++)
    {
       if (m_planes[p].a * mins.x + m_planes[p].b * mins.y + m_planes[p].c * mins.z + m_planes[p].d > 0)

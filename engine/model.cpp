@@ -364,7 +364,7 @@ void cModel::PreApplyJoints()
 
 ///////////////////////////////////////////////////////////////////////////////
 
-tResult ModelCreateBox(const tVec3 & mins, const tVec3 & maxs, const float color[4], IModel * * ppModel)
+tResult ModelCreateBox(const cPoint3<float> & mins, const cPoint3<float> & maxs, const float color[4], IModel * * ppModel)
 {
    sModelVertex verts[] =
    {

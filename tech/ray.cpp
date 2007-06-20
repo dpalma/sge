@@ -264,8 +264,8 @@ bool cRay::IntersectsAxisAlignedBox(const tAxisAlignedBox & box,
    {
       float d = m_direction.v[i]; // direction component
       float o = m_origin.v[i]; // origin component
-      float mn = box.GetMins().v[i]; // box minimum component
-      float mx = box.GetMaxs().v[i]; // box maximum component
+      float mn = box.GetMins().xyz[i]; // box minimum component
+      float mx = box.GetMaxs().xyz[i]; // box maximum component
 
       if (AlmostEqual(d, 0))
       {
