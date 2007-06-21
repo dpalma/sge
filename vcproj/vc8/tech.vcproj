@@ -945,6 +945,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\api\tech\plane.inl"
+				>
+			</File>
+			<File
 				RelativePath="..\..\api\tech\point2.h"
 				>
 			</File>

@@ -10,6 +10,8 @@
 #pragma once
 #endif
 
+template <typename T> class cVec3;
+
 ///////////////////////////////////////////////////////////////////////////////
 //
 // CLASS: cPoint3
@@ -113,6 +115,14 @@ template <typename T>
 inline cPoint3<T> operator -(const cPoint3<T> & a, const cPoint3<T> & b)
 {
    return cPoint3<T>(a.x - b.x, a.y - b.y, a.z - b.z);
+}
+
+///////////////////////////////////////
+
+template <typename T>
+inline cVec3<T> operator -(const cPoint3<T> & a, const cPoint3<T> & b)
+{
+   return cVec3<T>(a.x - b.x, a.y - b.y, a.z - b.z);
 }
 
 ///////////////////////////////////////

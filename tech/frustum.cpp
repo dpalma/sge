@@ -6,6 +6,7 @@
 #include "tech/frustum.h"
 
 #include "tech/axisalignedbox.h"
+#include "tech/plane.inl"
 #include "tech/vec3.h"
 
 #include "tech/dbgalloc.h" // must be last header
