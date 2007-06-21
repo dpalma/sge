@@ -9,6 +9,7 @@
 
 #include "tech/filepath.h"
 #include "tech/filespec.h"
+#include "tech/techmath.h"
 
 #include <GL/glew.h>
 #include <FTGLTextureFont.h>

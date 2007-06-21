@@ -5,6 +5,7 @@
 
 #include "tech/ray.h"
 
+#include "tech/point3.inl"
 #include "tech/techmath.h"
 
 #ifdef HAVE_UNITTESTPP

@@ -16,6 +16,7 @@
 #include "tech/color.h"
 #include "tech/comenumutil.h"
 #include "tech/multivar.h"
+#include "tech/point3.inl"
 #include "tech/ray.h"
 #include "tech/readwriteutils.h"
 #include "tech/resourceapi.h"

@@ -8,6 +8,7 @@
 #include "gui/guistyleapi.h"
 
 #include "tech/hashtabletem.h"
+#include "tech/point2.inl"
 
 #include "tech/dbgalloc.h" // must be last header
 

@@ -9,6 +9,7 @@
 #include "guistrings.h"
 
 #include "tech/globalobj.h"
+#include "tech/techmath.h"
 
 #include <tinyxml.h>
 

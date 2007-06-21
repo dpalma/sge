@@ -8,6 +8,7 @@
 #include "platform/keys.h"
 #include "platform/sys.h"
 #include "script/scriptapi.h"
+#include "tech/point2.inl"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"

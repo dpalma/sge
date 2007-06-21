@@ -5,14 +5,15 @@
 
 #include "terrainrender.h"
 
+#include "tech/color.h"
 #include "tech/imageapi.h"
 #include "tech/resourceapi.h"
 #include "tech/globalobj.h"
 #include "tech/filespec.h"
 #include "tech/configapi.h"
+#include "tech/point2.inl"
 #include "tech/readwriteapi.h"
 #include "tech/vec4.h"
-#include "tech/color.h"
 
 #include <algorithm>
 #include <functional>

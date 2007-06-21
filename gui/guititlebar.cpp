@@ -8,6 +8,8 @@
 #include "guielementtools.h"
 #include "guistrings.h"
 
+#include "tech/techmath.h"
+
 #include <tinyxml.h>
 
 #include "tech/dbgalloc.h" // must be last header

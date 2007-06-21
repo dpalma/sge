@@ -11,6 +11,7 @@
 
 #include "tech/configapi.h"
 #include "tech/globalobj.h"
+#include "tech/point2.inl"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"

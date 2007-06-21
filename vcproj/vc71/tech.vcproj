@@ -691,7 +691,13 @@
 				RelativePath="..\..\api\tech\point2.h">
 			</File>
 			<File
+				RelativePath="..\..\api\tech\point2.inl">
+			</File>
+			<File
 				RelativePath="..\..\api\tech\point3.h">
+			</File>
+			<File
+				RelativePath="..\..\api\tech\point3.inl">
 			</File>
 			<File
 				RelativePath="..\..\api\tech\quat.h">

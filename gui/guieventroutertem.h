@@ -15,6 +15,8 @@
 
 #include "platform/inputapi.h"
 
+#include "tech/point2.inl"
+
 #include <algorithm>
 
 #include "tech/dbgalloc.h" // must be last header

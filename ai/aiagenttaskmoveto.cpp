@@ -5,6 +5,7 @@
 
 #include "aiagenttaskmoveto.h"
 
+#include "tech/point3.inl"
 #include "tech/quat.inl"
 #include "tech/statemachinetem.h"
 
@@ -122,7 +123,7 @@ void cAIAgentTaskMoveTo::OnUpdateMoving(const tAgentDoublePair & adp)
       static const tVec3 axis(0,0,1);
 
       tVec3::value_type d = axis.Dot(dir);
-      pLocationProvider->SetOrientation(tQuat(0,1,0,acos(d)));
+      pLocationProvider->SetOrientation(tQuat(tVec3(0,1,0),acos(d)));
    }
 }
 

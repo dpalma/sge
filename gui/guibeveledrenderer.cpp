@@ -14,6 +14,7 @@
 #include "tech/configapi.h"
 #include "tech/globalobj.h"
 #include "tech/imageapi.h"
+#include "tech/techmath.h"
 
 #include "tech/dbgalloc.h" // must be last header
 

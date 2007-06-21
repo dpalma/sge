@@ -12,6 +12,7 @@
 #include "gui/guistyleapi.h"
 
 #include "tech/globalobj.h"
+#include "tech/techmath.h"
 
 #include "tech/dbgalloc.h" // must be last header
 

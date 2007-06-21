@@ -10,6 +10,7 @@
 #include "tech/filepath.h"
 #include "tech/globalobj.h"
 #include "tech/point2.h"
+#include "tech/point2.inl"
 #include "tech/readwriteapi.h"
 #include "tech/resourceapi.h"
 #include "tech/techmath.h"

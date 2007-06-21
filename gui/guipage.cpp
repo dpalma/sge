@@ -15,6 +15,7 @@
 
 #include "tech/comenumutil.h"
 #include "tech/globalobj.h"
+#include "tech/point2.inl"
 
 #include <tinyxml.h>
 

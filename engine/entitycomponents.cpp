@@ -9,6 +9,7 @@
 
 #include "tech/globalobj.h"
 #include "tech/multivar.h"
+#include "tech/point3.inl"
 #include "tech/quat.inl"
 #include "tech/statemachinetem.h"
 
