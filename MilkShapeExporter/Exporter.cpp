@@ -13,6 +13,7 @@
 
 #include "tech/comtools.h"
 #include "tech/filespec.h"
+#include "tech/quat.inl"
 #include "tech/readwriteapi.h"
 #include "tech/readwriteutils.h"
 
@@ -135,7 +136,7 @@ void cExporter::PreProcess()
                   sModelKeyFrame keyFrame;
                   keyFrame.time = rotKey.time / 24; // 24 frames per second
                   keyFrame.translation = tVec3(posKey.position);
-                  keyFrame.rotation = QuatFromEulerAngles(tVec3(rotKey.rotation));
+                  keyFrame.rotation = tQuat::FromEulerAngles(rotKey.rotation[0], rotKey.rotation[1], rotKey.rotation[2]);
                   jointAnimKeyFrames.push_back(keyFrame);
                }
                if (rotFrame >= animDesc.end)
@@ -447,7 +448,7 @@ void cExporter::CollectJoints(msModel * pModel, vector<cMs3dJoint> * pTempJoints
          sModelJoint modelJoint;
          modelJoint.parentIndex = -1;
          modelJoint.localTranslation = tVec3(iter->GetPosition());
-         modelJoint.localRotation = QuatFromEulerAngles(tVec3(iter->GetRotation()));
+         modelJoint.localRotation = tQuat::FromEulerAngles(iter->GetRotation()[0], iter->GetRotation()[1], iter->GetRotation()[2]);
 
          if (strlen(iter->GetParentName()) > 0)
          {

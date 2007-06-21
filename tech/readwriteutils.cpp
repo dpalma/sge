@@ -7,43 +7,6 @@
 
 #include "tech/dbgalloc.h" // must be last header
 
-///////////////////////////////////////////////////////////////////////////////
-
-tResult cReadWriteOps<tQuat>::Read(IReader * pReader, tQuat * pQ)
-{
-   if (pReader == NULL || pQ == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (pReader->Read(&pQ->x) == S_OK
-      && pReader->Read(&pQ->y) == S_OK
-      && pReader->Read(&pQ->z) == S_OK
-      && pReader->Read(&pQ->w) == S_OK)
-   {
-      return S_OK;
-   }
-
-   return E_FAIL;
-}
-
-tResult cReadWriteOps<tQuat>::Write(IWriter * pWriter, const tQuat & q)
-{
-   if (pWriter == NULL)
-   {
-      return E_POINTER;
-   }
-
-   if (pWriter->Write(q.x) == S_OK
-      && pWriter->Write(q.y) == S_OK
-      && pWriter->Write(q.z) == S_OK
-      && pWriter->Write(q.w) == S_OK)
-   {
-      return S_OK;
-   }
-
-   return E_FAIL;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 

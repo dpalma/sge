@@ -5,6 +5,7 @@
 
 #include "aiagenttaskmoveto.h"
 
+#include "tech/quat.inl"
 #include "tech/statemachinetem.h"
 
 #include "tech/dbgalloc.h" // must be last header

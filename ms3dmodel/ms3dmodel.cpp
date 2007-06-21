@@ -15,12 +15,13 @@
 
 #include "render/renderapi.h"
 
-#include "tech/vec4.h"
+#include "tech/filespec.h"
+#include "tech/globalobj.h"
 #include "tech/matrix4.h"
+#include "tech/quat.inl"
 #include "tech/resourceapi.h"
 #include "tech/readwriteapi.h"
-#include "tech/globalobj.h"
-#include "tech/filespec.h"
+#include "tech/vec4.h"
 
 #ifdef HAVE_UNITTESTPP
 #include "UnitTest++.h"
@@ -239,7 +240,7 @@ void CompileJointsAndKeyFrames(float animationFPS, const vector<cMs3dJoint> & ms
       }
 
       modelJoint.localTranslation = tVec3(iter->GetPosition());
-      modelJoint.localRotation = QuatFromEulerAngles(tVec3(iter->GetRotation()));
+      modelJoint.localRotation = tQuat::FromEulerAngles(iter->GetRotation()[0], iter->GetRotation()[1], iter->GetRotation()[2]);
       modelJoint.parentIndex = parentIndex;
 
       AssertMsg(iter->GetRotationKeys().size() == iter->GetPositionKeys().size(),
@@ -259,7 +260,7 @@ void CompileJointsAndKeyFrames(float animationFPS, const vector<cMs3dJoint> & ms
 
          keyFrames[j].time = keyFramesRot[j].time;
          keyFrames[j].translation = tVec3(keyFramesTrans[j].position);
-         keyFrames[j].rotation = QuatFromEulerAngles(tVec3(keyFramesRot[j].rotation));
+         keyFrames[j].rotation = tQuat::FromEulerAngles(keyFramesRot[j].rotation[0], keyFramesRot[j].rotation[1], keyFramesRot[j].rotation[2]);
 
          int frame = FloatToInt(static_cast<float>(keyFrames[j].time) * animationFPS);
          LocalMsg3("Key frame %d at %.3f is #%d\n", j, keyFrames[j].time, frame);

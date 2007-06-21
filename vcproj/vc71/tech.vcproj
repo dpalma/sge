@@ -697,6 +697,9 @@
 				RelativePath="..\..\api\tech\quat.h">
 			</File>
 			<File
+				RelativePath="..\..\api\tech\quat.inl">
+			</File>
+			<File
 				RelativePath="..\..\api\tech\ray.h">
 			</File>
 			<File

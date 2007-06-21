@@ -4,15 +4,14 @@
 #ifndef INCLUDED_QUAT_H
 #define INCLUDED_QUAT_H
 
-#include "techdll.h"
-#include "matrix3.h"
-#include "vec3.h"
-
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
 
 /////////////////////////////////////////////////////////////////////////////
+
+template <typename T> class cMatrix3;
+template <typename T> class cVec3;
 
 #ifndef NO_DEFAULT_QUAT
 template <typename T> class cQuat;
@@ -31,17 +30,17 @@ public:
    typedef T value_type;
 
    cQuat();
-   cQuat(const tVec3 & v, value_type _w);
-   cQuat(value_type _x, value_type _y, value_type _z, value_type _w);
+   cQuat(const cVec3<T> & axis, T angle); // angle should be in radians
+   cQuat(value_type xx, value_type yy, value_type zz, value_type ww);
    cQuat(const cQuat & other);
 
    const cQuat & operator =(const cQuat & other);
 
-   static const cQuat & GetAddIdentity();
+   void Assign(const cQuat & other);
+
    static const cQuat & GetMultIdentity();
 
-   bool operator ==(const cQuat & other) const;
-   bool operator !=(const cQuat & other) const;
+   bool EqualTo(const cQuat & other) const;
 
    const cQuat<T> & operator *=(const cQuat & other);
 
@@ -51,207 +50,17 @@ public:
 
    void ToMatrix(cMatrix3<T> * pMatrix) const;
 
-   value_type x, y, z, w;
+   static cQuat FromEulerAngles(T pitch, T yaw, T roll);
+
+   union
+   {
+      struct
+      {
+         value_type x, y, z, w;
+      };
+      value_type q[4];
+   };
 };
-
-///////////////////////////////////////
-
-template <typename T>
-inline cQuat<T>::cQuat()
-{
-}
-
-///////////////////////////////////////
-
-template <typename T>
-inline cQuat<T>::cQuat(const tVec3 & v, value_type _w)
- : x(v.x), y(v.y), z(v.z), w(_w)
-{
-}
-
-///////////////////////////////////////
-
-template <typename T>
-inline cQuat<T>::cQuat(value_type _x, value_type _y, value_type _z, value_type _w)
- : x(_x), y(_y), z(_z), w(_w)
-{
-}
-
-///////////////////////////////////////
-
-template <typename T>
-inline cQuat<T>::cQuat(const cQuat & other) 
- : x(other.x), y(other.y), z(other.z), w(other.w)
-{
-}
-
-///////////////////////////////////////
-
-template <typename T>
-inline const cQuat<T> & cQuat<T>::operator =(const cQuat & other) 
-{
-   w = other.w;
-   x = other.x;
-   y = other.y;
-   z = other.z;
-   return *this;
-}
-
-///////////////////////////////////////
-
-template <typename T>
-const cQuat<T> & cQuat<T>::GetAddIdentity()
-{
-   static const cQuat<T> addIdentity(0,0,0,0);
-   return addIdentity;
-}
-
-///////////////////////////////////////
-
-template <typename T>
-const cQuat<T> & cQuat<T>::GetMultIdentity()
-{
-   static const cQuat<T> multIdentity(0,0,0,1);
-   return multIdentity;
-}
-
-///////////////////////////////////////
-
-template <typename T>
-inline bool cQuat<T>::operator ==(const cQuat & other) const
-{
-   return w == other.w && x == other.x && y == other.y && z == other.z;
-}
-
-///////////////////////////////////////
-
-template <typename T>
-inline bool cQuat<T>::operator !=(const cQuat & other) const
-{
-   return w != other.w || x != other.x || y != other.y || z != other.z;
-}
-
-///////////////////////////////////////
-
-template <typename T>
-const cQuat<T> & cQuat<T>::operator *=(const cQuat & other)
-{
-   T wNew = ((w * other.w) - (x * other.x) - (y * other.y) - (z * other.z));
-   T xNew = ((w * other.x) + (x * other.w) + (y * other.z) - (z * other.y));
-   T yNew = ((w * other.y) - (x * other.z) + (y * other.w) + (z * other.x));
-   T zNew = ((w * other.z) + (x * other.y) - (y * other.x) + (z * other.w));
-   w = wNew;
-   x = xNew;
-   y = yNew;
-   z = zNew;
-   return *this;
-}
-
-///////////////////////////////////////
-
-template <typename T>
-inline T cQuat<T>::Dot(const cQuat & other) const
-{
-   return (w * other.w) + (x * other.x) + (y * other.y) + (z * other.z);
-}
-
-///////////////////////////////////////
-
-template <typename T>
-inline T cQuat<T>::Norm() const
-{
-   return (w * w) + (x * x) + (y * y) + (z * z);
-}
-
-///////////////////////////////////////
-
-template <typename T>
-inline cQuat<T> cQuat<T>::Inverse() const
-{
-   T n = Norm();
-   Assert(n != 0);
-   T oneOverN = static_cast<T>(1) / n;
-   return cQuat(-x * oneOverN, -y * oneOverN, -z * oneOverN, w);
-}
-
-///////////////////////////////////////
-
-template <typename T>
-inline void cQuat<T>::ToMatrix(cMatrix3<T> * pMatrix) const
-{
-   Assert(pMatrix != NULL);
-
-   tQuat::value_type s = 2.0f / Norm();
-   tQuat::value_type xs = x*s;
-   tQuat::value_type ys = y*s;
-   tQuat::value_type zs = z*s;
-
-   tQuat::value_type wx = w*xs;
-   tQuat::value_type wy = w*ys;
-   tQuat::value_type wz = w*zs;
-
-   tQuat::value_type xx = x*xs;
-   tQuat::value_type xy = x*ys;
-   tQuat::value_type xz = x*zs;
-
-   tQuat::value_type yy = y*ys;
-   tQuat::value_type yz = y*zs;
-   tQuat::value_type zz = z*zs;
-
-   pMatrix->m[0] = 1 - (yy + zz);
-   pMatrix->m[1] = xy + wz;
-   pMatrix->m[2] = xz - wy;
-
-   pMatrix->m[3] = xy - wz;
-   pMatrix->m[4] = 1 - (xx + zz);
-   pMatrix->m[5] = yz + wx;
-
-   pMatrix->m[6] = xz + wy;
-   pMatrix->m[7] = yz - wx;
-   pMatrix->m[8] = 1 - (xx + yy);
-}
-
-///////////////////////////////////////
-
-inline tQuat operator +(const tQuat & a, const tQuat & b)
-{
-   return tQuat(a.x + b.x, a.y + b.y, a.z + b.z, a.w + b.w);
-}
-
-///////////////////////////////////////
-
-inline tQuat operator -(const tQuat & a, const tQuat & b)
-{
-   return tQuat(a.x - b.x, a.y - b.y, a.z - b.z, a.w - b.w);
-}
-
-///////////////////////////////////////
-
-inline tQuat operator *(const tQuat & q, tQuat::value_type scalar)
-{
-   return tQuat(q.x * scalar, q.y * scalar, q.z * scalar, q.w * scalar);
-}
-
-///////////////////////////////////////
-
-inline tQuat operator /(const tQuat & q, tQuat::value_type scalar)
-{
-   tQuat::value_type oneOver = (tQuat::value_type)1 / scalar;
-   return tQuat(q.x * oneOver, q.y * oneOver, q.z * oneOver, q.w * oneOver);
-}
-
-///////////////////////////////////////
-
-inline tQuat operator *(const tQuat & q0, const tQuat & q1)
-{
-   return tQuat(q0) *= q1;
-}
-
-///////////////////////////////////////
-
-tQuat QuatFromEulerAngles(const tVec3 & eulerAngles);
-
-tQuat QuatSlerp(const tQuat & q0, const tQuat & q1, tQuat::value_type u);
 
 /////////////////////////////////////////////////////////////////////////////
 

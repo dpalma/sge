@@ -14,6 +14,7 @@
 #include "tech/filepath.h"
 #include "tech/filespec.h"
 #include "tech/globalobj.h"
+#include "tech/quat.inl"
 #include "tech/readwriteapi.h"
 #include "tech/readwriteutils.h"
 #include "tech/resourceapi.h"

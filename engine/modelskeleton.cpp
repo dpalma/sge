@@ -6,6 +6,7 @@
 #include "modelskeleton.h"
 
 #include "tech/matrix3.h"
+#include "tech/quat.inl"
 
 #include <algorithm>
 #include <cfloat>

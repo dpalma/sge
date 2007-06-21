@@ -8,6 +8,7 @@
 
 #include "tech/matrix3.h"
 #include "tech/matrix4.h"
+#include "tech/quat.inl"
 
 #define BOOST_MEM_FN_ENABLE_STDCALL
 #include <boost/mem_fn.hpp>
@@ -133,7 +134,7 @@ tResult cModelKeyFrameInterpolator::Interpolate(double time, tVec3 * pTrans, tQu
          else
          {
             double u = (time - prev->time) / (iter->time - prev->time);
-            *pRot = QuatSlerp(prev->rotation, iter->rotation, static_cast<float>(u));
+            *pRot = Slerp(prev->rotation, iter->rotation, static_cast<float>(u));
             *pTrans = Lerp(prev->translation, iter->translation, (tVec3::value_type)u);
          }
 

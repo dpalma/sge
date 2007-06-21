@@ -27,8 +27,8 @@ EXPORTS
 	?ConfigIsTrue@@YA_NPBD@Z										@23		NONAME
 ;	?techlog@@3VcLog@@A												@24		NONAME
 	?FilePathExists@@YA_NABVcFilePath@@@Z						@25		NONAME
-	?QuatFromEulerAngles@@YA?AV?$cQuat@M@@ABV?$cVec3@M@@@Z			@26		NONAME
-	?QuatSlerp@@YA?AV?$cQuat@M@@ABV1@0M@Z							@27		NONAME
+;	REMOVED
+;	REMOVED
 	?GetCpuFeatures@@YA_NPAUsCpuFeatures@@@Z						@28		NONAME
 	?DictionaryIniStoreCreate@@YAJABVcFileSpec@@PBDPAPAUIDictionaryStore@@@Z	@29		NONAME
 	?DictionaryStoreCreate@@YAJPAUHKEY__@@PBD_NPAPAUIDictionaryStore@@@Z		@30		NONAME
