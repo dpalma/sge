@@ -162,7 +162,7 @@ tResult cRenderDXCamera::ScreenToNormalizedDeviceCoords(int sx, int sy, float * 
 
 ///////////////////////////////////////
 
-tResult cRenderDXCamera::GeneratePickRay(float ndx, float ndy, cRay * pRay) const
+tResult cRenderDXCamera::GeneratePickRay(float ndx, float ndy, cRay<float> * pRay) const
 {
    return E_NOTIMPL;
 }

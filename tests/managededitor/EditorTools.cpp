@@ -10,7 +10,7 @@
 #include "engine/terrainapi.h"
 #include "render/renderapi.h"
 #include "tech/globalobj.h"
-#include "tech/ray.h"
+#include "tech/ray.inl"
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -20,13 +20,13 @@
 
 namespace ManagedEditor
 {
-   static bool GetTerrainLocation(const cRay & ray, tVec3 * pLocation)
+   static bool GetTerrainLocation(const cRay<float> & ray, cPoint3<float> * pLocation)
    {
       HTERRAINQUAD hQuad;
       UseGlobal(TerrainModel);
       if (pTerrainModel->GetQuadFromHitTest(ray, &hQuad) == S_OK)
       {
-         tVec3 corners[4];
+         cPoint3<float> corners[4];
          if (pTerrainModel->GetQuadCorners(hQuad, corners) == S_OK)
          {
             if (ray.IntersectsTriangle(corners[0], corners[3], corners[2], pLocation)
@@ -40,7 +40,7 @@ namespace ManagedEditor
    }
 
 
-   static EditorDocumentCommand ^ MakeSelectCommand(const cRay & pickRay)
+   static EditorDocumentCommand ^ MakeSelectCommand(const cRay<float> & pickRay)
    {
       XYZ<float> ^ rayOrigin = gcnew XYZ<float>(
          pickRay.GetOrigin().x,
@@ -67,7 +67,7 @@ namespace ManagedEditor
       UseGlobal(EntityManager);
 
       cAutoIPtr<IRenderCamera> pCamera;
-      cRay pickRay;
+      cRay<float> pickRay;
       if (pRenderer->GetCamera(&pCamera) == S_OK
          && pCamera->GenerateScreenPickRay(e->X, e->Y, &pickRay) == S_OK)
       {
@@ -103,7 +103,7 @@ namespace ManagedEditor
       UseGlobal(TerrainModel);
 
       cAutoIPtr<IRenderCamera> pCamera;
-      cRay pickRay;
+      cRay<float> pickRay;
       if (pRenderer->GetCamera(&pCamera) == S_OK
          && pCamera->GenerateScreenPickRay(e->X, e->Y, &pickRay) == S_OK)
       {
@@ -116,7 +116,7 @@ namespace ManagedEditor
             }
             else
             {
-               tVec3 location;
+               cPoint3<float> location;
                if (GetTerrainLocation(pickRay, &location))
                {
                   cTerrainSettings terrainSettings;
@@ -204,7 +204,7 @@ namespace ManagedEditor
       HTERRAINVERTEX hHitVertex = INVALID_HTERRAINVERTEX;
 
       cAutoIPtr<IRenderCamera> pCamera;
-      cRay pickRay;
+      cRay<float> pickRay;
       if (pRenderer->GetCamera(&pCamera) == S_OK
          && pCamera->GenerateScreenPickRay(e->X, e->Y, &pickRay) == S_OK)
       {
@@ -282,7 +282,7 @@ namespace ManagedEditor
 
       m_hitVertices->Clear();
 
-      cRay pickRay;
+      cRay<float> pickRay;
       HTERRAINVERTEX hHitVertex = INVALID_HTERRAINVERTEX;
       tVec3 vertexPos;
 
@@ -345,7 +345,7 @@ namespace ManagedEditor
       HTERRAINVERTEX hHitVertex = INVALID_HTERRAINVERTEX;
 
       cAutoIPtr<IRenderCamera> pCamera;
-      cRay pickRay;
+      cRay<float> pickRay;
       if (pRenderer->GetCamera(&pCamera) == S_OK
          && pCamera->GenerateScreenPickRay(e->X, e->Y, &pickRay) == S_OK)
       {

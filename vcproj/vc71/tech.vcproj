@@ -712,6 +712,9 @@
 				RelativePath="..\..\api\tech\ray.h">
 			</File>
 			<File
+				RelativePath="..\..\api\tech\ray.inl">
+			</File>
+			<File
 				RelativePath="..\..\api\tech\readwriteapi.h">
 			</File>
 			<File

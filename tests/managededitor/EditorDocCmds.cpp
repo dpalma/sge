@@ -9,7 +9,7 @@
 #include "engine/terrainapi.h"
 
 #include "tech/globalobj.h"
-#include "tech/ray.h"
+#include "tech/ray.inl"
 #include "tech/vec3.h"
 
 
@@ -60,8 +60,8 @@ namespace ManagedEditor
 
       if (m_rayOrigin && m_rayDirection)
       {
-         cRay pickRay(
-            tVec3(m_rayOrigin->X, m_rayOrigin->Y, m_rayOrigin->Z),
+         cRay<float> pickRay(
+            cPoint3<float>(m_rayOrigin->X, m_rayOrigin->Y, m_rayOrigin->Z),
             tVec3(m_rayDirection->X, m_rayDirection->Y, m_rayDirection->Z));
 
          cAutoIPtr<IEntity> pEntity;

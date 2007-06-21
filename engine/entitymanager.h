@@ -61,7 +61,7 @@ public:
 
    virtual void RenderAll();
 
-   virtual tResult RayCast(const cRay & ray, IEntity * * ppEntity) const;
+   virtual tResult RayCast(const cRay<float> & ray, IEntity * * ppEntity) const;
    virtual tResult BoxCast(const tAxisAlignedBox & box, IEnumEntities * * ppEnum) const;
 
    ///////////////////////////////////

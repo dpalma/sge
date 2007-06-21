@@ -9,7 +9,7 @@
 
 #include "tech/configapi.h"
 #include "tech/frustum.h"
-#include "tech/ray.h"
+#include "tech/ray.inl"
 
 #include <GL/glew.h>
 
@@ -346,7 +346,7 @@ tResult cRenderGLCamera::ScreenToNormalizedDeviceCoords(int sx, int sy, float * 
 
 ///////////////////////////////////////
 
-tResult cRenderGLCamera::GeneratePickRay(float ndx, float ndy, cRay * pRay) const
+tResult cRenderGLCamera::GeneratePickRay(float ndx, float ndy, cRay<float> * pRay) const
 {
    if (pRay == NULL)
    {
@@ -385,7 +385,7 @@ tResult cRenderGLCamera::GeneratePickRay(float ndx, float ndy, cRay * pRay) cons
    tVec3 dir(f.x - n.x, f.y - n.y, f.z - n.z);
    dir.Normalize();
 
-   *pRay = cRay(tVec3(eye.x,eye.y,eye.z), dir);
+   *pRay = cRay<float>(cPoint3<float>(eye.x,eye.y,eye.z), dir);
 
    return S_OK;
 }

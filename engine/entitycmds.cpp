@@ -16,7 +16,7 @@
 
 #include "tech/globalobj.h"
 #include "tech/multivar.h"
-#include "tech/ray.h"
+#include "tech/ray.inl"
 
 #include "tech/dbgalloc.h" // must be last header
 
@@ -65,13 +65,13 @@ tResult EntityCommandSpawn(IEntity * pEntity, const cMultiVar * pArgs, uint nArg
 
 ///////////////////////////////////////////////////////////////////////////////
 
-static bool GetTerrainLocation(const cRay & ray, tVec3 * pLocation)
+static bool GetTerrainLocation(const cRay<float> & ray, cPoint3<float> * pLocation)
 {
    HTERRAINQUAD hQuad;
    UseGlobal(TerrainModel);
    if (pTerrainModel->GetQuadFromHitTest(ray, &hQuad) == S_OK)
    {
-      tVec3 corners[4];
+      cPoint3<float> corners[4];
       if (pTerrainModel->GetQuadCorners(hQuad, corners) == S_OK)
       {
          if (ray.IntersectsTriangle(corners[0], corners[3], corners[2], pLocation)
@@ -107,7 +107,7 @@ protected:
    IEntity * AccessEntity() { return m_pEntity; }
    const IEntity * AccessEntity() const { return m_pEntity; }
 
-   virtual tResult OnTerrainClick(const tVec3 & location);
+   virtual tResult OnTerrainClick(const cPoint3<float> & location);
 
 private:
    cAutoIPtr<IEntity> m_pEntity;
@@ -139,11 +139,11 @@ bool cTerrainClickInputMode::OnInputEvent(const sInputEvent * pEvent)
       UseGlobal(Renderer);
 
       cAutoIPtr<IRenderCamera> pCamera;
-      cRay pickRay;
+      cRay<float> pickRay;
       if (pRenderer->GetCamera(&pCamera) == S_OK
          && pCamera->GenerateScreenPickRay(pEvent->point.x, pEvent->point.y, &pickRay) == S_OK)
       {
-         tVec3 location;
+         cPoint3<float> location;
          if (GetTerrainLocation(pickRay, &location))
          {
             UseGlobal(Input);
@@ -167,7 +167,7 @@ void cTerrainClickInputMode::CancelMode()
 
 ////////////////////////////////////////
 
-tResult cTerrainClickInputMode::OnTerrainClick(const tVec3 & location)
+tResult cTerrainClickInputMode::OnTerrainClick(const cPoint3<float> & location)
 {
    return S_FALSE;
 }
@@ -246,7 +246,7 @@ public:
    ~cMoveMode();
 
 protected:
-   virtual tResult OnTerrainClick(const tVec3 & location);
+   virtual tResult OnTerrainClick(const cPoint3<float> & location);
 };
 
 ////////////////////////////////////////
@@ -264,7 +264,7 @@ cMoveMode::~cMoveMode()
 
 ////////////////////////////////////////
 
-tResult cMoveMode::OnTerrainClick(const tVec3 & location)
+tResult cMoveMode::OnTerrainClick(const cPoint3<float> & location)
 {
    LocalMsg3("Issue move orders to (%f, %f, %f)\n", location.x, location.y, location.z);
 

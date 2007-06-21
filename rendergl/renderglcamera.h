@@ -49,7 +49,7 @@ public:
    virtual tResult GetViewProjectionInverseMatrix(float viewProjInvMatrix[16]) const;
 
    virtual tResult ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pndy) const;
-   virtual tResult GeneratePickRay(float ndx, float ndy, cRay * pRay) const;
+   virtual tResult GeneratePickRay(float ndx, float ndy, cRay<float> * pRay) const;
 
 private:
    float m_view[16];

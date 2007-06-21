@@ -28,7 +28,7 @@
 #include "tech/techstring.h"
 #include "tech/globalobj.h"
 #include "tech/multivar.h"
-#include "tech/ray.h"
+#include "tech/ray.inl"
 #include "tech/schedulerapi.h"
 #include "tech/simapi.h"
 #include "tech/statemachine.h"
@@ -129,7 +129,7 @@ bool cMainInputListener::OnInputEvent(const sInputEvent * pEvent)
       UseGlobal(Renderer);
 
       cAutoIPtr<IRenderCamera> pCamera;
-      cRay pickRay;
+      cRay<float> pickRay;
       if (pRenderer->GetCamera(&pCamera) == S_OK
          && pCamera->GenerateScreenPickRay(pEvent->point.x, pEvent->point.y, &pickRay) == S_OK)
       {

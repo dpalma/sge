@@ -112,14 +112,6 @@ inline typename cPoint3<T>::const_reference cPoint3<T>::operator /=(value_type d
 ///////////////////////////////////////
 
 template <typename T>
-inline cPoint3<T> operator -(const cPoint3<T> & a, const cPoint3<T> & b)
-{
-   return cPoint3<T>(a.x - b.x, a.y - b.y, a.z - b.z);
-}
-
-///////////////////////////////////////
-
-template <typename T>
 inline cVec3<T> operator -(const cPoint3<T> & a, const cPoint3<T> & b)
 {
    return cVec3<T>(a.x - b.x, a.y - b.y, a.z - b.z);
@@ -131,6 +123,14 @@ template <typename T>
 inline cPoint3<T> operator +(const cPoint3<T> & a, const cPoint3<T> & b)
 {
    return cPoint3<T>(a.x + b.x, a.y + b.y, a.z + b.z);
+}
+
+///////////////////////////////////////
+
+template <typename T>
+inline cPoint3<T> operator +(const cPoint3<T> & p, const cVec3<T> & v)
+{
+   return cPoint3<T>(p.x + v.x, p.y + v.y, p.z + v.z);
 }
 
 ///////////////////////////////////////

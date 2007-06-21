@@ -11,7 +11,7 @@
 
 #include "tech/connptimpl.h"
 #include "tech/imageapi.h"
-#include "tech/ray.h"
+#include "tech/ray.inl"
 #include "tech/readwriteapi.h"
 #include "tech/readwriteutils.h"
 #include "tech/resourceapi.h"
@@ -309,14 +309,14 @@ tResult cGMMTerrain::EnumTerrainQuads(uint xStart, uint xEnd, uint zStart, uint 
 
 ////////////////////////////////////////
 
-tResult cGMMTerrain::GetVertexFromHitTest(const cRay & ray, HTERRAINVERTEX * phVertex) const
+tResult cGMMTerrain::GetVertexFromHitTest(const cRay<float> & ray, HTERRAINVERTEX * phVertex) const
 {
    if (phVertex == NULL)
    {
       return E_POINTER;
    }
 
-   tVec3 pointOnPlane;
+   cPoint3<float> pointOnPlane;
    if (ray.IntersectsPlane(g_terrainVertical, 0, &pointOnPlane))
    {
       LocalMsg3("Hit the terrain at approximately (%.1f, %.1f, %.1f)\n",
@@ -417,14 +417,14 @@ tResult cGMMTerrain::SetVertexElevation(HTERRAINVERTEX hVertex, float elevation)
 
 ////////////////////////////////////////
 
-tResult cGMMTerrain::GetQuadFromHitTest(const cRay & ray, HTERRAINQUAD * phQuad) const
+tResult cGMMTerrain::GetQuadFromHitTest(const cRay<float> & ray, HTERRAINQUAD * phQuad) const
 {
    if (phQuad == NULL)
    {
       return E_POINTER;
    }
 
-   tVec3 pointOnPlane;
+   cPoint3<float> pointOnPlane;
    if (ray.IntersectsPlane(g_terrainVertical, 0, &pointOnPlane))
    {
       LocalMsg3("Hit the terrain at approximately (%.1f, %.1f, %.1f)\n",
@@ -459,7 +459,7 @@ tResult cGMMTerrain::GetQuadTile(HTERRAINQUAD hQuad, uint * pTile) const
 
 ////////////////////////////////////////
 
-tResult cGMMTerrain::GetQuadCorners(HTERRAINQUAD hQuad, tVec3 corners[4]) const
+tResult cGMMTerrain::GetQuadCorners(HTERRAINQUAD hQuad, cPoint3<float> corners[4]) const
 {
    uint16 x, z;
    DecomposeHandle(hQuad, &x, &z);
@@ -542,11 +542,11 @@ tResult cGMMTerrain::GetPointOnTerrain(float nx, float nz, tVec3 * pLocation) co
    uint ix, iz;
    if (GetTileIndices(x, z, &ix, &iz) == S_OK)
    {
-      tVec3 corners[4];
+      cPoint3<float> corners[4];
       if (GetQuadCorners(ix, iz, corners) == S_OK)
       {
-         tVec3 hit;
-         cRay ray(tVec3(x, 99999, z), g_terrainVertical * -1);
+         cPoint3<float> hit;
+         cRay<float> ray(cPoint3<float>(x, 99999, z), g_terrainVertical * -1);
          if (ray.IntersectsTriangle(corners[2], corners[1], corners[0], &hit)
             || ray.IntersectsTriangle(corners[0], corners[2], corners[3], &hit))
          {
@@ -646,7 +646,7 @@ tResult cGMMTerrain::GetTileIndices(float x, float z, uint * pix, uint * piz) co
 
 ////////////////////////////////////////
 
-tResult cGMMTerrain::GetQuadCorners(uint quadx, uint quadz, tVec3 corners[4]) const
+tResult cGMMTerrain::GetQuadCorners(uint quadx, uint quadz, cPoint3<float> corners[4]) const
 {
    if (corners == NULL)
    {
@@ -660,10 +660,10 @@ tResult cGMMTerrain::GetQuadCorners(uint quadx, uint quadz, tVec3 corners[4]) co
    }
 
 #define Index(qx, qz) (((qz) * (m_terrainSettings.GetTileCountZ() + 1)) + qx)
-   corners[0] = m_vertices[Index(quadx,   quadz)].position;
-   corners[1] = m_vertices[Index(quadx+1, quadz)].position;
-   corners[2] = m_vertices[Index(quadx+1, quadz+1)].position;
-   corners[3] = m_vertices[Index(quadx,   quadz+1)].position;
+   corners[0] = m_vertices[Index(quadx,   quadz)].position.v;
+   corners[1] = m_vertices[Index(quadx+1, quadz)].position.v;
+   corners[2] = m_vertices[Index(quadx+1, quadz+1)].position.v;
+   corners[3] = m_vertices[Index(quadx,   quadz+1)].position.v;
 #undef Index
 
    return S_OK;

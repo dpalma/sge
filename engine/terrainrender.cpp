@@ -355,7 +355,7 @@ void cTerrainRenderer::Render()
       if (m_highlightQuad != INVALID_HTERRAINQUAD)
       {
          UseGlobal(TerrainModel);
-         tVec3 corners[4];
+         cPoint3<float> corners[4];
          if (pTerrainModel->GetQuadCorners(m_highlightQuad, corners) == S_OK)
          {
             glPushAttrib(GL_CURRENT_BIT | GL_ENABLE_BIT);
@@ -368,10 +368,10 @@ void cTerrainRenderer::Render()
             glBegin(GL_QUADS);
                glColor4fv(kHighlightTileColor);
                glNormal3f(0, 1, 0);
-               glVertex3fv(corners[0].v);
-               glVertex3fv(corners[3].v);
-               glVertex3fv(corners[2].v);
-               glVertex3fv(corners[1].v);
+               glVertex3fv(corners[0].xyz);
+               glVertex3fv(corners[3].xyz);
+               glVertex3fv(corners[2].xyz);
+               glVertex3fv(corners[1].xyz);
             glEnd();
             glPopAttrib();
          }
@@ -1044,7 +1044,7 @@ tResult cTerrainChunk::BuildVertexBuffer(const cRange<uint> xRange,
          pTerrainRenderer->GetTilesPerChunk() * terrainSettings.GetTileSize());
 
       bool bFirst = true;
-      tVec3 rangeStart(0,0,0);
+      cPoint3<float> rangeStart(0,0,0);
 
       uint iVert = 0;
 
@@ -1053,7 +1053,7 @@ tResult cTerrainChunk::BuildVertexBuffer(const cRange<uint> xRange,
 
       while (pEnumQuads->Next(1, &hQuad, &nQuads) == S_OK && nQuads == 1)
       {
-         tVec3 corners[4];
+         cPoint3<float> corners[4];
          if (pTerrainModel->GetQuadCorners(hQuad, corners) == S_OK)
          {
             if (bFirst)
@@ -1074,7 +1074,7 @@ tResult cTerrainChunk::BuildVertexBuffer(const cRange<uint> xRange,
 
             for (int j = 0; j < 4; j++)
             {
-               m_vertices[iVert+j].pos = corners[j];
+               m_vertices[iVert+j].pos = tVec3(corners[j].x, corners[j].y, corners[j].z);
 
                m_vertices[iVert+j].uv2 = cVec2<float>(
                   (corners[j].x - rangeStart.x) * oneOverChunkExtentX,

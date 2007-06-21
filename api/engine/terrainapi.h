@@ -6,9 +6,11 @@
 
 #include "enginedll.h"
 #include "tech/comtools.h"
-#include "tech/vec3.h"
-#include "tech/techstring.h"
+#include "tech/point3.h"
+#include "tech/ray.h"
 #include "tech/readwriteapi.h"
+#include "tech/techstring.h"
+#include "tech/vec3.h"
 
 #include <vector>
 
@@ -27,8 +29,6 @@ F_DECLARE_INTERFACE(IHeightMap);
 
 F_DECLARE_HANDLE(HTERRAINQUAD);
 F_DECLARE_HANDLE(HTERRAINVERTEX);
-
-class cRay;
 
 /////////////////////////////////////////////////////////////////////////////
 
@@ -199,18 +199,18 @@ interface ITerrainModel : IUnknown
    virtual tResult EnumTerrainQuads(IEnumTerrainQuads * * ppEnum) = 0;
    virtual tResult EnumTerrainQuads(uint xStart, uint xEnd, uint zStart, uint zEnd, IEnumTerrainQuads * * ppEnum) = 0;
 
-   virtual tResult GetVertexFromHitTest(const cRay & ray, HTERRAINVERTEX * phVertex) const = 0;
+   virtual tResult GetVertexFromHitTest(const cRay<float> & ray, HTERRAINVERTEX * phVertex) const = 0;
 
    virtual tResult GetVertexPosition(HTERRAINVERTEX hVertex, tVec3 * pPosition) const = 0;
    virtual tResult ChangeVertexElevation(HTERRAINVERTEX hVertex, float elevDelta) = 0;
    virtual tResult SetVertexElevation(HTERRAINVERTEX hVertex, float elevation) = 0;
 
-   virtual tResult GetQuadFromHitTest(const cRay & ray, HTERRAINQUAD * phQuad) const = 0;
+   virtual tResult GetQuadFromHitTest(const cRay<float> & ray, HTERRAINQUAD * phQuad) const = 0;
 
    virtual tResult SetQuadTile(HTERRAINQUAD hQuad, uint tile) = 0;
    virtual tResult GetQuadTile(HTERRAINQUAD hQuad, uint * pTile) const = 0;
 
-   virtual tResult GetQuadCorners(HTERRAINQUAD hQuad, tVec3 corners[4]) const = 0;
+   virtual tResult GetQuadCorners(HTERRAINQUAD hQuad, cPoint3<float> corners[4]) const = 0;
 
    virtual tResult GetQuadNeighbors(HTERRAINQUAD hQuad, HTERRAINQUAD neighbors[8]) const = 0;
 

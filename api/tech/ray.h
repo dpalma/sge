@@ -4,9 +4,8 @@
 #ifndef INCLUDED_RAY_H
 #define INCLUDED_RAY_H
 
-#include "techdll.h"
-
 #include "axisalignedbox.h"
+#include "point3.h"
 #include "vec3.h"
 
 #ifdef _MSC_VER
@@ -18,51 +17,39 @@
 // CLASS: cRay
 //
 
-class TECH_API cRay
+template <typename T>
+class cRay
 {
 public:
    cRay();
-   cRay(const tVec3 & origin, const tVec3 & direction);
+   cRay(const cPoint3<T> & origin, const cVec3<T> & direction);
    cRay(const cRay & ray);
    const cRay & operator =(const cRay & ray);
 
-   const tVec3 & GetOrigin() const;
-   const tVec3 & GetDirection() const;
+   const cPoint3<T> & GetOrigin() const;
+   const cVec3<T> & GetDirection() const;
 
-   bool IntersectsSphere(const tVec3 & center, 
-                         tVec3::value_type radius, 
-                         tVec3 * pIntersection = NULL) const;
+   bool IntersectsSphere(const cPoint3<T> & center, 
+                         typename cVec3<T>::value_type radius, 
+                         cPoint3<T> * pIntersection = NULL) const;
 
-   bool IntersectsPlane(const tVec3 & normal, 
-                        tVec3::value_type d,
-                        tVec3 * pIntersection = NULL) const;
+   bool IntersectsPlane(const cVec3<T> & normal, 
+                        typename cVec3<T>::value_type d,
+                        cPoint3<T> * pIntersection = NULL) const;
 
-   bool IntersectsTriangle(const tVec3 & v1,
-                           const tVec3 & v2,
-                           const tVec3 & v3,
-                           tVec3 * pIntersection = NULL) const;
+   bool IntersectsTriangle(const cPoint3<T> & v1,
+                           const cPoint3<T> & v2,
+                           const cPoint3<T> & v3,
+                           cPoint3<T> * pIntersection = NULL) const;
 
-   bool IntersectsAxisAlignedBox(const tAxisAlignedBox & box,
-                                 float * pTNear = NULL,
-                                 float * pTFar = NULL) const;
+   bool IntersectsAxisAlignedBox(const cAxisAlignedBox<T> & box,
+                                 T * pTNear = NULL,
+                                 T * pTFar = NULL) const;
 
 private:
-   tVec3 m_origin, m_direction;
+   cPoint3<T> m_origin;
+   cVec3<T> m_direction;
 };
-
-///////////////////////////////////////
-
-inline const tVec3 & cRay::GetOrigin() const
-{
-   return m_origin;
-}
-
-///////////////////////////////////////
-
-inline const tVec3 & cRay::GetDirection() const
-{
-   return m_direction;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 

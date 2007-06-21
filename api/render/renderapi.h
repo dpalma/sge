@@ -7,13 +7,12 @@
 #include "renderdll.h"
 #include "tech/comtools.h"
 
+#include "tech/ray.h"
 #include "tech/rect.h"
 
 #ifdef _MSC_VER
 #pragma once
 #endif
-
-class cRay;
 
 F_DECLARE_HANDLE(HWND);
 
@@ -191,9 +190,9 @@ interface IRenderCamera : IUnknown
    virtual tResult GetViewProjectionInverseMatrix(float viewProjInvMatrix[16]) const = 0;
 
    virtual tResult ScreenToNormalizedDeviceCoords(int sx, int sy, float * pndx, float * pndy) const = 0;
-   virtual tResult GeneratePickRay(float ndx, float ndy, cRay * pRay) const = 0;
+   virtual tResult GeneratePickRay(float ndx, float ndy, cRay<float> * pRay) const = 0;
 
-   inline tResult GenerateScreenPickRay(int sx, int sy, cRay * pRay) const
+   inline tResult GenerateScreenPickRay(int sx, int sy, cRay<float> * pRay) const
    {
       float ndx, ndy;
       if (ScreenToNormalizedDeviceCoords(sx, sy, &ndx, &ndy) == S_OK

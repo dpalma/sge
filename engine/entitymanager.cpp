@@ -17,7 +17,7 @@
 #include "tech/comenumutil.h"
 #include "tech/multivar.h"
 #include "tech/point3.inl"
-#include "tech/ray.h"
+#include "tech/ray.inl"
 #include "tech/readwriteutils.h"
 #include "tech/resourceapi.h"
 
@@ -266,7 +266,7 @@ void cEntityManager::RenderAll()
 
 ///////////////////////////////////////
 
-tResult cEntityManager::RayCast(const cRay & ray, IEntity * * ppEntity) const
+tResult cEntityManager::RayCast(const cRay<float> & ray, IEntity * * ppEntity) const
 {
    tEntityList::const_iterator iter = m_entities.begin(), end = m_entities.end();
    for (; iter != end; ++iter)

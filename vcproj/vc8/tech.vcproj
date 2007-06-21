@@ -977,6 +977,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\api\tech\ray.inl"
+				>
+			</File>
+			<File
 				RelativePath="..\..\api\tech\readwriteapi.h"
 				>
 			</File>

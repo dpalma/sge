@@ -11,6 +11,7 @@
 #include "tech/comtools.h"
 #include "tech/matrix4.h"
 #include "tech/quat.h"
+#include "tech/ray.h"
 #include "tech/techstring.h"
 #include "tech/vec3.h"
 
@@ -41,7 +42,6 @@ F_DECLARE_INTERFACE_GUID(IEntitySelectionListener, "FAA8FFFA-F8F7-4d72-B504-1404
 
 
 class cMultiVar;
-class cRay;
 class TiXmlElement;
 
 template <typename T> class cAxisAlignedBox;
@@ -351,7 +351,7 @@ interface IEntityManager : IUnknown
 
    virtual void RenderAll() = 0;
 
-   virtual tResult RayCast(const cRay & ray, IEntity * * ppEntity) const = 0;
+   virtual tResult RayCast(const cRay<float> & ray, IEntity * * ppEntity) const = 0;
    virtual tResult BoxCast(const tAxisAlignedBox & box, IEnumEntities * * ppEnum) const = 0;
 };
 

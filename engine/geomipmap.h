@@ -89,15 +89,15 @@ public:
    virtual tResult EnumTerrainQuads(IEnumTerrainQuads * * ppEnum);
    virtual tResult EnumTerrainQuads(uint xStart, uint xEnd, uint zStart, uint zEnd, IEnumTerrainQuads * * ppEnum);
 
-   virtual tResult GetVertexFromHitTest(const cRay & ray, HTERRAINVERTEX * phVertex) const;
+   virtual tResult GetVertexFromHitTest(const cRay<float> & ray, HTERRAINVERTEX * phVertex) const;
    virtual tResult GetVertexPosition(HTERRAINVERTEX hVertex, tVec3 * pPosition) const;
    virtual tResult ChangeVertexElevation(HTERRAINVERTEX hVertex, float elevDelta);
    virtual tResult SetVertexElevation(HTERRAINVERTEX hVertex, float elevation);
 
-   virtual tResult GetQuadFromHitTest(const cRay & ray, HTERRAINQUAD * phQuad) const;
+   virtual tResult GetQuadFromHitTest(const cRay<float> & ray, HTERRAINQUAD * phQuad) const;
    virtual tResult SetQuadTile(HTERRAINQUAD hQuad, uint tile);
    virtual tResult GetQuadTile(HTERRAINQUAD hQuad, uint * pTile) const;
-   virtual tResult GetQuadCorners(HTERRAINQUAD hQuad, tVec3 corners[4]) const;
+   virtual tResult GetQuadCorners(HTERRAINQUAD hQuad, cPoint3<float> corners[4]) const;
    virtual tResult GetQuadNeighbors(HTERRAINQUAD hQuad, HTERRAINQUAD neighbors[8]) const;
 
    virtual tResult GetPointOnTerrain(float nx, float nz, tVec3 * pLocation) const;
@@ -121,7 +121,7 @@ public:
 
 private:
    tResult GetTileIndices(float x, float z, uint * pix, uint * piz) const;
-   tResult GetQuadCorners(uint quadx, uint quadz, tVec3 corners[4]) const;
+   tResult GetQuadCorners(uint quadx, uint quadz, cPoint3<float> corners[4]) const;
 
    cTerrainSettings m_terrainSettings;
 
