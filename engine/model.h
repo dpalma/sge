@@ -82,10 +82,6 @@ public:
    tResult GetSkeleton(IModelSkeleton * * ppSkeleton);
 
 private:
-   // Transform every vertex by the inverse of its affecting
-   // joint's absolute transform
-   void PreApplyJoints();
-
    std::vector<sModelVertex> m_vertices;
    std::vector<uint16> m_indices;
    std::vector<sModelMesh> m_meshes;

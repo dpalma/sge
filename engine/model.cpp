@@ -173,8 +173,6 @@ tResult cModel::Create(const sModelVertex * pVerts, size_t nVerts,
       return E_OUTOFMEMORY;
    }
 
-   pModel->PreApplyJoints();
-
    *ppModel = static_cast<IModel*>(pModel);
    return S_OK;
 }
@@ -198,8 +196,6 @@ tResult cModel::Create(tModelVertices::const_iterator firstVert, tModelVertices:
    {
       return E_OUTOFMEMORY;
    }
-
-   pModel->PreApplyJoints();
 
    *ppModel = static_cast<IModel*>(pModel);
    return S_OK;
@@ -321,44 +317,6 @@ tResult cModel::GetMeshes(uint * pnMeshes, const sModelMesh * * ppMeshes) const
 tResult cModel::GetSkeleton(IModelSkeleton * * ppSkeleton)
 {
    return m_pSkeleton.GetPointer(ppSkeleton);
-}
-
-///////////////////////////////////////
-// TODO: How does this work for more than one joint per vertex with blend weights?
-// (Answer: I don't think you can pre-apply like this.)
-
-void cModel::PreApplyJoints()
-{
-   if (!m_pSkeleton)
-   {
-      return;
-   }
-
-   size_t nJoints = 0;
-   if (m_pSkeleton->GetJointCount(&nJoints) != S_OK || nJoints == 0)
-   {
-      return;
-   }
-
-   vector<tMatrix34> bindMatrices(nJoints);
-   m_pSkeleton->GetBindMatrices(bindMatrices.size(), &bindMatrices[0]);
-
-   for (tModelVertices::iterator iter = m_vertices.begin(); iter != m_vertices.end(); iter++)
-   {
-      int index = FloatToInt(iter->bone);
-      if (index < 0)
-      {
-         continue;
-      }
-
-      tVec3 transformedNormal;
-      bindMatrices[index].Transform(iter->normal, &transformedNormal);
-      iter->normal = transformedNormal;
-
-      tVec3 transformedPosition;
-      bindMatrices[index].Transform(iter->pos, &transformedPosition);
-      iter->pos = transformedPosition;
-   }
 }
 
 

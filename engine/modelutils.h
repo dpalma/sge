@@ -68,6 +68,8 @@ private:
    tBlendedVertices m_blendedVerts;
    cAutoIPtr<IModelAnimationController> m_pAnimController;
    tAxisAlignedBox m_bbox;
+   std::vector<sModelVertex> m_modelVertices;
+   std::vector<tMatrix34> m_bindMatrices;
 };
 
 

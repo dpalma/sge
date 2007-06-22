@@ -154,7 +154,8 @@ void cBasicModelRenderer::Render()
 ///////////////////////////////////////////////////////////////////////////////
 
 static void ApplyJointMatrices(uint nVertices, const sModelVertex * pVertices,
-                               const std::vector<tMatrix34> & matrices,
+                               const std::vector<tMatrix34> & bindMatrices,
+                               const std::vector<tMatrix34> & boneMatrices,
                                tBlendedVertices * pBlendedVertices)
 {
    pBlendedVertices->resize(nVertices);
@@ -165,18 +166,23 @@ static void ApplyJointMatrices(uint nVertices, const sModelVertex * pVertices,
       sBlendedVertex & v = (*pBlendedVertices)[i];
       v.u = pV->u;
       v.v = pV->v;
-      // TODO: call them bones or joints???
-      int iJoint = FloatToInt(pV->bone);
-      if (iJoint < 0)
+      int iBone = FloatToInt(pV->bone);
+      if (iBone < 0)
       {
          v.normal = pV->normal;
          v.pos = pV->pos;
       }
       else
       {
-         const tMatrix34 & m = matrices[iJoint];
-         m.Transform(pV->normal, &v.normal);
-         m.Transform(pV->pos, &v.pos);
+         tVec3 pos, normal;
+
+         const tMatrix34 & bindMatrix = bindMatrices[iBone];
+         bindMatrix.Transform(pV->normal, &normal);
+         bindMatrix.Transform(pV->pos, &pos);
+
+         const tMatrix34 & boneMatrix = boneMatrices[iBone];
+         boneMatrix.Transform(normal, &v.normal);
+         boneMatrix.Transform(pos, &v.pos);
       }
    }
 }
@@ -243,6 +249,9 @@ void cAnimatedModelRenderer::Update(double elapsedTime)
          {
             m_blendMatrices.resize(nJoints);
 
+            m_bindMatrices.resize(nJoints);
+            pSkeleton->GetBindMatrices(m_bindMatrices.size(), &m_bindMatrices[0]);
+
             if (ModelAnimationControllerCreate(pSkeleton, &m_pAnimController) == S_OK)
             {
                SetAnimation(kMAT_Idle);
@@ -259,6 +268,10 @@ void cAnimatedModelRenderer::Update(double elapsedTime)
       if (m_pModel->GetVertices(&nVertices, &pVertices) == S_OK)
       {
          CalculateBBox(nVertices, pVertices, &m_bbox);
+
+         m_modelVertices.clear();
+         m_modelVertices.reserve(nVertices);
+         m_modelVertices.insert(m_modelVertices.begin(), pVertices, &pVertices[nVertices]);
       }
    }
 
@@ -266,12 +279,7 @@ void cAnimatedModelRenderer::Update(double elapsedTime)
    {
       if (m_pAnimController->Advance(elapsedTime, m_blendMatrices.size(), &m_blendMatrices[0]) == S_OK)
       {
-         uint nVertices = 0;
-         const sModelVertex * pVertices = NULL;
-         if (m_pModel->GetVertices(&nVertices, &pVertices) == S_OK)
-         {
-            ApplyJointMatrices(nVertices, pVertices, m_blendMatrices, &m_blendedVerts);
-         }
+         ApplyJointMatrices(m_modelVertices.size(), &m_modelVertices[0], m_bindMatrices, m_blendMatrices, &m_blendedVerts);
       }
    }
 }
@@ -294,13 +302,8 @@ void cAnimatedModelRenderer::Render()
          // TODO: Maybe use a generated stand-in model to indicate loading failure
          return;
       }
-      uint nVertices = 0;
-      const sModelVertex * pVertices = NULL;
-      if (m_pModel->GetVertices(&nVertices, &pVertices) == S_OK)
-      {
-         pRenderer->SetVertexFormat(g_modelVert, _countof(g_modelVert));
-         pRenderer->SubmitVertices(const_cast<sModelVertex *>(pVertices), nVertices);
-      }
+      pRenderer->SetVertexFormat(g_modelVert, _countof(g_modelVert));
+      pRenderer->SubmitVertices(&m_modelVertices[0], m_modelVertices.size());
    }
 
    pRenderer->SetIndexFormat(kIF_16Bit);
