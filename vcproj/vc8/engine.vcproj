@@ -532,6 +532,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\engine\modelanimcontroller.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\engine\modelreadwrite.cpp"
 				>
 			</File>
@@ -674,6 +678,10 @@
 			</File>
 			<File
 				RelativePath="..\..\engine\modelanim.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\engine\modelanimcontroller.h"
 				>
 			</File>
 			<File

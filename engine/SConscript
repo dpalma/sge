@@ -20,6 +20,7 @@ sourceFiles = Split("""
    heightmap.cpp
    model.cpp
    modelanim.cpp
+   modelanimcontroller.cpp
    modelreadwrite.cpp
    modelsgem.cpp
    modelskeleton.cpp
