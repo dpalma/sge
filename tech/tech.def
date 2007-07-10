@@ -34,6 +34,3 @@ EXPORTS
 	?DictionaryStoreCreate@@YAJPAUHKEY__@@PBD_NPAPAUIDictionaryStore@@@Z		@30		NONAME
 	?DictionaryCreate@@YAJPAPAUIDictionary@@@Z						@31		NONAME
 	?DictionaryCreate@@YAJW4ePersistence@@PAPAUIDictionary@@@Z		@32		NONAME
-	?MatrixRotateX@@YAXMPAV?$cMatrix3@M@@@Z							@33		NONAME
-	?MatrixRotateY@@YAXMPAV?$cMatrix3@M@@@Z							@34		NONAME
-	?MatrixRotateZ@@YAXMPAV?$cMatrix3@M@@@Z							@35		NONAME
