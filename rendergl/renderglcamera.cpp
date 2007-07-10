@@ -158,12 +158,6 @@ tResult cRenderGLCamera::SetViewMatrix(const float viewMatrix[16])
 
 const float * cRenderGLCamera::GetProjectionMatrix() const
 {
-   if ((m_flags & kUpdateProjectionMatrix) == kUpdateProjectionMatrix)
-   {
-      MatrixPerspective(GetFOV(), GetAspect(), m_znear, m_zfar, &m_proj);
-      m_flags &= ~kUpdateProjectionMatrix;
-   }
-
    return m_proj.m;
 }
 
@@ -174,12 +168,6 @@ tResult cRenderGLCamera::GetProjectionMatrix(float projMatrix[16]) const
    if (projMatrix == NULL)
    {
       return E_POINTER;
-   }
-
-   if ((m_flags & kUpdateProjectionMatrix) == kUpdateProjectionMatrix)
-   {
-      MatrixPerspective(GetFOV(), GetAspect(), m_znear, m_zfar, &m_proj);
-      m_flags &= ~kUpdateProjectionMatrix;
    }
 
    memcpy(projMatrix, m_proj.m, 16 * sizeof(float));

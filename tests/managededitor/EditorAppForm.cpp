@@ -279,15 +279,9 @@ namespace ManagedEditor
          const float kZNear = 1;
          const float kZFar = 5000;
 
-         tMatrix4 proj;
-         MatrixPerspective(kFov, aspect, kZNear, kZFar, &proj);
-
-         UseGlobal(Renderer);
-         cAutoIPtr<IRenderCamera> pCamera;
-         if (pRenderer->GetCamera(&pCamera) == S_OK)
-         {
-            pCamera->SetProjectionMatrix(proj.m);
-         }
+         glMatrixMode(GL_PROJECTION);
+         glLoadIdentity();
+         gluPerspective(kFov, aspect, kZNear, kZFar);
 
          glViewport(0, 0, m_renderControl->Width, m_renderControl->Height);
       }

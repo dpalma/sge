@@ -72,9 +72,6 @@ void MatrixRotateX(float theta, tMatrix4 * pResult);
 void MatrixRotateY(float theta, tMatrix4 * pResult);
 void MatrixRotateZ(float theta, tMatrix4 * pResult);
 void MatrixLookAt(const tVec3 & eye, const tVec3 & center, const tVec3 & up, tMatrix4 * pMatrix);
-void MatrixPerspective(float fov, float aspect, float znear, float zfar, tMatrix4 * pResult);
-void MatrixPerspective(double fov, double aspect, double znear, double zfar, cMatrix4<double> * pResult);
-void MatrixOrtho(float left, float right, float bottom, float top, float znear, float zfar, tMatrix4 * pResult);
 
 ///////////////////////////////////////////////////////////////////////////////
 

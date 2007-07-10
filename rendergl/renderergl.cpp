@@ -680,7 +680,14 @@ tResult cRendererGL::BeginScene()
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 
       glMatrixMode(GL_PROJECTION);
-      glLoadMatrixf(m_pCamera->GetProjectionMatrix());
+      glLoadIdentity();
+      float zn, zf;
+      m_pCamera->GetNearFar(&zn, &zf);
+      gluPerspective(m_pCamera->GetFOV(), m_pCamera->GetAspect(), zn, zf);
+
+      GLfloat p[16];
+      glGetFloatv(GL_PROJECTION_MATRIX, p);
+      m_pCamera->SetProjectionMatrix(p);
 
       glMatrixMode(GL_MODELVIEW);
       glLoadMatrixf(m_pCamera->GetViewMatrix());
