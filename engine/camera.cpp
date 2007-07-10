@@ -10,8 +10,9 @@
 
 #include "render/renderapi.h"
 
-#include "tech/readwriteutils.h"
 #include "tech/configapi.h"
+#include "tech/matrix4.inl"
+#include "tech/readwriteutils.h"
 
 #include "tech/dbgalloc.h" // must be last header
 

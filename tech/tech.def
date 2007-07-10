@@ -6,8 +6,8 @@ EXPORTS
 	?AssertFail@@YA_NPBDH00@Z										@2		NONAME
 	?MatrixInvert@@YA_NPBMPAM@Z										@3		NONAME
 	?MatrixMultiply@@YAXPBM0PAM@Z									@4		NONAME
-	?MatrixTransform3@@YAXPBM0PAM@Z									@5		NONAME
-	?MatrixTransform4@@YAXPBM0PAM@Z									@6		NONAME
+;	REMOVED
+;	REMOVED
 	?MatrixTranslate@@YAXMMMPAV?$cMatrix4@M@@@Z						@7		NONAME
 	?MatrixRotateX@@YAXMPAV?$cMatrix4@M@@@Z							@8		NONAME
 	?MatrixRotateY@@YAXMPAV?$cMatrix4@M@@@Z							@9		NONAME

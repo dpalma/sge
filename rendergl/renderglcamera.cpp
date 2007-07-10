@@ -9,6 +9,7 @@
 
 #include "tech/configapi.h"
 #include "tech/frustum.h"
+#include "tech/matrix4.inl"
 #include "tech/ray.inl"
 
 #include <GL/glew.h>
@@ -359,8 +360,7 @@ tResult cRenderGLCamera::GeneratePickRay(float ndx, float ndy, cRay<float> * pRa
       return E_FAIL;
    }
 
-   tVec4 n;
-   m.Transform(tVec4(ndx, ndy, -1, 1), &n);
+   tVec4 n = m.Transform(tVec4(ndx, ndy, -1, 1));
    if (n.w == 0.0f)
    {
       return E_FAIL;
@@ -369,8 +369,7 @@ tResult cRenderGLCamera::GeneratePickRay(float ndx, float ndy, cRay<float> * pRa
    n.y /= n.w;
    n.z /= n.w;
 
-   tVec4 f;
-   m.Transform(tVec4(ndx, ndy, 1, 1), &f);
+   tVec4 f = m.Transform(tVec4(ndx, ndy, 1, 1));
    if (f.w == 0.0f)
    {
       return E_FAIL;
@@ -379,8 +378,8 @@ tResult cRenderGLCamera::GeneratePickRay(float ndx, float ndy, cRay<float> * pRa
    f.y /= f.w;
    f.z /= f.w;
 
-   tVec4 eye;
-   MatrixTransform4(m_viewInv, tVec4(0,0,0,1).v, eye.v);
+   cMatrix4<float> viewInv(m_viewInv);
+   cPoint3<float> eye = viewInv.Transform(cPoint3<float>(0,0,0));
 
    tVec3 dir(f.x - n.x, f.y - n.y, f.z - n.z);
    dir.Normalize();

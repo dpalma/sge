@@ -929,6 +929,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\api\tech\matrix3.inl"
+				>
+			</File>
+			<File
 				RelativePath="..\..\api\tech\matrix34.h"
 				>
 			</File>

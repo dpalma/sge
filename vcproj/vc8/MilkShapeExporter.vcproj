@@ -78,7 +78,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib winmm.lib"
+				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib $(OutDir)/zlibwapi.lib winmm.lib"
 				OutputFile="..\..\Build.vc8\StaticRelease/msSGEExporter.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
@@ -378,7 +378,7 @@
 			<Tool
 				Name="VCLinkerTool"
 				AdditionalOptions="/MACHINE:I386"
-				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib $(OutDir)/UnitTest++.lib winmm.lib"
+				AdditionalDependencies="msModelLib.lib $(OutDir)/tinyxml.lib $(OutDir)/NvTriStrip.lib $(OutDir)/UnitTest++.lib $(OutDir)/zlibwapi.lib winmm.lib"
 				OutputFile="..\..\Build.vc8\StaticDebug/msSGEExporter.dll"
 				LinkIncremental="2"
 				SuppressStartupBanner="true"

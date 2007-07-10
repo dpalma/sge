@@ -4,13 +4,14 @@
 #ifndef INCLUDED_QUAT_H
 #define INCLUDED_QUAT_H
 
+#include "matrix3.h"
+
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
 
 /////////////////////////////////////////////////////////////////////////////
 
-template <typename T> class cMatrix3;
 template <typename T> class cVec3;
 
 #ifndef NO_DEFAULT_QUAT
@@ -46,11 +47,11 @@ public:
 
    value_type Dot(const cQuat & quat) const;
    value_type Norm() const;
-   cQuat Inverse() const;
+   cQuat<T> Inverse() const;
 
-   void ToMatrix(cMatrix3<T> * pMatrix) const;
+   cMatrix3<T> ToMatrix() const;
 
-   static cQuat FromEulerAngles(T pitch, T yaw, T roll);
+   static cQuat<T> FromEulerAngles(T pitch, T yaw, T roll);
 
    union
    {

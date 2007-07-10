@@ -8,6 +8,8 @@
 #include "engine/terrainapi.h"
 
 #include "tech/globalobj.h"
+#include "tech/matrix3.inl"
+#include "tech/matrix4.inl"
 #include "tech/multivar.h"
 #include "tech/point3.inl"
 #include "tech/quat.inl"
@@ -179,8 +181,7 @@ const tMatrix4 & cEntityPositionComponent::GetWorldTransform() const
    {
       m_updateWorldTransform &= ~kUpdateRotation;
 
-      tMatrix3 orientationMatrix;
-      m_orientation.ToMatrix(&orientationMatrix);
+      cMatrix3<float> orientationMatrix = m_orientation.ToMatrix();
 
       m_worldTransform.m00 = orientationMatrix.m00;
       m_worldTransform.m10 = orientationMatrix.m10;

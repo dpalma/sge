@@ -170,8 +170,7 @@ tResult cModelSkeleton::GetBindMatrices(uint nMaxMatrices, tMatrix34 * pMatrices
    {
       tQuat invRot = absoluteRotations[i].Inverse();
       tVec3 invTrans = -absoluteTranslations[i];
-      tMatrix3 mr;
-      invRot.ToMatrix(&mr);
+      cMatrix3<float> mr = invRot.ToMatrix();
       pMatrices[i].SetRotation(mr);
       pMatrices[i].SetTranslation(invTrans);
    }

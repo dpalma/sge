@@ -4,6 +4,7 @@
 #include "stdhdr.h"
 
 #include "tech/matrix4.h"
+#include "tech/matrix4.inl"
 // cVec2 is not used but is included here to instantiate the exports
 #include "tech/vec2.h"
 #include "tech/vec3.h"
@@ -244,113 +245,6 @@ void MatrixMultiply(const float * ml, const float * mr, float * pResult)
 {
    Assert(g_pfnMatrixMultiply != NULL);
    (*g_pfnMatrixMultiply)(ml, mr, pResult);
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void MatrixTransform3Default(const float * m, const float * v, float * pResult)
-{
-   Assert(m != NULL);
-   Assert(v != NULL);
-   Assert(pResult != NULL);
-   // result.x = row0 * v
-   // result.y = row1 * v
-   // result.z = row2 * v
-   pResult[0] = (v[0] * m[0]) + (v[1] * m[4]) + (v[2] * m[8]) + m[12];
-   pResult[1] = (v[0] * m[1]) + (v[1] * m[5]) + (v[2] * m[9]) + m[13];
-   pResult[2] = (v[0] * m[2]) + (v[1] * m[6]) + (v[2] * m[10]) + m[14];
-}
-
-bool MatrixTransform3DefaultSupported()
-{
-   return true; // always supported
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void MatrixTransform3(const float * m, const float * v, float * pResult)
-{
-   static const struct
-   {
-      tMatrixMultiplyFn pfnTransform3;
-      tMatrixOpQuerySupportFn pfnSupport;
-   }
-   matrixTransform3Fns[] =
-   {
-      { MatrixTransform3Default, MatrixTransform3DefaultSupported },
-   };
-
-   static tMatrixMultiplyFn pfnMatrixTransform3 = NULL;
-
-   if (pfnMatrixTransform3 == NULL)
-   {
-      for (size_t i = 0; i < _countof(matrixTransform3Fns); i++)
-      {
-         if (matrixTransform3Fns[i].pfnSupport != NULL && 
-            (*matrixTransform3Fns[i].pfnSupport)())
-         {
-            pfnMatrixTransform3 = matrixTransform3Fns[i].pfnTransform3;
-            break;
-         }
-      }
-   }
-
-   (*pfnMatrixTransform3)(m, v, pResult);
-}
-
-
-///////////////////////////////////////////////////////////////////////////////
-
-void MatrixTransform4Default(const float * m, const float * v, float * pResult)
-{
-   Assert(m != NULL);
-   Assert(v != NULL);
-   Assert(pResult != NULL);
-   // result.x = row0 * v
-   // result.y = row1 * v
-   // result.z = row2 * v
-   // result.w = row3 * v
-   pResult[0] = (v[0] * m[0]) + (v[1] * m[4]) + (v[2] * m[8]) + (v[3] * m[12]);
-   pResult[1] = (v[0] * m[1]) + (v[1] * m[5]) + (v[2] * m[9]) + (v[3] * m[13]);
-   pResult[2] = (v[0] * m[2]) + (v[1] * m[6]) + (v[2] * m[10]) + (v[3] * m[14]);
-   pResult[3] = (v[0] * m[3]) + (v[1] * m[7]) + (v[2] * m[11]) + (v[3] * m[15]);
-}
-
-bool MatrixTransform4DefaultSupported()
-{
-   return true; // always supported
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void MatrixTransform4(const float * m, const float * v, float * pResult)
-{
-   static const struct
-   {
-      tMatrixMultiplyFn pfnTransform4;
-      tMatrixOpQuerySupportFn pfnSupport;
-   }
-   matrixTransform4Fns[] =
-   {
-      { MatrixTransform4Default, MatrixTransform4DefaultSupported },
-   };
-
-   static tMatrixMultiplyFn pfnMatrixTransform4 = NULL;
-
-   if (pfnMatrixTransform4 == NULL)
-   {
-      for (size_t i = 0; i < _countof(matrixTransform4Fns); i++)
-      {
-         if (matrixTransform4Fns[i].pfnSupport != NULL && 
-            (*matrixTransform4Fns[i].pfnSupport)())
-         {
-            pfnMatrixTransform4 = matrixTransform4Fns[i].pfnTransform4;
-            break;
-         }
-      }
-   }
-
-   (*pfnMatrixTransform4)(m, v, pResult);
 }
 
 

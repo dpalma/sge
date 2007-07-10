@@ -6,6 +6,7 @@
 #include "entity.h"
 
 #include "tech/comenum.h"
+#include "tech/matrix4.inl"
 
 #include <list>
 

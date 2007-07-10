@@ -7,6 +7,8 @@
 
 #include "engine/modeltypes.h"
 
+#include "tech/matrix3.inl"
+
 #include "tech/dbgalloc.h" // must be last header
 
 
@@ -89,13 +91,11 @@ tResult cModelAnimationController::Advance(double elapsedTime, uint nMaxMatrices
          return E_FAIL;
       }
 
-      tMatrix3 localJointRotMat;
-      joint.localRotation.ToMatrix(&localJointRotMat);
+      cMatrix3<float> localJointRotMat = joint.localRotation.ToMatrix();
 
-      tMatrix3 animRotMat;
-      rotation.ToMatrix(&animRotMat);
+      cMatrix3<float> animRotMat = rotation.ToMatrix();
 
-      tMatrix3 finalRotMat;
+      cMatrix3<float> finalRotMat;
       localJointRotMat.Multiply(animRotMat, &finalRotMat);
 
       tMatrix34 mf;

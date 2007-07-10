@@ -32,14 +32,6 @@ struct sModelMaterial;
 struct sModelMesh;
 struct sModelVertex;
 
-////////////////////////////////////////////////////////////////////////////////
-
-#if _MSC_VER > 1300
-template class ENGINE_API cMatrix4<float>;
-template class ENGINE_API std::allocator< cMatrix4<float> >;
-template class ENGINE_API std::vector< cMatrix4<float> >;
-#endif
-
 
 ////////////////////////////////////////////////////////////////////////////////
 //

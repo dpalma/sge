@@ -25,6 +25,14 @@ cMatrix3<T>::cMatrix3()
 ///////////////////////////////////////
 
 template <typename T>
+cMatrix3<T>::cMatrix3(T m[9])
+{
+   memcpy(this->m, m, sizeof(T) * 9);
+}
+
+///////////////////////////////////////
+
+template <typename T>
 cMatrix3<T>::cMatrix3(T m00, T m10, T m20, T m01, T m11, T m21, T m02, T m12, T m22)
 {
    this->m00 = m00;
@@ -105,6 +113,17 @@ void cMatrix3<T>::Multiply(const cMatrix3 & other, cMatrix3 * pResult) const
    pResult->m02 = m00*other.m02 + m01*other.m12 + m02*other.m22;
    pResult->m12 = m10*other.m02 + m11*other.m12 + m12*other.m22;
    pResult->m22 = m20*other.m02 + m21*other.m12 + m22*other.m22;
+}
+
+///////////////////////////////////////
+
+template <typename T>
+inline cPoint3<T> cMatrix3<T>::Transform(const cPoint3<T> & p) const
+{
+   return cVec3<T>(
+      (p.x * m00) + (p.y * m01) + (p.z * m02),
+      (p.x * m10) + (p.y * m11) + (p.z * m12),
+      (p.x * m20) + (p.y * m21) + (p.z * m22));
 }
 
 ///////////////////////////////////////

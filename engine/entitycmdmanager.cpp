@@ -5,6 +5,7 @@
 
 #include "entitycmdmanager.h"
 
+#include "tech/matrix4.inl"
 #include "tech/multivar.h"
 
 #include <tinyxml.h>

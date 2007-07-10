@@ -147,12 +147,8 @@ inline cQuat<T> cQuat<T>::Inverse() const
 ///////////////////////////////////////
 
 template <typename T>
-inline void cQuat<T>::ToMatrix(cMatrix3<T> * pMatrix) const
+inline cMatrix3<T> cQuat<T>::ToMatrix() const
 {
-   Assert(pMatrix != NULL);
-   if (pMatrix == NULL)
-      return;
-
    value_type s = 2.0f / Norm();
    value_type xs = x*s;
    value_type ys = y*s;
@@ -170,17 +166,16 @@ inline void cQuat<T>::ToMatrix(cMatrix3<T> * pMatrix) const
    value_type yz = y*zs;
    value_type zz = z*zs;
 
-   pMatrix->m[0] = 1 - (yy + zz);
-   pMatrix->m[1] = xy + wz;
-   pMatrix->m[2] = xz - wy;
-
-   pMatrix->m[3] = xy - wz;
-   pMatrix->m[4] = 1 - (xx + zz);
-   pMatrix->m[5] = yz + wx;
-
-   pMatrix->m[6] = xz + wy;
-   pMatrix->m[7] = yz - wx;
-   pMatrix->m[8] = 1 - (xx + yy);
+   return cMatrix3<T>(
+      1 - (yy + zz),
+      xy + wz,
+      xz - wy,
+      xy - wz,
+      1 - (xx + zz),
+      yz + wx,
+      xz + wy,
+      yz - wx,
+      1 - (xx + yy));
 }
 
 ///////////////////////////////////////

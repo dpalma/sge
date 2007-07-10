@@ -15,6 +15,7 @@
 #include "render/renderapi.h"
 
 #include "tech/globalobj.h"
+#include "tech/matrix4.inl"
 #include "tech/schedulerapi.h"
 
 #include <GL/glew.h>
