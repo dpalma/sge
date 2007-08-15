@@ -11,14 +11,14 @@ import tarfile
 #now = datetime.datetime.now()
 
 repos = os.path.normpath(sys.argv[1].lstrip("\"").rstrip("\""))
+reposName = os.path.split(repos)[1]
 
 def getCurRev(repos):
 	return os.popen("svnlook youngest %s" % repos).read().rstrip('\r\n\t ')
 
-def fullBackup(repos, name = None):
+def fullBackup(repos, reposName, name = None):
 	if name == None:
 		rev = getCurRev(repos)
-		reposName = os.path.split(repos)[1]
 		now = datetime.datetime.now()
 		name = "%s%04d%02d%02d-%s%sfull" % (reposName, now.year, now.month, now.day, rev, os.extsep)
 	os.system("svnadmin dump %s -q >%s" % (repos, name))
@@ -43,7 +43,7 @@ def findLastFullDump(dir = None):
 	if dir == None:
 		dir = '.'
 	for f in os.listdir(dir):
-		if fnmatch(f, '*.full'):
+		if fnmatch(f, "%s*.full" % reposName):
 			t = os.stat(f)[stat.ST_CTIME]
 			if dt == None or t > dt:
 				name = f
@@ -53,7 +53,7 @@ def findLastFullDump(dir = None):
 lastFullDumpName = findLastFullDump()
 
 if lastFullDumpName == None:
-	fullBackup(repos)
+	fullBackup(repos, reposName)
 	sys.exit(0)
 
 lastFullDumpBase = os.path.splitext(lastFullDumpName)[0].split('-')[0]
