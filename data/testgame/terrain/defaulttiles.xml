@@ -1,0 +1,5 @@
+<tileset name="Terrain">
+<tile name="Dirt" texture="dirt.tga" flags="" />
+<tile name="Grass" texture="grass.tga" flags="" />
+<tile name="Snow" texture="snow.tga" flags="" />
+</tileset>

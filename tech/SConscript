@@ -1,0 +1,76 @@
+#############################################################################
+# $Id$
+
+Import('env')
+
+sourceFiles = Split("""
+   bmp.cpp
+   color.cpp
+   comtools.cpp
+   config.cpp
+   cpufeatures.cpp
+   dictionary.cpp
+   dictionarystore.cpp
+   dictregstore.cpp
+   fileenum.cpp
+   filepath.cpp
+   filespec.cpp
+   frustum.cpp
+   functor.cpp
+   globalobjreg.cpp
+   hash.cpp
+   hashtbltest.cpp
+   image.cpp
+   jpg.cpp
+   matrix3.cpp
+   matrix4.cpp
+   md5.c
+   multivar.cpp
+   quat.cpp
+   ray.cpp
+   readwritefile.cpp
+   readwritemd5.cpp
+   readwritemem.cpp
+   readwriteutils.cpp
+   resourceformat.cpp
+   resourcemanager.cpp
+   resourcemanagertest.cpp
+   resourcestore.cpp
+   resourcestorefs.cpp
+   resourcestorezip.cpp
+   resourceutils.cpp
+   scheduler.cpp
+   schedulerclock.cpp
+   sim.cpp
+   statemachinetest.cpp
+   techassert.cpp
+   techhash.cpp
+   techlog.cpp
+   techmath.cpp
+   techstring.cpp
+   techtest.cpp
+   techtime.cpp
+   text.cpp
+   tga.cpp
+   thread.cpp
+   threadcaller.cpp
+""")
+
+libPaths = Split("""
+   #allguids
+""")
+
+linkLibs = Split("""
+   allguids
+""")
+
+local = env.Copy()
+if local.IsShared() and local['PLATFORM'] == 'win32':
+   linkLibs += ['advapi32.lib']
+local.UseJpeg()
+local.UseZLib()
+local.BuildLibrary(target='tech',
+                   source=sourceFiles,
+                   deffile='#tech/tech.def',
+                   lib_path=libPaths,
+                   libs=linkLibs)

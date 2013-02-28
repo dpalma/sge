@@ -1,0 +1,29 @@
+<!-- $Id$ -->
+
+<page>
+   <script src="customgame.lua" />
+
+   <panel id="mapsPanel" style="width:60%;height:60%;background-color:(0,0,0.75)" renderer="beveled">
+      <listbox id="mapsList" rows=6 style="placement:absolute;width:50%;align:center;vertical-align:center;"
+         renderer="beveled" onselchange="OnMapsListSelChange();"
+      />
+   </panel>
+
+   <panel style="width:40%;height:60%;background-color:(0,0,0.75)" renderer="beveled">
+      <layout type="grid" rows=4 columns=2 />
+      <label text="Title: "/><label id=title />
+      <label text="Author: "/><label id=author />
+      <label text="Description: "/><label id=descr />
+      <label text="Number of Players: "/><label id=numPlayers />
+   </panel>
+
+   <panel style="width:100%;height:40%;background-color:black;" renderer="beveled">
+      <layout type="grid" rows="2" columns="5" />
+      <label/><label/><label/>
+      <button text="Start" style="align:center;vertical-align:center;" onclick="OnStart();" renderer="beveled" />
+      <label/>
+      <label/><label/><label/>
+      <button text="Cancel" style="align:center;vertical-align:center;" onclick="GUIContext:PopPage();" renderer="beveled" />
+      <label/>
+   </panel>
+</page>

@@ -1,0 +1,23 @@
+////////////////////////////////////////////////////////////////////////////////
+// $Id$
+
+#ifndef INCLUDED_MS3DMODELAPI_H
+#define INCLUDED_MS3DMODELAPI_H
+
+#include "ms3dmodeldll.h"
+
+#include "tech/comtools.h"
+
+#ifdef _MSC_VER
+#pragma once
+#endif
+
+F_DECLARE_INTERFACE(IResourceManager);
+
+////////////////////////////////////////////////////////////////////////////////
+
+MS3DMODEL_API tResult Ms3dModelResourceRegister(IResourceManager * pResourceManager);
+
+////////////////////////////////////////////////////////////////////////////////
+
+#endif // !INCLUDED_MS3DMODELAPI_H

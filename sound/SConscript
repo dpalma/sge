@@ -1,0 +1,26 @@
+#############################################################################
+# $Id$
+
+Import('env')
+
+if env['PLATFORM'] == 'win32':
+   sourceFiles = ['soundwin.cpp']
+else:
+   sourceFiles = ['soundnull.cpp']
+
+libPaths = Split("""
+   #allguids
+   #tech
+""")
+
+linkLibs = Split("""
+   allguids
+   tech
+""")
+
+local = env.Copy()
+local.UseTinyxml()
+local.BuildLibrary(target='sound',
+                   source=sourceFiles,
+                   lib_path=libPaths,
+                   libs=linkLibs)

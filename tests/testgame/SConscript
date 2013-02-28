@@ -1,0 +1,53 @@
+#############################################################################
+# $Id$
+
+Import('env')
+
+sourceFiles = Split("""
+   main.cpp
+""")
+
+if env['PLATFORM'] == 'win32':
+   sourceFiles += env.RES('testgame.rc')
+
+libPaths = Split("""
+   #ai
+   #allguids
+   #engine
+   #gui
+   #network
+   #platform
+   #rendergl
+   #script
+   #sound
+   #tech
+""")
+
+linkLibs = Split("""
+   ai
+   allguids
+   engine
+   gui
+   network
+   platform
+   rendergl
+   script
+   sound
+   tech
+""")
+
+if env['PLATFORM'] == 'win32':
+   linkLibs += ['ws2_32.lib']
+elif env['PLATFORM'] in ['cygwin', 'posix']:
+   linkLibs += ['pthread']
+
+local = env.Copy()
+local.UseJpeg()
+local.UseFTGL()
+local.UseLua()
+local.UseTinyxml()
+local.UseZLib()
+local.BuildExecutable(target='testgame',
+                      source=sourceFiles,
+                      lib_path=libPaths,
+                      libs=linkLibs)

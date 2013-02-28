@@ -1,0 +1,63 @@
+#############################################################################
+# $Id$
+
+Import('env')
+
+sourceFiles = Split("""
+   aboutdlg.cpp
+   BitmapUtils.cpp
+   CameraDlg.cpp
+   cmds.cpp
+   DynamicLink.cpp
+   editorApp.cpp
+   editorCommands.cpp
+   editorCtrlBars.cpp
+   editorDoc.cpp
+   editorTools.cpp
+   editorToolState.cpp
+   editorTypes.cpp
+   editorView.cpp
+   LogWnd.cpp
+   MainFrm.cpp
+   MapPropertiesDlg.cpp
+   MapSettingsDlg.cpp
+   OutputBar.cpp
+   scbarcf.cpp
+   scbarg.cpp
+   ScriptCmdDlg.cpp
+   sizecbar.cpp
+   splashwnd.cpp
+   stdhdr.cpp
+   ToolPalette.cpp
+   ToolPaletteBar.cpp
+""")
+
+libPaths = Split("""
+   #allguids
+   #engine
+   #platform
+   #rendergl
+   #script
+   #tech
+""")
+
+linkLibs = Split("""
+   allguids.lib
+   engine.lib
+   platform.lib
+   rendergl.lib
+   script.lib
+   tech.lib
+""")
+
+if env['PLATFORM'] == 'win32':
+   local = env.Copy()
+   local.UseGL()
+   local.UseLua()
+   local.UseTinyxml()
+   local.UseZLib()
+   local.Append(CPPPATH=['#3rdparty/wtl/include'])
+   local.BuildExecutable(target='editor',
+                         source=sourceFiles + local.RES('editor.rc'),
+                         lib_path=libPaths,
+                         libs=linkLibs)

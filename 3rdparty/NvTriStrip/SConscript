@@ -1,0 +1,15 @@
+#############################################################################
+# $Id: SConscript,v 1.5 2006/01/31 20:35:54 dpalma Exp $
+
+Import('env')
+
+sourceFiles = Split("""
+   src/NvTriStrip/NvTriStrip.cpp
+   src/NvTriStrip/NvTriStripObjects.cpp
+""")
+
+local = env.Copy()
+local.Append(CCFLAGS=['/Zc:forScope-'])
+local.BuildStaticLibrary(target='NvTriStrip',
+                         source=sourceFiles,
+                         include_path=['#3rdparty/NvTriStrip/include'])

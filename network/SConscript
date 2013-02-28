@@ -1,0 +1,30 @@
+#############################################################################
+# $Id$
+
+Import('env')
+
+sourceFiles = Split("""
+   netaddress.cpp
+   netsocket.cpp
+   network.cpp
+""")
+
+libPaths = Split("""
+   #allguids
+   #tech
+""")
+
+linkLibs = Split("""
+   allguids
+   tech
+""")
+
+if env['PLATFORM'] == 'win32':
+   linkLibs += ['ws2_32.lib']
+
+local = env.Copy()
+local.BuildLibrary(target='network',
+                   export_symbol='NET_EXPORTS',
+                   source=sourceFiles,
+                   lib_path=libPaths,
+                   libs=linkLibs)

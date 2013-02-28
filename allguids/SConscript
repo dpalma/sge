@@ -1,0 +1,13 @@
+#############################################################################
+# $Id$
+
+Import('env')
+
+sourceFiles = Split("""
+   allguids.cpp
+""")
+
+local = env.Copy()
+local.Append(CPPPATH=['#tests/mfceditor'])
+local.BuildStaticLibrary(target='allguids',
+                         source=sourceFiles)

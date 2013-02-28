@@ -1,0 +1,33 @@
+#############################################################################
+# $Id$
+
+Import('env')
+
+sourceFiles = Split("""
+   server.cpp
+""")
+
+if env['PLATFORM'] == 'win32':
+   sourceFiles += [env.RES('server.rc'), 'service.cpp']
+else:
+   sourceFiles += ['daemon.cpp']
+
+libPaths = Split("""
+   #allguids
+   #network
+   #tech
+""")
+
+linkLibs = Split("""
+   allguids
+   network
+   tech
+""")
+
+local = env.Copy()
+local.UseTinyxml()
+local.UseZLib()
+local.BuildExecutable(target='server',
+                      source=sourceFiles,
+                      lib_path=libPaths,
+                      libs=linkLibs)

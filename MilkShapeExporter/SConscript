@@ -1,0 +1,41 @@
+#############################################################################
+# $Id$
+
+Import('env')
+
+sourceFiles = Split("""
+   Exporter.cpp
+   ExportPreviewDlg.cpp
+   msPlugInApp.cpp
+   msPlugInImpl.cpp
+   StdAfx.cpp
+""")
+
+libPaths = Split("""
+   #MilkShapeExporter
+   #allguids
+   #ms3dmodel
+   #tech
+   #engine
+""")
+
+linkLibs = Split("""
+   msModelLib.lib
+   allguids.lib
+   ms3dmodel.lib
+   tech.lib
+   engine.lib
+   comdlg32.lib
+""")
+
+if env['PLATFORM'] == 'win32':
+   local = env.Copy()
+   local.UseNvTriStrip()
+   local.UseTinyxml()
+   local.UseZLib()
+   local.Append(CPPPATH=['#MilkShapeExporter', '#3rdparty/wtl/include'])
+   local.BuildSharedLibrary(target='msSGEExporter',
+                            source=sourceFiles + local.RES('msPlugIn.rc'),
+                            deffile='#MilkShapeExporter/msPlugin.def',
+                            lib_path=libPaths,
+                            libs=linkLibs)

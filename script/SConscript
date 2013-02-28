@@ -1,0 +1,28 @@
+#############################################################################
+# $Id$
+
+Import('env')
+
+sourceFiles = Split("""
+   luainterp.cpp
+   luastate.cpp
+   luautil.cpp
+""")
+
+libPaths = Split("""
+   #allguids
+   #tech
+""")
+
+linkLibs = Split("""
+   allguids
+   tech
+""")
+
+local = env.Copy()
+local.UseLua()
+local.UseTinyxml()
+local.BuildLibrary(target='script',
+                   source=sourceFiles,
+                   lib_path=libPaths,
+                   libs=linkLibs)

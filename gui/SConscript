@@ -1,0 +1,54 @@
+#############################################################################
+# $Id$
+
+Import('env')
+
+sourceFiles = Split("""
+   guibasicrenderer.cpp
+   guibeveledrenderer.cpp
+   guibutton.cpp
+   guicontext.cpp
+   guidialog.cpp
+   guielementenum.cpp
+   guielementtools.cpp
+   guievent.cpp
+   guieventrouter.cpp
+   guieventsounds.cpp
+   guifactory.cpp
+   guilabel.cpp
+   guilayout.cpp
+   guilistbox.cpp
+   guipage.cpp
+   guipagelayout.cpp
+   guipanel.cpp
+   guiparse.cpp
+   guiscript.cpp
+   guiscrollbar.cpp
+   guistyle.cpp
+   guistylesheet.cpp
+   guititlebar.cpp
+   guitextedit.cpp
+   guitypes.cpp
+""")
+
+libPaths = Split("""
+   #allguids
+   #platform
+   #rendergl
+   #tech
+""")
+
+linkLibs = Split("""
+   allguids
+   platform
+   rendergl
+   tech
+""")
+
+local = env.Copy()
+local.UseGL()
+local.UseTinyxml()
+local.BuildLibrary(target='gui',
+                   source=sourceFiles,
+                   lib_path=libPaths,
+                   libs=linkLibs)

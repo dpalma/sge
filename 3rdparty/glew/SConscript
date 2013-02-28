@@ -1,0 +1,17 @@
+#############################################################################
+# $Id: SConscript,v 1.5 2006/01/31 20:35:55 dpalma Exp $
+
+Import('env')
+
+sourceFiles = Split("""
+   src/glew.c
+""")
+
+includePaths = Split("""
+   #3rdparty/glew/include
+""")
+
+local = env.Copy()
+local.Append(CPPDEFINES = ['GLEW_STATIC'])
+local.Append(CPPPATH = includePaths)
+local.BuildStaticLibrary(target='glew', source=sourceFiles)

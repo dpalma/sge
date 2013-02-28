@@ -1,0 +1,14 @@
+/* $Id$ */
+
+button
+{
+	font-family:Times;
+	font-size:12pt;
+	align:center;
+	vertical-align:center;
+}
+
+label
+{
+	font-family:Arial;
+}

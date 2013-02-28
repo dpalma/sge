@@ -1,0 +1,41 @@
+#############################################################################
+# $Id$
+
+Import('env')
+
+sourceFiles = Split("""
+   src/FTBitmapGlyph.cpp
+   src/FTCharmap.cpp
+   src/FTContour.cpp
+   src/FTExtrdGlyph.cpp
+   src/FTFace.cpp
+   src/FTFont.cpp
+   src/FTGLBitmapFont.cpp
+   src/FTGLExtrdFont.cpp
+   src/FTGLOutlineFont.cpp
+   src/FTGLPixmapFont.cpp
+   src/FTGLPolygonFont.cpp
+   src/FTGLTextureFont.cpp
+   src/FTGlyph.cpp
+   src/FTGlyphContainer.cpp
+   src/FTLibrary.cpp
+   src/FTOutlineGlyph.cpp
+   src/FTPixmapGlyph.cpp
+   src/FTPoint.cpp
+   src/FTPolyGlyph.cpp
+   src/FTSize.cpp
+   src/FTTextureGlyph.cpp
+   src/FTVectoriser.cpp
+""")
+
+
+includePaths = Split("""
+   #3rdparty/freetype/include
+   #3rdparty/ftgl/include
+""")
+
+local = env.Copy()
+local.UseFTGL()
+local.BuildStaticLibrary(target='ftgl',
+                         source=sourceFiles,
+                         include_path=includePaths)

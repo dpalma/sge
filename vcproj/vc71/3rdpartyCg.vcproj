@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="7.10"
+	Name="3rdpartyCg"
+	ProjectGUID="{281AC579-4D4A-4408-B651-EA5E100CDD3C}"
+	SccProjectName=""
+	SccLocalPath="">
+	<Platforms>
+		<Platform
+			Name="Win32"/>
+	</Platforms>
+	<Configurations>
+		<Configuration
+			Name="StaticRelease|Win32"
+			OutputDirectory=".\..\..\Build.vc71\StaticRelease"
+			IntermediateDirectory=".\..\..\Build.vc71\StaticRelease"
+			ConfigurationType="0"
+			UseOfMFC="0">
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName)"
+				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) /a"
+				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) clean"
+				Output="3rdpartyCg.exe"/>
+		</Configuration>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory=".\..\..\Build.vc71\Debug"
+			IntermediateDirectory=".\..\..\Build.vc71\Debug"
+			ConfigurationType="0"
+			UseOfMFC="0">
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) DEBUG=TRUE"
+				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) DEBUG=TRUE /a"
+				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) DEBUG=TRUE clean"
+				Output="3rdpartyCg.exe"/>
+		</Configuration>
+		<Configuration
+			Name="Opt|Win32"
+			OutputDirectory=".\..\..\Build.vc71\Opt"
+			IntermediateDirectory=".\..\..\Build.vc71\Opt"
+			ConfigurationType="0"
+			UseOfMFC="0">
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) DEBUG=TRUE"
+				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) DEBUG=TRUE /a"
+				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) DEBUG=TRUE clean"
+				Output="3rdpartyCg.exe"/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory=".\..\..\Build.vc71\Release"
+			IntermediateDirectory=".\..\..\Build.vc71\Release"
+			ConfigurationType="0"
+			UseOfMFC="0">
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName)"
+				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) /a"
+				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) clean"
+				Output="3rdpartyCg.exe"/>
+		</Configuration>
+		<Configuration
+			Name="StaticDebug|Win32"
+			OutputDirectory=".\..\..\Build.vc71\StaticDebug"
+			IntermediateDirectory=".\..\..\Build.vc71\StaticDebug"
+			ConfigurationType="0"
+			UseOfMFC="0">
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) DEBUG=TRUE"
+				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) DEBUG=TRUE /a"
+				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc71\$(ConfigurationName) DEBUG=TRUE clean"
+				Output="3rdpartyCg.exe"/>
+		</Configuration>
+	</Configurations>
+	<References>
+	</References>
+	<Files>
+		<Filter
+			Name="Source Files"
+			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat">
+		</Filter>
+		<Filter
+			Name="Header Files"
+			Filter="h;hpp;hxx;hm;inl">
+		</Filter>
+		<Filter
+			Name="Resource Files"
+			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe">
+		</Filter>
+		<File
+			RelativePath=".\..\..\3rdParty\Cg\CopyCg.mak">
+		</File>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>

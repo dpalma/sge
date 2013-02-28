@@ -1,0 +1,30 @@
+#############################################################################
+# $Id$
+
+Import('env')
+
+sourceFiles = Split("""
+   aiagent.cpp
+   aiagentbehaviorfolloworders.cpp
+   aiagentbehaviorwander.cpp
+   aiagentmessage.cpp
+   aiagentmessagerouter.cpp
+   aiagenttaskmoveto.cpp
+   aiagenttaskstand.cpp
+""")
+
+libPaths = Split("""
+   #allguids
+   #tech
+""")
+
+linkLibs = Split("""
+   allguids
+   tech
+""")
+
+local = env.Copy()
+local.BuildLibrary(target='ai',
+                   source=sourceFiles,
+                   lib_path=libPaths,
+                   libs=linkLibs)

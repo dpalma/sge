@@ -1,0 +1,60 @@
+#############################################################################
+# $Id$
+
+Import('env')
+
+sourceFiles = Split("""
+   camera.cpp
+   cmds.cpp
+   engine.cpp
+   entity.cpp
+   entitycmds.cpp
+   entitycmdmanager.cpp
+   entitycmdui.cpp
+   entitycomponentregistry.cpp
+   entitycomponents.cpp
+   entityfactory.cpp
+   entitymanager.cpp
+   entityselection.cpp
+   geomipmap.cpp
+   heightmap.cpp
+   model.cpp
+   modelanim.cpp
+   modelanimcontroller.cpp
+   modelreadwrite.cpp
+   modelsgem.cpp
+   modelskeleton.cpp
+   modeltypes.cpp
+   modelutils.cpp
+   saveloadmanager.cpp
+   scenario.cpp
+   terrain.cpp
+   terrainrender.cpp
+   tixml.cpp
+""")
+
+libPaths = Split("""
+   #allguids
+   #gui
+   #platform
+   #rendergl
+   #script
+   #tech
+""")
+
+linkLibs = Split("""
+   allguids
+   gui
+   platform
+   rendergl
+   script
+   tech
+""")
+
+local = env.Copy()
+local.UseGL()
+local.UseTinyxml()
+local.BuildLibrary(target='engine',
+                   source=sourceFiles,
+                   lib_path=libPaths,
+                   libs=linkLibs)

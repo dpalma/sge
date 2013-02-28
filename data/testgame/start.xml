@@ -1,0 +1,29 @@
+<!-- $Id$ -->
+<page>
+
+   <style src="gui.css" />
+   
+   <panel id="title" style="width:100%;height:60%;background-color:(41,162,241);" renderer="basic">
+	   <layout type="grid" rows="2" columns="1" />
+	   <label text="Copyright &amp;copy; 2005, Daniel Palma" style="font-size:10pt;align:right;vertical-align:top;" />
+	   <label text="{{TEST game}}" style="font-size:36pt;align:left;vertical-align:bottom;" />
+   </panel>
+   
+   <panel id="btns" style="width:100%;height:40%;background-color:black;" renderer="basic">
+   
+	   <layout type="grid" rows="5" columns="5" />
+	   
+	   <label visible=false/><label visible=false/><label visible=false/>
+	   <button text="Custom Game" onclick="GUIContext:PushPage('customgame.xml');" renderer="beveled"/>
+	   <label visible=false/>
+	   
+	   <label visible=false/><label visible=false/><label visible=false/>
+	   <button text="GUI Test" onclick="GUIContext:PushPage([[guitest.xml]]);" renderer="beveled"/>
+	   <label visible=false/>
+	   
+	   <label visible=false/><label visible=false/><label visible=false/>
+	   <button text="Exit" onclick="QuitWithConfirm();" renderer="beveled" />
+	   <label visible=false/>
+	   
+   </panel>
+</page>

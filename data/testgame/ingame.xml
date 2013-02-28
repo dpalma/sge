@@ -1,0 +1,32 @@
+<!-- $Id$ -->
+<page>
+   <script>
+      SetEntityPanel("entityCommands");
+   </script>
+
+   <panel id="toppanel"
+       style="width:100%;height:28"
+       renderer="beveled">
+       
+      <button text="End Game" onclick="UnloadMap();" />
+      
+      <button text="Exit" style="placement:absolute;align:right;" onclick="QuitWithConfirm();" />
+
+   </panel>
+
+   <panel id="bottompanel"
+       style="placement:absolute;vertical-align:bottom;width:100%;height:20%"
+       renderer="beveled">
+
+      <panel id="otherControls" style="placement:absolute;align:left;width:60%;height:100%">
+         <button text="Sim x 1/2" onclick="SetSimTimeScale(0.5);" />
+         <button text="Sim x 1" onclick="SetSimTimeScale(1);" />
+         <button text="Sim x 2" onclick="SetSimTimeScale(2);" />
+         <button text="Sim x 4" onclick="SetSimTimeScale(4);" />
+      </panel>
+
+      <panel id="entityCommands" style="placement:absolute;align:right;width:40%;height:100%">
+      </panel>
+
+   </panel>
+</page>

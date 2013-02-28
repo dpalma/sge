@@ -1,0 +1,38 @@
+#############################################################################
+# $Id$
+
+Import('env')
+
+sourceFiles = Split("""
+   freetypeutils.cpp
+   glinterleave.cpp
+   gltexture.cpp
+   renderergl.cpp
+   renderfontfreetype.cpp
+   renderfontftgl.cpp
+   renderglcamera.cpp
+""")
+
+if env['PLATFORM'] == 'win32':
+   sourceFiles += ['renderfontw32.cpp', 'rendertargetw32.cpp']
+elif env['PLATFORM'] in ['cygwin', 'posix']:
+   sourceFiles += ['renderfontx11.cpp', 'rendertargetx11.cpp']
+
+libPaths = Split("""
+   #allguids
+   #platform
+   #tech
+""")
+
+linkLibs = Split("""
+   allguids
+   platform
+   tech
+""")
+
+local = env.Copy()
+local.UseFTGL()
+local.BuildLibrary(target='rendergl',
+                   source=sourceFiles,
+                   lib_path=libPaths,
+                   libs=linkLibs)

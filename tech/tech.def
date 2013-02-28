@@ -1,0 +1,36 @@
+;-------------------------------------------------------------------------------
+; $Id$
+
+EXPORTS
+	?hash@@YAKPAEKK@Z												@1		NONAME
+	?AssertFail@@YA_NPBDH00@Z										@2		NONAME
+	?MatrixInvert@@YA_NPBMPAM@Z										@3		NONAME
+	?MatrixMultiply@@YAXPBM0PAM@Z									@4		NONAME
+;	REMOVED
+;	REMOVED
+	?MatrixTranslate@@YAXMMMPAV?$cMatrix4@M@@@Z						@7		NONAME
+	?MatrixRotateX@@YAXMPAV?$cMatrix4@M@@@Z							@8		NONAME
+	?MatrixRotateY@@YAXMPAV?$cMatrix4@M@@@Z							@9		NONAME
+	?MatrixRotateZ@@YAXMPAV?$cMatrix4@M@@@Z							@10		NONAME
+	?MatrixLookAt@@YAXABV?$cVec3@M@@00PAV?$cMatrix4@M@@@Z			@11		NONAME
+;	REMOVED
+;	REMOVED
+;	REMOVED
+	?WildCardMatch@@YA_NPBD0@Z										@15		NONAME
+	?RegisterGlobalObject@@YAJABU_GUID@@PAUIUnknown@@@Z				@16		NONAME
+	?StartGlobalObjects@@YAJXZ										@17		NONAME
+	?StopGlobalObjects@@YAXXZ										@18		NONAME
+;	REMOVED
+;	REMOVED
+;	?g_pConfig@@3PAUIDictionary@@A									@21		NONAME
+	?ParseCommandLine@@YAJHQAPADPAUIDictionary@@@Z					@22		NONAME
+	?ConfigIsTrue@@YA_NPBD@Z										@23		NONAME
+;	?techlog@@3VcLog@@A												@24		NONAME
+	?FilePathExists@@YA_NABVcFilePath@@@Z						@25		NONAME
+;	REMOVED
+;	REMOVED
+	?GetCpuFeatures@@YA_NPAUsCpuFeatures@@@Z						@28		NONAME
+	?DictionaryIniStoreCreate@@YAJABVcFileSpec@@PBDPAPAUIDictionaryStore@@@Z	@29		NONAME
+	?DictionaryStoreCreate@@YAJPAUHKEY__@@PBD_NPAPAUIDictionaryStore@@@Z		@30		NONAME
+	?DictionaryCreate@@YAJPAPAUIDictionary@@@Z						@31		NONAME
+	?DictionaryCreate@@YAJW4ePersistence@@PAPAUIDictionary@@@Z		@32		NONAME
