@@ -1,0 +1,293 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Opt|Win32">
+      <Configuration>Opt</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="StaticDebug|Win32">
+      <Configuration>StaticDebug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="StaticRelease|Win32">
+      <Configuration>StaticRelease</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{FB6B440F-2457-4526-A399-5B17A7A8BC9D}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'">.\..\..\Build.vc10\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'">.\..\..\Build.vc10\$(Configuration)\UnitTest++\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\Build.vc10\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\Build.vc10\$(Configuration)\UnitTest++\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'">.\..\..\Build.vc10\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'">.\..\..\Build.vc10\$(Configuration)\UnitTest++\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\Build.vc10\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\Build.vc10\$(Configuration)\UnitTest++\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'">.\..\..\Build.vc10\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'">.\..\..\Build.vc10\$(Configuration)\UnitTest++\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'">false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>.\..\..\3rdparty\UnitTest++\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;NO_AUTO_EXPORTS;_CRT_SECURE_NO_DEPRECATE;UNITTEST_USE_CUSTOM_STREAMS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc10\$(Configuration)\UnitTest++/UnitTest++.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc10\$(Configuration)\UnitTest++/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc10\$(Configuration)\UnitTest++/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc10\$(Configuration)\UnitTest++/</ProgramDataBaseFileName>
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x040c</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>..\..\Build.vc10\$(Configuration)\UnitTest++.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>.\..\..\3rdparty\UnitTest++\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;UNITTEST_USE_CUSTOM_STREAMS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc10\$(Configuration)\UnitTest++/UnitTest++.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc10\$(Configuration)\UnitTest++/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc10\$(Configuration)\UnitTest++/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc10\$(Configuration)\UnitTest++/</ProgramDataBaseFileName>
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x040c</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <OutputFile>..\..\Build.vc10\$(Configuration)/UnitTest++.dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ModuleDefinitionFile>..\..\3rdparty\UnitTest++\src\UnitTest++.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\..\..\Build.vc10\$(Configuration)/UnitTest++.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>.\..\..\Build.vc10\$(Configuration)\UnitTest++/UnitTest++.map</MapFileName>
+      <ImportLibrary>.\..\..\Build.vc10\$(Configuration)/UnitTest++.lib</ImportLibrary>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>.\..\..\3rdparty\UnitTest++\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;NO_AUTO_EXPORTS;UNITTEST_USE_CUSTOM_STREAMS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc10\$(Configuration)\UnitTest++/UnitTest++.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc10\$(Configuration)\UnitTest++/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc10\$(Configuration)\UnitTest++/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc10\$(Configuration)\UnitTest++/</ProgramDataBaseFileName>
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x040c</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>..\..\Build.vc10\StaticDebug\UnitTest++.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>.\..\..\3rdparty\UnitTest++\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;UNITTEST_USE_CUSTOM_STREAMS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc10\$(Configuration)\UnitTest++/UnitTest++.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc10\$(Configuration)\UnitTest++/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc10\$(Configuration)\UnitTest++/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc10\$(Configuration)\UnitTest++/</ProgramDataBaseFileName>
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x040c</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <OutputFile>..\..\Build.vc10\$(Configuration)/UnitTest++.dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ModuleDefinitionFile>..\..\3rdparty\UnitTest++\src\UnitTest++.def</ModuleDefinitionFile>
+      <ProgramDatabaseFile>.\..\..\Build.vc10\$(Configuration)/UnitTest++.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>.\..\..\Build.vc10\$(Configuration)\UnitTest++/UnitTest++.map</MapFileName>
+      <ImportLibrary>.\..\..\Build.vc10\$(Configuration)/UnitTest++.lib</ImportLibrary>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>.\..\..\3rdparty\UnitTest++\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_DEPRECATE;UNITTEST_USE_CUSTOM_STREAMS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc10\$(Configuration)\UnitTest++/UnitTest++.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc10\$(Configuration)\UnitTest++/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc10\$(Configuration)\UnitTest++/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc10\$(Configuration)\UnitTest++/</ProgramDataBaseFileName>
+      <WarningLevel>Level4</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x040c</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <OutputFile>..\..\Build.vc10\$(Configuration)/UnitTest++.dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ModuleDefinitionFile>..\..\3rdparty\UnitTest++\src\UnitTest++.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\..\..\Build.vc10\$(Configuration)/UnitTest++.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>.\..\..\Build.vc10\$(Configuration)\UnitTest++/UnitTest++.map</MapFileName>
+      <ImportLibrary>.\..\..\Build.vc10\$(Configuration)/UnitTest++.lib</ImportLibrary>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\3rdparty\UnitTest++\src\Win32\TimeHelpers.cpp" />
+    <ClCompile Include="..\..\3rdparty\UnitTest++\src\AssertException.cpp" />
+    <ClCompile Include="..\..\3rdparty\UnitTest++\src\Checks.cpp" />
+    <ClCompile Include="..\..\3rdparty\UnitTest++\src\DeferredTestReporter.cpp" />
+    <ClCompile Include="..\..\3rdparty\UnitTest++\src\DeferredTestResult.cpp" />
+    <ClCompile Include="..\..\3rdparty\UnitTest++\src\MemoryOutStream.cpp" />
+    <ClCompile Include="..\..\3rdparty\UnitTest++\src\ReportAssert.cpp" />
+    <ClCompile Include="..\..\3rdparty\UnitTest++\src\Test.cpp" />
+    <ClCompile Include="..\..\3rdparty\UnitTest++\src\TestDetails.cpp" />
+    <ClCompile Include="..\..\3rdparty\UnitTest++\src\TestList.cpp" />
+    <ClCompile Include="..\..\3rdparty\UnitTest++\src\TestReporter.cpp" />
+    <ClCompile Include="..\..\3rdparty\UnitTest++\src\TestReporterStdout.cpp" />
+    <ClCompile Include="..\..\3rdparty\UnitTest++\src\TestResults.cpp" />
+    <ClCompile Include="..\..\3rdparty\UnitTest++\src\TestRunner.cpp" />
+    <ClCompile Include="..\..\3rdparty\UnitTest++\src\TimeConstraint.cpp" />
+    <ClCompile Include="..\..\3rdparty\UnitTest++\src\XmlTestReporter.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\3rdparty\UnitTest++\src\Win32\TimeHelpers.h" />
+    <ClInclude Include="..\..\3rdparty\UnitTest++\src\AssertException.h" />
+    <ClInclude Include="..\..\3rdparty\UnitTest++\src\CheckMacros.h" />
+    <ClInclude Include="..\..\3rdparty\UnitTest++\src\Checks.h" />
+    <ClInclude Include="..\..\3rdparty\UnitTest++\src\Config.h" />
+    <ClInclude Include="..\..\3rdparty\UnitTest++\src\DeferredTestReporter.h" />
+    <ClInclude Include="..\..\3rdparty\UnitTest++\src\DeferredTestResult.h" />
+    <ClInclude Include="..\..\3rdparty\UnitTest++\src\MemoryOutStream.h" />
+    <ClInclude Include="..\..\3rdparty\UnitTest++\src\ReportAssert.h" />
+    <ClInclude Include="..\..\3rdparty\UnitTest++\src\Test.h" />
+    <ClInclude Include="..\..\3rdparty\UnitTest++\src\TestDetails.h" />
+    <ClInclude Include="..\..\3rdparty\UnitTest++\src\TestList.h" />
+    <ClInclude Include="..\..\3rdparty\UnitTest++\src\TestMacros.h" />
+    <ClInclude Include="..\..\3rdparty\UnitTest++\src\TestReporter.h" />
+    <ClInclude Include="..\..\3rdparty\UnitTest++\src\TestReporterStdout.h" />
+    <ClInclude Include="..\..\3rdparty\UnitTest++\src\TestResults.h" />
+    <ClInclude Include="..\..\3rdparty\UnitTest++\src\TestRunner.h" />
+    <ClInclude Include="..\..\3rdparty\UnitTest++\src\TestSuite.h" />
+    <ClInclude Include="..\..\3rdparty\UnitTest++\src\TimeConstraint.h" />
+    <ClInclude Include="..\..\3rdparty\UnitTest++\src\TimeHelpers.h" />
+    <ClInclude Include="..\..\3rdparty\UnitTest++\src\UnitTest++.h" />
+    <ClInclude Include="..\..\3rdparty\UnitTest++\src\XmlTestReporter.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\3rdparty\UnitTest++\src\UnitTest++.def" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

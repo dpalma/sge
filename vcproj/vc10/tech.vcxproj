@@ -1,0 +1,434 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Opt|Win32">
+      <Configuration>Opt</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="StaticDebug|Win32">
+      <Configuration>StaticDebug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="StaticRelease|Win32">
+      <Configuration>StaticRelease</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{5B1DB8CD-0522-43C7-91B1-D558CA7520EB}</ProjectGuid>
+    <RootNamespace>tech</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+    <Import Project="General.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+    <Import Project="General.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+    <Import Project="General.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+    <Import Project="General.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+    <Import Project="General.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\..\..\Build.vc10\Opt/tech.tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\3rdparty\UnitTest++\src;..\..\3rdparty\jpeg;..\..\3rdparty\zlib;..\..\3rdparty\zlib\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_USRDLL;TECH_EXPORTS;STRICT;_WINDOWS;NDEBUG;WIN32;HAVE_UNITTESTPP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdhdr.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc10\Opt\tech/tech.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc10\Opt\tech/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc10\Opt\tech/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc10\Opt\tech/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>advapi32.lib;$(OutDir)UnitTest++.lib;$(OutDir)jpeg.lib;$(OutDir)zlibwapi.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\..\..\Build.vc10\Opt/tech.dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ModuleDefinitionFile>..\..\tech\tech.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\..\..\Build.vc10\Opt/tech.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>..\..\Build.vc10\Opt/tech.map</MapFileName>
+      <ImportLibrary>.\..\..\Build.vc10\Opt/tech.lib</ImportLibrary>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\3rdparty\UnitTest++\src;..\..\3rdparty\jpeg;..\..\3rdparty\zlib;..\..\3rdparty\zlib\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NO_AUTO_EXPORTS;_DEBUG;_USRDLL;TECH_EXPORTS;WIN32;_WINDOWS;STRICT;HAVE_UNITTESTPP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdhdr.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc10\StaticDebug\tech/tech.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc10\StaticDebug\tech/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc10\StaticDebug\tech/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc10\StaticDebug\tech/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>.\..\..\Build.vc10\StaticDebug\tech.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\..\..\Build.vc10\Release/tech.tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\3rdparty\UnitTest++\src;..\..\3rdparty\jpeg;..\..\3rdparty\zlib;..\..\3rdparty\zlib\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;_USRDLL;TECH_EXPORTS;WIN32;_WINDOWS;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdhdr.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc10\Release\tech/tech.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc10\Release\tech/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc10\Release\tech/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc10\Release\tech/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>advapi32.lib;$(OutDir)jpeg.lib;$(OutDir)zlibwapi.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\..\..\Build.vc10\Release/tech.dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ModuleDefinitionFile>..\..\tech\tech.def</ModuleDefinitionFile>
+      <ProgramDatabaseFile>.\..\..\Build.vc10\Release/tech.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>..\..\Build.vc10\Release/tech.map</MapFileName>
+      <OptimizeReferences>true</OptimizeReferences>
+      <ImportLibrary>.\..\..\Build.vc10\Release/tech.lib</ImportLibrary>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\3rdparty\UnitTest++\src;..\..\3rdparty\jpeg;..\..\3rdparty\zlib;..\..\3rdparty\zlib\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;NO_AUTO_EXPORTS;_USRDLL;TECH_EXPORTS;WIN32;_WINDOWS;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdhdr.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc10\StaticRelease\tech/tech.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc10\StaticRelease\tech/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc10\StaticRelease\tech/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc10\StaticRelease\tech/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>.\..\..\Build.vc10\StaticRelease\tech.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\..\..\Build.vc10\Debug/tech.tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\3rdparty\UnitTest++\src;..\..\3rdparty\jpeg;..\..\3rdparty\zlib;..\..\3rdparty\zlib\contrib\minizip;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;_USRDLL;TECH_EXPORTS;WIN32;_WINDOWS;STRICT;HAVE_UNITTESTPP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdhdr.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc10\Debug\tech/tech.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc10\Debug\tech/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc10\Debug\tech/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc10\Debug\tech/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>advapi32.lib;$(OutDir)UnitTest++.lib;$(OutDir)jpeg.lib;$(OutDir)zlibwapi.lib;winmm.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\..\..\Build.vc10\Debug/tech.dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ModuleDefinitionFile>..\..\tech\tech.def</ModuleDefinitionFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\..\..\Build.vc10\Debug/tech.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>..\..\Build.vc10\Debug/tech.map</MapFileName>
+      <ImportLibrary>.\..\..\Build.vc10\Debug/tech.lib</ImportLibrary>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\tech\bmp.cpp" />
+    <ClCompile Include="..\..\tech\color.cpp" />
+    <ClCompile Include="..\..\tech\comtools.cpp" />
+    <ClCompile Include="..\..\tech\config.cpp" />
+    <ClCompile Include="..\..\tech\cpufeatures.cpp" />
+    <ClCompile Include="..\..\tech\dictionary.cpp" />
+    <ClCompile Include="..\..\tech\dictionarystore.cpp" />
+    <ClCompile Include="..\..\tech\dictregstore.cpp" />
+    <ClCompile Include="..\..\tech\fileenum.cpp" />
+    <ClCompile Include="..\..\tech\filepath.cpp" />
+    <ClCompile Include="..\..\tech\filespec.cpp" />
+    <ClCompile Include="..\..\tech\frustum.cpp" />
+    <ClCompile Include="..\..\tech\functor.cpp" />
+    <ClCompile Include="..\..\tech\globalobjreg.cpp" />
+    <ClCompile Include="..\..\tech\hash.cpp" />
+    <ClCompile Include="..\..\tech\hashtbltest.cpp" />
+    <ClCompile Include="..\..\tech\image.cpp" />
+    <ClCompile Include="..\..\tech\jpg.cpp" />
+    <ClCompile Include="..\..\tech\matrix3.cpp" />
+    <ClCompile Include="..\..\tech\matrix4.cpp" />
+    <ClCompile Include="..\..\tech\md5.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'">
+      </PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'">
+      </PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\multivar.cpp" />
+    <ClCompile Include="..\..\tech\quat.cpp" />
+    <ClCompile Include="..\..\tech\ray.cpp" />
+    <ClCompile Include="..\..\tech\readwritefile.cpp" />
+    <ClCompile Include="..\..\tech\readwritemd5.cpp" />
+    <ClCompile Include="..\..\tech\readwritemem.cpp" />
+    <ClCompile Include="..\..\tech\readwriteutils.cpp" />
+    <ClCompile Include="..\..\tech\resourceformat.cpp" />
+    <ClCompile Include="..\..\tech\resourcemanager.cpp" />
+    <ClCompile Include="..\..\tech\resourcemanagertest.cpp" />
+    <ClCompile Include="..\..\tech\resourcestore.cpp" />
+    <ClCompile Include="..\..\tech\resourcestorefs.cpp" />
+    <ClCompile Include="..\..\tech\resourcestorezip.cpp" />
+    <ClCompile Include="..\..\tech\resourceutils.cpp" />
+    <ClCompile Include="..\..\tech\scheduler.cpp" />
+    <ClCompile Include="..\..\tech\schedulerclock.cpp" />
+    <ClCompile Include="..\..\tech\sim.cpp" />
+    <ClCompile Include="..\..\tech\statemachinetest.cpp" />
+    <ClCompile Include="..\..\tech\stdhdr.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\techassert.cpp" />
+    <ClCompile Include="..\..\tech\techhash.cpp" />
+    <ClCompile Include="..\..\tech\techlog.cpp" />
+    <ClCompile Include="..\..\tech\techmath.cpp" />
+    <ClCompile Include="..\..\tech\techstring.cpp" />
+    <ClCompile Include="..\..\tech\techtest.cpp" />
+    <ClCompile Include="..\..\tech\techtime.cpp" />
+    <ClCompile Include="..\..\tech\text.cpp" />
+    <ClCompile Include="..\..\tech\tga.cpp" />
+    <ClCompile Include="..\..\tech\thread.cpp" />
+    <ClCompile Include="..\..\tech\threadcaller.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\tech\tech.def" />
+    <None Include="..\..\api\tech\matrix3.inl" />
+    <None Include="..\..\api\tech\plane.inl" />
+    <None Include="..\..\api\tech\point2.inl" />
+    <None Include="..\..\api\tech\point3.inl" />
+    <None Include="..\..\api\tech\quat.inl" />
+    <None Include="..\..\api\tech\ray.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\tech\dictionary.h" />
+    <ClInclude Include="..\..\tech\dictionarystore.h" />
+    <ClInclude Include="..\..\tech\dictregstore.h" />
+    <ClInclude Include="..\..\tech\image.h" />
+    <ClInclude Include="..\..\tech\md5.h" />
+    <ClInclude Include="..\..\tech\readwritefile.h" />
+    <ClInclude Include="..\..\tech\readwritemd5.h" />
+    <ClInclude Include="..\..\tech\readwritemem.h" />
+    <ClInclude Include="..\..\tech\resourceformat.h" />
+    <ClInclude Include="..\..\tech\resourcemanager.h" />
+    <ClInclude Include="..\..\tech\resourcestore.h" />
+    <ClInclude Include="..\..\tech\resourceutils.h" />
+    <ClInclude Include="..\..\tech\scheduler.h" />
+    <ClInclude Include="..\..\tech\schedulerclock.h" />
+    <ClInclude Include="..\..\tech\sim.h" />
+    <ClInclude Include="..\..\tech\stdhdr.h" />
+    <ClInclude Include="..\..\tech\threadcaller.h" />
+    <ClInclude Include="..\..\api\tech\axisalignedbox.h" />
+    <ClInclude Include="..\..\api\tech\color.h" />
+    <ClInclude Include="..\..\api\tech\combase.h" />
+    <ClInclude Include="..\..\api\tech\comenum.h" />
+    <ClInclude Include="..\..\api\tech\comenumutil.h" />
+    <ClInclude Include="..\..\api\tech\comtools.h" />
+    <ClInclude Include="..\..\api\tech\configapi.h" />
+    <ClInclude Include="..\..\api\tech\connpt.h" />
+    <ClInclude Include="..\..\api\tech\connptimpl.h" />
+    <ClInclude Include="..\..\api\tech\cpufeatures.h" />
+    <ClInclude Include="..\..\api\tech\dbgalloc.h" />
+    <ClInclude Include="..\..\api\tech\dictionaryapi.h" />
+    <ClInclude Include="..\..\api\tech\digraph.h" />
+    <ClInclude Include="..\..\api\tech\fileenum.h" />
+    <ClInclude Include="..\..\api\tech\filepath.h" />
+    <ClInclude Include="..\..\api\tech\filespec.h" />
+    <ClInclude Include="..\..\api\tech\frustum.h" />
+    <ClInclude Include="..\..\api\tech\functor.h" />
+    <ClInclude Include="..\..\api\tech\globalobj.h" />
+    <ClInclude Include="..\..\api\tech\globalobjdef.h" />
+    <ClInclude Include="..\..\api\tech\hashtable.h" />
+    <ClInclude Include="..\..\api\tech\hashtabletem.h" />
+    <ClInclude Include="..\..\api\tech\imageapi.h" />
+    <ClInclude Include="..\..\api\tech\matrix3.h" />
+    <ClInclude Include="..\..\api\tech\matrix34.h" />
+    <ClInclude Include="..\..\api\tech\matrix4.h" />
+    <ClInclude Include="..\..\api\tech\multivar.h" />
+    <ClInclude Include="..\..\api\tech\plane.h" />
+    <ClInclude Include="..\..\api\tech\point2.h" />
+    <ClInclude Include="..\..\api\tech\point3.h" />
+    <ClInclude Include="..\..\api\tech\quat.h" />
+    <ClInclude Include="..\..\api\tech\ray.h" />
+    <ClInclude Include="..\..\api\tech\readwriteapi.h" />
+    <ClInclude Include="..\..\api\tech\readwriteutils.h" />
+    <ClInclude Include="..\..\api\tech\rect.h" />
+    <ClInclude Include="..\..\api\tech\resourceapi.h" />
+    <ClInclude Include="..\..\api\tech\schedulerapi.h" />
+    <ClInclude Include="..\..\api\tech\simapi.h" />
+    <ClInclude Include="..\..\api\tech\statemachine.h" />
+    <ClInclude Include="..\..\api\tech\statemachinetem.h" />
+    <ClInclude Include="..\..\api\tech\techassert.h" />
+    <ClInclude Include="..\..\api\tech\techdll.h" />
+    <ClInclude Include="..\..\api\tech\techguids.h" />
+    <ClInclude Include="..\..\api\tech\techhash.h" />
+    <ClInclude Include="..\..\api\tech\techlog.h" />
+    <ClInclude Include="..\..\api\tech\techmath.h" />
+    <ClInclude Include="..\..\api\tech\techstring.h" />
+    <ClInclude Include="..\..\api\tech\techtime.h" />
+    <ClInclude Include="..\..\api\tech\techtypes.h" />
+    <ClInclude Include="..\..\api\tech\thread.h" />
+    <ClInclude Include="..\..\api\tech\threadcallapi.h" />
+    <ClInclude Include="..\..\api\tech\toposort.h" />
+    <ClInclude Include="..\..\api\tech\undbgalloc.h" />
+    <ClInclude Include="..\..\api\tech\vec2.h" />
+    <ClInclude Include="..\..\api\tech\vec3.h" />
+    <ClInclude Include="..\..\api\tech\vec4.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="allguids.vcxproj">
+      <Project>{54120fb9-28f7-41dd-90e8-fac9dac6ed75}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

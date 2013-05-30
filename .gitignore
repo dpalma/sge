@@ -11,3 +11,17 @@
 *.lai
 *.la
 *.a
+
+# Visual Studio temporary files
+*.suo
+*.wwdb
+*.user
+*.sdf
+*.opensdf
+
+# JPEG library configuration header file
+3rdparty/jpeg/jconfig.h
+
+# Output directories
+Build.vc8
+Build.vc10

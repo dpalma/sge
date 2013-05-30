@@ -1,0 +1,415 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{8fb6e7b5-2b4b-4ca5-80f9-4f0f12e5b877}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{059430e9-79bb-4ceb-96ce-900d3b0aedbb}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="API">
+      <UniqueIdentifier>{a7988720-7414-4495-b342-22a2936cf25d}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\tech\bmp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\color.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\comtools.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\config.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\cpufeatures.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\dictionary.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\dictionarystore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\dictregstore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\fileenum.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\filepath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\filespec.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\frustum.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\functor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\globalobjreg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\hash.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\hashtbltest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\image.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\jpg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\matrix3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\matrix4.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\md5.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\multivar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\quat.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\ray.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\readwritefile.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\readwritemd5.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\readwritemem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\readwriteutils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\resourceformat.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\resourcemanager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\resourcemanagertest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\resourcestore.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\resourcestorefs.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\resourcestorezip.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\resourceutils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\scheduler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\schedulerclock.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\sim.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\statemachinetest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\stdhdr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\techassert.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\techhash.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\techlog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\techmath.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\techstring.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\techtest.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\techtime.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\text.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\tga.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\thread.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\tech\threadcaller.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\tech\tech.def">
+      <Filter>Source Files</Filter>
+    </None>
+    <None Include="..\..\api\tech\matrix3.inl">
+      <Filter>API</Filter>
+    </None>
+    <None Include="..\..\api\tech\plane.inl">
+      <Filter>API</Filter>
+    </None>
+    <None Include="..\..\api\tech\point2.inl">
+      <Filter>API</Filter>
+    </None>
+    <None Include="..\..\api\tech\point3.inl">
+      <Filter>API</Filter>
+    </None>
+    <None Include="..\..\api\tech\quat.inl">
+      <Filter>API</Filter>
+    </None>
+    <None Include="..\..\api\tech\ray.inl">
+      <Filter>API</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\tech\dictionary.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tech\dictionarystore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tech\dictregstore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tech\image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tech\md5.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tech\readwritefile.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tech\readwritemd5.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tech\readwritemem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tech\resourceformat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tech\resourcemanager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tech\resourcestore.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tech\resourceutils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tech\scheduler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tech\schedulerclock.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tech\sim.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tech\stdhdr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\tech\threadcaller.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\axisalignedbox.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\color.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\combase.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\comenum.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\comenumutil.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\comtools.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\configapi.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\connpt.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\connptimpl.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\cpufeatures.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\dbgalloc.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\dictionaryapi.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\digraph.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\fileenum.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\filepath.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\filespec.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\frustum.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\functor.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\globalobj.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\globalobjdef.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\hashtable.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\hashtabletem.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\imageapi.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\matrix3.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\matrix34.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\matrix4.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\multivar.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\plane.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\point2.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\point3.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\quat.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\ray.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\readwriteapi.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\readwriteutils.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\rect.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\resourceapi.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\schedulerapi.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\simapi.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\statemachine.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\statemachinetem.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\techassert.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\techdll.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\techguids.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\techhash.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\techlog.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\techmath.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\techstring.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\techtime.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\techtypes.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\thread.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\threadcallapi.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\toposort.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\undbgalloc.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\vec2.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\vec3.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\tech\vec4.h">
+      <Filter>API</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

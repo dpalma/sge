@@ -1,0 +1,62 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{2465a487-d2c6-4b0c-8231-141af2321b46}</UniqueIdentifier>
+      <Extensions>cpp;c;cxx;rc;def;r;odl;idl;hpj;bat</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{46b87081-d66f-4f0c-bffe-d7fc78b136d7}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl</Extensions>
+    </Filter>
+    <Filter Include="API">
+      <UniqueIdentifier>{e2deb946-82bd-4f58-ab4f-a7c6c7094a4f}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\platform\input.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\platform\stdhdr.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\platform\syscommon.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\platform\syslinux.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\platform\syswin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\platform\dll.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\platform\input.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\platform\stdhdr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\platform\syscommon.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\platform\inputapi.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\platform\keys.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\platform\platformdll.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\platform\platformguids.h">
+      <Filter>API</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\api\platform\sys.h">
+      <Filter>API</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

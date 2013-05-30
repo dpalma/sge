@@ -1,0 +1,336 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Opt|Win32">
+      <Configuration>Opt</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="StaticDebug|Win32">
+      <Configuration>StaticDebug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="StaticRelease|Win32">
+      <Configuration>StaticRelease</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{9AE171BB-5FD5-461C-A208-92F94B9D2C80}</ProjectGuid>
+    <RootNamespace>3rdpartyLuaCompiler</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\Build.vc10\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\Build.vc10\Release\luacompiler\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'">.\..\..\Build.vc10\StaticRelease\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'">.\..\..\Build.vc10\StaticRelease\luacompiler\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'">.\..\..\Build.vc10\StaticDebug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'">.\..\..\Build.vc10\StaticDebug\luacompiler\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'">.\..\..\Build.vc10\Opt\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'">.\..\..\Build.vc10\Opt\luacompiler\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\Build.vc10\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\Build.vc10\Debug\luacompiler\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <TypeLibraryName>.\..\..\Build.vc10\Release/3rdpartyLuaCompiler.tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>.\..\..\3rdparty\lua\include;.\..\..\3rdparty\lua\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;NOSTUBS;LUA_OPNAMES;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc10\Release\luacompiler/3rdpartyLuaCompiler.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc10\Release\luacompiler/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc10\Release\luacompiler/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc10\Release\luacompiler/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <OutputFile>..\..\Build.vc10\Release/luac.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ProgramDatabaseFile>.\..\..\Build.vc10\Release/luac.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>.\..\..\Build.vc10\Release\luacompiler/luac.map</MapFileName>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'">
+    <Midl>
+      <TypeLibraryName>.\..\..\Build.vc10\StaticRelease/3rdpartyLuaCompiler.tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>.\..\..\3rdparty\lua\include;.\..\..\3rdparty\lua\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;NOSTUBS;LUA_OPNAMES;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc10\StaticRelease\luacompiler/3rdpartyLuaCompiler.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc10\StaticRelease\luacompiler/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc10\StaticRelease\luacompiler/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc10\StaticRelease\luacompiler/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <OutputFile>..\..\Build.vc10\StaticRelease/luac.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ProgramDatabaseFile>.\..\..\Build.vc10\StaticRelease/luac.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>.\..\..\Build.vc10\StaticRelease\luacompiler/luac.map</MapFileName>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'">
+    <Midl>
+      <TypeLibraryName>.\..\..\Build.vc10\StaticDebug/3rdpartyLuaCompiler.tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>.\..\..\3rdparty\lua\include;.\..\..\3rdparty\lua\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_CONSOLE;NOSTUBS;LUA_OPNAMES;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc10\StaticDebug\luacompiler/3rdpartyLuaCompiler.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc10\StaticDebug\luacompiler/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc10\StaticDebug\luacompiler/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc10\StaticDebug\luacompiler/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <OutputFile>..\..\Build.vc10\StaticDebug/luac.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\..\..\Build.vc10\StaticDebug/luac.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>.\..\..\Build.vc10\StaticDebug\luacompiler/luac.map</MapFileName>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'">
+    <Midl>
+      <TypeLibraryName>.\..\..\Build.vc10\Opt/3rdpartyLuaCompiler.tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>.\..\..\3rdparty\lua\include;.\..\..\3rdparty\lua\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_CONSOLE;NOSTUBS;LUA_OPNAMES;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc10\Opt\luacompiler/3rdpartyLuaCompiler.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc10\Opt\luacompiler/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc10\Opt\luacompiler/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc10\Opt\luacompiler/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <OutputFile>..\..\Build.vc10\opt/luac.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\..\..\Build.vc10\Opt/luac.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>.\..\..\Build.vc10\Opt\luacompiler/luac.map</MapFileName>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <TypeLibraryName>.\..\..\Build.vc10\Debug/3rdpartyLuaCompiler.tlb</TypeLibraryName>
+    </Midl>
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>.\..\..\3rdparty\lua\include;.\..\..\3rdparty\lua\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_CONSOLE;NOSTUBS;LUA_OPNAMES;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc10\Debug\luacompiler/3rdpartyLuaCompiler.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc10\Debug\luacompiler/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc10\Debug\luacompiler/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc10\Debug\luacompiler/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <OutputFile>..\..\Build.vc10\Debug/luac.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\..\..\Build.vc10\Debug/luac.pdb</ProgramDatabaseFile>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>.\..\..\Build.vc10\Debug\luacompiler/luac.map</MapFileName>
+      <SubSystem>Console</SubSystem>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\3rdparty\lua\src\lapi.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\lauxlib.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\lbaselib.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\lcode.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\ldblib.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\ldebug.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\ldo.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\ldump.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\lfunc.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\lgc.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\linit.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\liolib.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\llex.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\lmathlib.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\lmem.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\loadlib.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\lobject.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\lopcodes.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\loslib.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\lparser.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\lstate.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\lstring.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\lstrlib.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\ltable.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\ltablib.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\ltm.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\luac.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\lundump.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\lvm.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\lzio.c" />
+    <ClCompile Include="..\..\3rdparty\lua\src\print.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\3rdparty\lua\src\lapi.h" />
+    <ClInclude Include="..\..\3rdparty\lua\src\lauxlib.h" />
+    <ClInclude Include="..\..\3rdparty\lua\src\lcode.h" />
+    <ClInclude Include="..\..\3rdparty\lua\src\ldebug.h" />
+    <ClInclude Include="..\..\3rdparty\lua\src\ldo.h" />
+    <ClInclude Include="..\..\3rdparty\lua\src\lfunc.h" />
+    <ClInclude Include="..\..\3rdparty\lua\src\lgc.h" />
+    <ClInclude Include="..\..\3rdparty\lua\src\llex.h" />
+    <ClInclude Include="..\..\3rdparty\lua\src\llimits.h" />
+    <ClInclude Include="..\..\3rdparty\lua\src\lmem.h" />
+    <ClInclude Include="..\..\3rdparty\lua\src\lobject.h" />
+    <ClInclude Include="..\..\3rdparty\lua\src\lopcodes.h" />
+    <ClInclude Include="..\..\3rdparty\lua\src\lparser.h" />
+    <ClInclude Include="..\..\3rdparty\lua\src\lstate.h" />
+    <ClInclude Include="..\..\3rdparty\lua\src\lstring.h" />
+    <ClInclude Include="..\..\3rdparty\lua\src\ltable.h" />
+    <ClInclude Include="..\..\3rdparty\lua\src\ltm.h" />
+    <ClInclude Include="..\..\3rdparty\lua\src\lua.h" />
+    <ClInclude Include="..\..\3rdparty\lua\src\luaconf.h" />
+    <ClInclude Include="..\..\3rdparty\lua\src\lualib.h" />
+    <ClInclude Include="..\..\3rdparty\lua\src\lundump.h" />
+    <ClInclude Include="..\..\3rdparty\lua\src\lvm.h" />
+    <ClInclude Include="..\..\3rdparty\lua\src\lzio.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

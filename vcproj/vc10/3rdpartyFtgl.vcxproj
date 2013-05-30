@@ -1,0 +1,301 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Opt|Win32">
+      <Configuration>Opt</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="StaticDebug|Win32">
+      <Configuration>StaticDebug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="StaticRelease|Win32">
+      <Configuration>StaticRelease</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{364CD7D3-D768-470C-8631-0D9EC056AE6E}</ProjectGuid>
+    <RootNamespace>3rdpartyFtgl</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'">.\..\..\Build.vc10\StaticRelease\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'">.\..\..\Build.vc10\StaticRelease\ftgl\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\Build.vc10\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.\..\..\Build.vc10\Release\ftgl\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\Build.vc10\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.\..\..\Build.vc10\Debug\ftgl\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'">.\..\..\Build.vc10\Opt\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'">.\..\..\Build.vc10\Opt\ftgl\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'">false</LinkIncremental>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'">.\..\..\Build.vc10\StaticDebug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'">.\..\..\Build.vc10\StaticDebug\ftgl\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\3rdparty\ftgl\include;..\..\3rdparty\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;FTGL_LIBRARY_STATIC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc10\StaticRelease\ftgl/3rdpartyFtgl.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc10\StaticRelease\ftgl/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc10\StaticRelease\ftgl/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc10\StaticRelease\ftgl/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)ftgl.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\3rdparty\ftgl\include;..\..\3rdparty\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;FTGL_DLL_EXPORTS;FTGL_LIBRARY;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc10\Release\ftgl/3rdpartyFtgl.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc10\Release\ftgl/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc10\Release\ftgl/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc10\Release\ftgl/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)ftgl.dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\3rdparty\ftgl\include;..\..\3rdparty\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;_USRDLL;FTGL_DLL_EXPORTS;FTGL_LIBRARY;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc10\Debug\ftgl/3rdpartyFtgl.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc10\Debug\ftgl/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc10\Debug\ftgl/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc10\Debug\ftgl/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)ftgl.dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(TargetDir)/ftgl.pdb</ProgramDatabaseFile>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'">
+    <ClCompile>
+      <Optimization>MaxSpeed</Optimization>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>..\..\3rdparty\ftgl\include;..\..\3rdparty\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;_USRDLL;FTGL_DLL_EXPORTS;FTGL_LIBRARY;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc10\Opt\ftgl/3rdpartyFtgl.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc10\Opt\ftgl/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc10\Opt\ftgl/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc10\Opt\ftgl/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>opengl32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)ftgl.dll</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>..\..\3rdparty\ftgl\include;..\..\3rdparty\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;_USRDLL;FTGL_LIBRARY_STATIC;_CRT_SECURE_NO_DEPRECATE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc10\StaticDebug\ftgl/3rdpartyFtgl.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc10\StaticDebug\ftgl/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc10\StaticDebug\ftgl/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc10\StaticDebug\ftgl/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)ftgl.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\3rdparty\ftgl\src\FTBitmapGlyph.cpp" />
+    <ClCompile Include="..\..\3rdparty\ftgl\src\FTCharmap.cpp" />
+    <ClCompile Include="..\..\3rdparty\ftgl\src\FTContour.cpp" />
+    <ClCompile Include="..\..\3rdparty\ftgl\src\FTExtrdGlyph.cpp" />
+    <ClCompile Include="..\..\3rdparty\ftgl\src\FTFace.cpp" />
+    <ClCompile Include="..\..\3rdparty\ftgl\src\FTFont.cpp" />
+    <ClCompile Include="..\..\3rdparty\ftgl\src\FTGLBitmapFont.cpp" />
+    <ClCompile Include="..\..\3rdparty\ftgl\src\FTGLExtrdFont.cpp" />
+    <ClCompile Include="..\..\3rdparty\ftgl\src\FTGLOutlineFont.cpp" />
+    <ClCompile Include="..\..\3rdparty\ftgl\src\FTGLPixmapFont.cpp" />
+    <ClCompile Include="..\..\3rdparty\ftgl\src\FTGLPolygonFont.cpp" />
+    <ClCompile Include="..\..\3rdparty\ftgl\src\FTGLTextureFont.cpp" />
+    <ClCompile Include="..\..\3rdparty\ftgl\src\FTGlyph.cpp" />
+    <ClCompile Include="..\..\3rdparty\ftgl\src\FTGlyphContainer.cpp" />
+    <ClCompile Include="..\..\3rdparty\ftgl\src\FTLibrary.cpp" />
+    <ClCompile Include="..\..\3rdparty\ftgl\src\FTOutlineGlyph.cpp" />
+    <ClCompile Include="..\..\3rdparty\ftgl\src\FTPixmapGlyph.cpp" />
+    <ClCompile Include="..\..\3rdparty\ftgl\src\FTPoint.cpp" />
+    <ClCompile Include="..\..\3rdparty\ftgl\src\FTPolyGlyph.cpp" />
+    <ClCompile Include="..\..\3rdparty\ftgl\src\FTSize.cpp" />
+    <ClCompile Include="..\..\3rdparty\ftgl\src\FTTextureGlyph.cpp" />
+    <ClCompile Include="..\..\3rdparty\ftgl\src\FTVectoriser.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTBBox.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTBitmapGlyph.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTCharmap.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTCharToGlyphIndexMap.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTContour.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTExtrdGlyph.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTFace.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTFont.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTGL.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTGLBitmapFont.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTGLExtrdFont.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTGLOutlineFont.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTGLPixmapFont.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTGLPolygonFont.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTGLTextureFont.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTGlyph.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTGlyphContainer.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTLibrary.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTList.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTOutlineGlyph.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTPixmapGlyph.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTPoint.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTPolyGlyph.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTSize.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTTextureGlyph.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTVector.h" />
+    <ClInclude Include="..\..\3rdparty\ftgl\include\FTVectoriser.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="3rdpartyFreetype.vcxproj">
+      <Project>{320f900e-24d1-40f0-a21d-8f0c1876396c}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

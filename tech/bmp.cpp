@@ -235,7 +235,7 @@ tResult BmpWrite(IImage * pImage, IWriter * pWriter)
 
    // BMP file scan lines must be 4-byte aligned
    int scanLineWidth = ((pImage->GetWidth() * BytesPerPixel(pixelFormat)) + 3) & ~3;
-   int bitsSize = abs(scanLineWidth * pImage->GetHeight());
+   int bitsSize = abs(scanLineWidth * static_cast<int>(pImage->GetHeight()));
 
    sBmpFileHeader header;
    header.bfType = kBmpFileId;

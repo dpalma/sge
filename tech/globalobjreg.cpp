@@ -22,7 +22,6 @@
 #include "tech/dbgalloc.h" // must be last header
 
 using namespace boost;
-using namespace std;
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -137,7 +136,7 @@ private:
    typedef cHashTable<const GUID *, IUnknown *> tObjMap;
    tObjMap m_objMap;
 
-   typedef vector<const GUID *> tInitOrder;
+   typedef std::vector<const GUID *> tInitOrder;
    tInitOrder m_initOrder;
 };
 
@@ -214,7 +213,7 @@ tResult cGlobalObjectRegistry::InitAll()
    // This set keeps track of the identity IUnknown* pointers of the objects
    // whose Init() method has been called to avoid call Init() more than once
    // on the same object.
-   set<IUnknown*> initialized;
+   std::set<IUnknown*> initialized;
 
    tResult result = S_OK;
 
@@ -272,7 +271,7 @@ void cGlobalObjectRegistry::TermAll()
 {
    Assert(m_objMap.size() == m_initOrder.size());
 
-   set<IUnknown*> termed;
+   std::set<IUnknown*> termed;
 
    // Terminate in reverse order
    tInitOrder::reverse_iterator iter;

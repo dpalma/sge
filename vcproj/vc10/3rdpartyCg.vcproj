@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="Windows-1252"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="8.00"
+	Name="3rdpartyCg"
+	ProjectGUID="{281AC579-4D4A-4408-B651-EA5E100CDD3C}"
+	>
+	<Platforms>
+		<Platform
+			Name="Win32"
+		/>
+	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
+	<Configurations>
+		<Configuration
+			Name="StaticRelease|Win32"
+			OutputDirectory=".\..\..\Build.vc8\StaticRelease"
+			IntermediateDirectory=".\..\..\Build.vc8\StaticRelease"
+			ConfigurationType="0"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName)"
+				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) /a"
+				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) clean"
+				Output="3rdpartyCg.exe"
+				PreprocessorDefinitions=""
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory=".\..\..\Build.vc8\Debug"
+			IntermediateDirectory=".\..\..\Build.vc8\Debug"
+			ConfigurationType="0"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) DEBUG=TRUE"
+				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) DEBUG=TRUE /a"
+				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) DEBUG=TRUE clean"
+				Output="3rdpartyCg.exe"
+				PreprocessorDefinitions=""
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="Opt|Win32"
+			OutputDirectory=".\..\..\Build.vc8\Opt"
+			IntermediateDirectory=".\..\..\Build.vc8\Opt"
+			ConfigurationType="0"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) DEBUG=TRUE"
+				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) DEBUG=TRUE /a"
+				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) DEBUG=TRUE clean"
+				Output="3rdpartyCg.exe"
+				PreprocessorDefinitions=""
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory=".\..\..\Build.vc8\Release"
+			IntermediateDirectory=".\..\..\Build.vc8\Release"
+			ConfigurationType="0"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName)"
+				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) /a"
+				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) clean"
+				Output="3rdpartyCg.exe"
+				PreprocessorDefinitions=""
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="StaticDebug|Win32"
+			OutputDirectory=".\..\..\Build.vc8\StaticDebug"
+			IntermediateDirectory=".\..\..\Build.vc8\StaticDebug"
+			ConfigurationType="0"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) DEBUG=TRUE"
+				ReBuildCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) DEBUG=TRUE /a"
+				CleanCommandLine="nmake /nologo /f ..\..\3rdParty\Cg\CopyCg.mak OUTDIR=..\..\Build.vc8\$(ConfigurationName) DEBUG=TRUE clean"
+				Output="3rdpartyCg.exe"
+				PreprocessorDefinitions=""
+				IncludeSearchPath=""
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+	</Configurations>
+	<References>
+	</References>
+	<Files>
+		<Filter
+			Name="Source Files"
+			Filter="cpp;c;cxx;rc;def;r;odl;idl;hpj;bat"
+			>
+		</Filter>
+		<Filter
+			Name="Header Files"
+			Filter="h;hpp;hxx;hm;inl"
+			>
+		</Filter>
+		<Filter
+			Name="Resource Files"
+			Filter="ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe"
+			>
+		</Filter>
+		<File
+			RelativePath=".\..\..\3rdParty\Cg\CopyCg.mak"
+			>
+		</File>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>
