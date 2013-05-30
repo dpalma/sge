@@ -100,7 +100,7 @@
     </Midl>
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\3rdparty\atl;..\..\3rdparty\ms3dsdk\msLib;..\..\3rdparty\UnitTest++\src;..\..\3rdparty\NvTriStrip\include;..\..\3rdparty\wtl\include;..\..\api;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\3rdparty\atl;..\..\3rdparty\ms3dsdk\msLib;..\..\3rdparty\UnitTest++\src;..\..\3rdparty\NvTriStrip\include;..\..\3rdparty\wtl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;NO_AUTO_EXPORTS;_USRDLL;WIN32;_WINDOWS;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
@@ -143,7 +143,7 @@
     </Midl>
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\3rdparty\atl;..\..\3rdparty\ms3dsdk\msLib;..\..\3rdparty\UnitTest++\src;..\..\3rdparty\NvTriStrip\include;..\..\3rdparty\wtl\include;..\..\api;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\3rdparty\atl;..\..\3rdparty\ms3dsdk\msLib;..\..\3rdparty\UnitTest++\src;..\..\3rdparty\NvTriStrip\include;..\..\3rdparty\wtl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_USRDLL;STRICT;_WINDOWS;NDEBUG;WIN32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
@@ -188,7 +188,7 @@
     </Midl>
     <ClCompile>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\3rdparty\atl;..\..\3rdparty\ms3dsdk\msLib;..\..\3rdparty\UnitTest++\src;..\..\3rdparty\NvTriStrip\include;..\..\3rdparty\wtl\include;..\..\api;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\3rdparty\atl;..\..\3rdparty\ms3dsdk\msLib;..\..\3rdparty\UnitTest++\src;..\..\3rdparty\NvTriStrip\include;..\..\3rdparty\wtl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;_USRDLL;WIN32;_WINDOWS;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
@@ -232,7 +232,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\3rdparty\atl;..\..\3rdparty\ms3dsdk\msLib;..\..\3rdparty\UnitTest++\src;..\..\3rdparty\NvTriStrip\include;..\..\3rdparty\wtl\include;..\..\api;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\3rdparty\atl;..\..\3rdparty\ms3dsdk\msLib;..\..\3rdparty\UnitTest++\src;..\..\3rdparty\NvTriStrip\include;..\..\3rdparty\wtl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;NO_AUTO_EXPORTS;_USRDLL;WIN32;_WINDOWS;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
@@ -276,7 +276,7 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\3rdparty\atl;..\..\3rdparty\ms3dsdk\msLib;..\..\3rdparty\UnitTest++\src;..\..\3rdparty\NvTriStrip\include;..\..\3rdparty\wtl\include;..\..\api;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\3rdparty\atl;..\..\3rdparty\ms3dsdk\msLib;..\..\3rdparty\UnitTest++\src;..\..\3rdparty\NvTriStrip\include;..\..\3rdparty\wtl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;_USRDLL;WIN32;_WINDOWS;STRICT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>

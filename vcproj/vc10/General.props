@@ -2,7 +2,12 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros">
-    <APIInclude>$(SolutionDir)..\..\api</APIInclude>
+     <APIInclude>$(SolutionDir)..\..\api</APIInclude>
+     <ThirdpartyDir>$(SolutionDir)..\..\3rdparty\</ThirdpartyDir>
+     <BoostInclude>$(ThirdpartyDir)boost</BoostInclude>
+     <JPEGInclude>$(ThirdpartyDir)jpeg</JPEGInclude>
+     <ZLibInclude>$(ThirdpartyDir)zlib;$(ThirdpartyDir)zlib\contrib\minizip</ZLibInclude>
+     <TinyXmlInclude>$(ThirdpartyDir)tixml</TinyXmlInclude>
   </PropertyGroup>
   <PropertyGroup>
     <OutDir>.\..\..\Build.vc10\$(Configuration)\</OutDir>
@@ -10,7 +15,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(APIInclude);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(APIInclude);$(BoostInclude);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup />
