@@ -1,0 +1,397 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Opt|Win32">
+      <Configuration>Opt</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="StaticDebug|Win32">
+      <Configuration>StaticDebug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="StaticRelease|Win32">
+      <Configuration>StaticRelease</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Template|Win32">
+      <Configuration>Template</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{4764E397-0635-449F-99E1-9E7E759F9390}</ProjectGuid>
+    <RootNamespace>mfceditor</RootNamespace>
+    <Keyword>MFCProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Static</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Static</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="General.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="General.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="General.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="General.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="General.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+    <Import Project="General.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'">true</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'">false</LinkIncremental>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'">false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>$(TinyXmlInclude);..\..\3rdparty\wtl\include;..\..\3rdparty\glew\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;TIXML_USE_STL;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile>stdhdr.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc71\Release\mfceditor/mfceditor.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc71\Release\mfceditor/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc71\Release\mfceditor/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc71\Release\mfceditor/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>opengl32.lib;glu32.lib;winmm.lib;$(OutDir)tinyxml.lib;$(OutDir)lua.lib;$(OutDir)zlibwapi.lib;$(OutDir)glew.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\..\..\Build.vc71\Release/mfceditor.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>..\..\3rdparty\Cg\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <ProgramDatabaseFile>.\..\..\Build.vc71\Release/mfceditor.pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\..\..\Build.vc71\Release/mfceditor.tlb</TypeLibraryName>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_AFXDLL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(TinyXmlInclude);..\..\3rdparty\wtl\include;..\..\3rdparty\glew\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_WINDOWS;TIXML_USE_STL;GLEW_STATIC;HAVE_UNITTESTPP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeTypeInfo>true</RuntimeTypeInfo>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile>stdhdr.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc71\Debug\mfceditor/mfceditor.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc71\Debug\mfceditor/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc71\Debug\mfceditor/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc71\Debug\mfceditor/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>opengl32.lib;glu32.lib;winmm.lib;$(OutDir)tinyxml.lib;$(OutDir)lua.lib;$(OutDir)zlibwapi.lib;$(OutDir)glew.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\..\..\Build.vc71\Debug/mfceditor.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>..\..\3rdparty\Cg\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\..\..\Build.vc71\Debug/mfceditor.pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\..\..\Build.vc71\Debug/mfceditor.tlb</TypeLibraryName>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_AFXDLL;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(TinyXmlInclude);..\..\3rdparty\wtl\include;..\..\3rdparty\glew\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NO_AUTO_EXPORTS;_DEBUG;WIN32;_WINDOWS;TIXML_USE_STL;GLEW_STATIC;HAVE_UNITTESTPP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile>stdhdr.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc71\StaticDebug\mfceditor/mfceditor.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc71\StaticDebug\mfceditor/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc71\StaticDebug\mfceditor/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc71\StaticDebug\mfceditor/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>opengl32.lib;glu32.lib;Cg.lib;CgGL.lib;winmm.lib;$(OutDir)tinyxml.lib;$(OutDir)jpeg.lib;$(OutDir)lua.lib;$(OutDir)zlibwapi.lib;$(OutDir)glew.lib;$(OutDir)freetype.lib;$(OutDir)ftgl.lib;$(OutDir)UnitTest++.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\..\..\Build.vc71\StaticDebug/mfceditor.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>..\..\3rdparty\Cg\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\..\..\Build.vc71\StaticDebug/mfceditor.pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\..\..\Build.vc71\StaticDebug/mfceditor.tlb</TypeLibraryName>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>$(TinyXmlInclude);..\..\3rdparty\wtl\include;..\..\3rdparty\glew\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_WINDOWS;TIXML_USE_STL;GLEW_STATIC;HAVE_UNITTESTPP;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile>stdhdr.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc71\Opt\mfceditor/mfceditor.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc71\Opt\mfceditor/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc71\Opt\mfceditor/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc71\Opt\mfceditor/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>opengl32.lib;glu32.lib;winmm.lib;$(OutDir)tinyxml.lib;$(OutDir)lua.lib;$(OutDir)zlibwapi.lib;$(OutDir)glew.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\..\..\Build.vc71\Opt/mfceditor.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>..\..\3rdparty\Cg\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>..\..\Build.vc71\Opt\mfceditor.map</MapFileName>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\..\..\Build.vc71\Opt/mfceditor.tlb</TypeLibraryName>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_AFXDLL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>$(TinyXmlInclude);..\..\3rdparty\wtl\include;..\..\3rdparty\glew\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>NO_AUTO_EXPORTS;NDEBUG;WIN32;_WINDOWS;TIXML_USE_STL;GLEW_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderFile>stdhdr.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\..\..\Build.vc71\StaticRelease\mfceditor/mfceditor.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\Build.vc71\StaticRelease\mfceditor/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\Build.vc71\StaticRelease\mfceditor/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\Build.vc71\StaticRelease\mfceditor/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>opengl32.lib;glu32.lib;Cg.lib;CgGL.lib;winmm.lib;$(OutDir)jpeg.lib;$(OutDir)tinyxml.lib;$(OutDir)lua.lib;$(OutDir)zlibwapi.lib;$(OutDir)glew.lib;$(OutDir)freetype.lib;$(OutDir)ftgl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>.\..\..\Build.vc71\StaticRelease/mfceditor.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <AdditionalLibraryDirectories>..\..\3rdparty\Cg\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateMapFile>true</GenerateMapFile>
+      <MapFileName>..\..\Build.vc71\StaticRelease\mfceditor.map</MapFileName>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\..\..\Build.vc71\StaticRelease/mfceditor.tlb</TypeLibraryName>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Template|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(TinyXmlInclude);..\..\3rdparty\wtl\include;..\..\3rdparty\glew\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\tests\mfceditor\aboutdlg.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\BitmapUtils.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\CameraDlg.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\cmds.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\DynamicLink.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\editorApp.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\editorCommands.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\editorCtrlBars.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\editorDoc.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\editorTools.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\editorToolState.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\editorTypes.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\editorView.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\LogWnd.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\MainFrm.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\MapPropertiesDlg.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\MapSettingsDlg.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\OutputBar.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\scbarcf.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\scbarg.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\ScriptCmdDlg.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\sizecbar.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\splashwnd.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\stdhdr.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="..\..\tests\mfceditor\ToolPalette.cpp" />
+    <ClCompile Include="..\..\tests\mfceditor\ToolPaletteBar.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="..\..\tests\mfceditor\editor.rc">
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Opt|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='StaticDebug|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories Condition="'$(Configuration)|$(Platform)'=='StaticRelease|Win32'">%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\tests\mfceditor\aboutdlg.h" />
+    <ClInclude Include="..\..\tests\mfceditor\afxcomtools.h" />
+    <ClInclude Include="..\..\tests\mfceditor\BitmapUtils.h" />
+    <ClInclude Include="..\..\tests\mfceditor\CameraDlg.h" />
+    <ClInclude Include="..\..\tests\mfceditor\DynamicLink.h" />
+    <ClInclude Include="..\..\tests\mfceditor\editorapi.h" />
+    <ClInclude Include="..\..\tests\mfceditor\editorApp.h" />
+    <ClInclude Include="..\..\tests\mfceditor\editorCommands.h" />
+    <ClInclude Include="..\..\tests\mfceditor\editorCtrlBars.h" />
+    <ClInclude Include="..\..\tests\mfceditor\editorDoc.h" />
+    <ClInclude Include="..\..\tests\mfceditor\editorguids.h" />
+    <ClInclude Include="..\..\tests\mfceditor\editorTools.h" />
+    <ClInclude Include="..\..\tests\mfceditor\editorToolState.h" />
+    <ClInclude Include="..\..\tests\mfceditor\editorTypes.h" />
+    <ClInclude Include="..\..\tests\mfceditor\editorView.h" />
+    <ClInclude Include="..\..\tests\mfceditor\LogWnd.h" />
+    <ClInclude Include="..\..\tests\mfceditor\MainFrm.h" />
+    <ClInclude Include="..\..\tests\mfceditor\MapPropertiesDlg.h" />
+    <ClInclude Include="..\..\tests\mfceditor\MapSettingsDlg.h" />
+    <ClInclude Include="..\..\tests\mfceditor\OutputBar.h" />
+    <ClInclude Include="..\..\tests\mfceditor\resource.h" />
+    <ClInclude Include="..\..\tests\mfceditor\scbarcf.h" />
+    <ClInclude Include="..\..\tests\mfceditor\scbarg.h" />
+    <ClInclude Include="..\..\tests\mfceditor\ScriptCmdDlg.h" />
+    <ClInclude Include="..\..\tests\mfceditor\sizecbar.h" />
+    <ClInclude Include="..\..\tests\mfceditor\splashwnd.h" />
+    <ClInclude Include="..\..\tests\mfceditor\stdhdr.h" />
+    <ClInclude Include="..\..\tests\mfceditor\ToolPalette.h" />
+    <ClInclude Include="..\..\tests\mfceditor\ToolPaletteBar.h" />
+    <ClInclude Include="..\..\tests\mfceditor\TrackMouseEvent.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\tests\mfceditor\res\editor.ico" />
+    <None Include="..\..\tests\mfceditor\res\editor.rc2" />
+    <None Include="..\..\tests\mfceditor\res\editorDoc.ico" />
+    <None Include="..\..\tests\mfceditor\res\stdtools.bmp" />
+    <None Include="..\..\tests\mfceditor\res\toolbar.bmp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="\prj\sge\editor\editor.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>
