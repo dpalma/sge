@@ -12,4 +12,10 @@ if not exist tinyxml (
    del tinyxml_2_6_2.zip
 )
 
+if not exist UnitTest++ (
+   curl --location -O  http://downloads.sourceforge.net/project/unittest-cpp/UnitTest++/1.4/unittest-cpp-1.4.zip
+   unzip unittest-cpp-1.4.zip
+   del unittest-cpp-1.4.zip
+)
+
 popd
