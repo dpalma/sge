@@ -1,0 +1,45 @@
+<!DOCTYPE HTML>
+<html>
+	<head>
+		<title>sge - Strategy Game Engine</title>
+		<META http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+		<META http-equiv="Content-Style-Type" content="text/css">
+		<link rel="stylesheet" href="styles.css" type="text/css">
+	</head>
+	<body>
+		<section>
+			<h1>sge - Strategy Game Engine</h1>
+			<a href="https://github.com/dpalma/sge">Source Code</a>
+			<ul>
+				<li>C++ code with APIs specified by COM-style interfaces
+				<li>Uses STL container classes
+				<li>Compiles and runs on Windows (VC6 or VCExpress2005Beta) and Linux (gcc 3+)
+			</ul>
+		</section>
+		<section>
+			<h2>Features</h2>
+			<ul>
+				<li>Skeletal character animation (1 bone per vertex); See engine/mesh.cpp,
+				engine/skeleton.cpp, render/softwarevertexblend.cpp in the source code.</li>
+				<li>Custom world builder/scenario editor application built with MFC
+				<li>OpenGL rendering for platform compatibility;
+				Most rendering details hidden behind COM interfaces for future software or D3D rendering backends;
+				Rendering operations queued and sorted each frame to minimize GL state switching</li>
+				<li>In-game user interface system with button, text edit, label widgets implemented (see screenshot)
+				<li><A href="http://www.lua.org">Lua</A> script language integration
+			</ul>
+		</section>
+		<section>
+			<h2>Game</h2>
+			<div>
+			The running game; The small humanoid form near the center is an animated character. The
+			blue rectangle at the bottom is a GUI panel with a text field, a button, and a label
+			<div>
+			<img src="images/sge-game.jpg">
+		</section>
+		<section>
+			<h2>Editor</h2>
+			<img src="images/sge-editor.jpg">
+		</section>
+	</body>
+</html>
